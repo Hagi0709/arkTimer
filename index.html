@@ -1,164 +1,19 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
-  />
-  <title>arkTimer</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>arkTimer</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="title-wrap">
-        <h1>arkTimer</h1>
-        <p>ARKの建築タイマー管理</p>
-      </div>
-      <button id="clearExpiredBtn" class="ghost-btn" type="button">期限切れ削除</button>
-    </header>
 
-    <main class="main">
-      <section class="summary-card">
-        <div class="summary-item">
-          <span class="summary-label">稼働中</span>
-          <strong id="activeCount">0</strong>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">期限切れ</span>
-          <strong id="expiredCount">0</strong>
-        </div>
-      </section>
+<div class="header">arkTimer</div>
 
-      <section id="emptyState" class="empty-state">
-        <div class="empty-icon">⏳</div>
-        <h2>タイマーがありません</h2>
-        <p>右下の＋ボタンから追加してください</p>
-      </section>
+<div id="list"></div>
 
-      <section id="timerList" class="timer-list"></section>
-    </main>
+<button id="add">＋</button>
 
-    <button id="addBtn" class="fab" type="button" aria-label="タイマー追加">＋</button>
-
-    <div id="modalBackdrop" class="modal-backdrop hidden"></div>
-
-    <div id="timerModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modal-header">
-        <h2 id="modalTitle">タイマー追加</h2>
-        <button id="closeModalBtn" class="icon-btn" type="button" aria-label="閉じる">×</button>
-      </div>
-
-      <form id="timerForm" class="form">
-        <label class="field">
-          <span>マップ</span>
-          <input id="mapInput" name="map" type="text" placeholder="例: The Island" required />
-        </label>
-
-        <label class="field">
-          <span>種類</span>
-          <select id="typeSelect" name="type" required>
-            <option value="building">建築タイマー</option>
-            <option value="other">その他</option>
-          </select>
-        </label>
-
-        <div id="materialField" class="field">
-          <span>建材</span>
-          <div class="chip-group" id="materialChips">
-            <label class="chip-option">
-              <input type="radio" name="material" value="わら" checked />
-              <span>わら</span>
-            </label>
-            <label class="chip-option">
-              <input type="radio" name="material" value="木" />
-              <span>木</span>
-            </label>
-            <label class="chip-option">
-              <input type="radio" name="material" value="石" />
-              <span>石</span>
-            </label>
-            <label class="chip-option">
-              <input type="radio" name="material" value="金属" />
-              <span>金属</span>
-            </label>
-            <label class="chip-option">
-              <input type="radio" name="material" value="TEK" />
-              <span>TEK</span>
-            </label>
-          </div>
-          <small class="hint">追加した時点から自動でカウント開始</small>
-        </div>
-
-        <div id="customTimerField" class="field hidden">
-          <span>その他タイマー</span>
-          <div class="duration-grid">
-            <label>
-              <input id="customDaysInput" type="number" min="0" step="1" value="0" />
-              <small>日</small>
-            </label>
-            <label>
-              <input id="customHoursInput" type="number" min="0" max="23" step="1" value="1" />
-              <small>時間</small>
-            </label>
-            <label>
-              <input id="customMinutesInput" type="number" min="0" max="59" step="1" value="0" />
-              <small>分</small>
-            </label>
-          </div>
-          <small class="hint">追加時からこの時間でカウント開始</small>
-        </div>
-
-        <label class="field">
-          <span>メモ</span>
-          <textarea id="memoInput" name="memo" rows="3" placeholder="任意で入力"></textarea>
-        </label>
-
-        <button class="primary-btn" type="submit">追加して開始</button>
-      </form>
-    </div>
-  </div>
-
-  <template id="timerCardTemplate">
-    <article class="timer-card">
-      <div class="timer-card-top">
-        <div class="timer-main">
-          <div class="timer-title-row">
-            <h3 class="timer-title"></h3>
-            <span class="status-badge"></span>
-          </div>
-          <div class="meta-row">
-            <span class="map-badge"></span>
-            <span class="type-badge"></span>
-          </div>
-        </div>
-        <button class="delete-btn" type="button">削除</button>
-      </div>
-
-      <div class="countdown-wrap">
-        <div class="countdown-label">残り時間</div>
-        <div class="countdown-value"></div>
-      </div>
-
-      <div class="detail-grid">
-        <div class="detail-item">
-          <span class="detail-label">開始</span>
-          <strong class="started-at"></strong>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">期限</span>
-          <strong class="expires-at"></strong>
-        </div>
-      </div>
-
-      <div class="memo-block hidden">
-        <div class="detail-label">メモ</div>
-        <p class="memo-text"></p>
-      </div>
-    </article>
-  </template>
-
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
