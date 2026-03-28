@@ -46,6 +46,7 @@
 
       <form id="timerForm" class="form">
         <input type="hidden" id="editId" value="">
+        <input type="hidden" id="imageMode" value="default">
 
         <label class="field">
           <span>マップ</span>
@@ -64,6 +65,22 @@
           </select>
         </label>
 
+        <div class="field">
+          <span>マップ画像</span>
+          <div id="imagePreview" class="image-preview is-empty">
+            <div id="imagePreviewLabel" class="image-preview-label">NO IMAGE</div>
+          </div>
+
+          <div class="image-actions">
+            <label class="file-btn">
+              <input id="imageInput" type="file" accept="image/*">
+              <span>画像を変更</span>
+            </label>
+            <button id="useDefaultImageBtn" class="secondary-btn" type="button">デフォルトに戻す</button>
+          </div>
+          <small class="hint">同階層のデフォルト画像を自動使用。追加時・編集時に個別変更もできます。</small>
+        </div>
+
         <label class="field">
           <span>種類</span>
           <select id="typeSelect" required>
@@ -75,26 +92,11 @@
         <div id="materialField" class="field">
           <span>建材</span>
           <div class="chip-grid">
-            <label class="chip">
-              <input type="radio" name="material" value="わら" checked>
-              <span>わら</span>
-            </label>
-            <label class="chip">
-              <input type="radio" name="material" value="木">
-              <span>木</span>
-            </label>
-            <label class="chip">
-              <input type="radio" name="material" value="石">
-              <span>石</span>
-            </label>
-            <label class="chip">
-              <input type="radio" name="material" value="金属">
-              <span>金属</span>
-            </label>
-            <label class="chip">
-              <input type="radio" name="material" value="TEK">
-              <span>TEK</span>
-            </label>
+            <label class="chip"><input type="radio" name="material" value="わら" checked><span>わら</span></label>
+            <label class="chip"><input type="radio" name="material" value="木"><span>木</span></label>
+            <label class="chip"><input type="radio" name="material" value="石"><span>石</span></label>
+            <label class="chip"><input type="radio" name="material" value="金属"><span>金属</span></label>
+            <label class="chip"><input type="radio" name="material" value="TEK"><span>TEK</span></label>
           </div>
           <small class="hint">追加時から自動で開始します</small>
         </div>
@@ -102,18 +104,9 @@
         <div id="otherField" class="field hidden">
           <span>その他タイマー</span>
           <div class="time-grid">
-            <label>
-              <input id="daysInput" type="number" min="0" step="1" value="0">
-              <small>日</small>
-            </label>
-            <label>
-              <input id="hoursInput" type="number" min="0" max="23" step="1" value="1">
-              <small>時間</small>
-            </label>
-            <label>
-              <input id="minutesInput" type="number" min="0" max="59" step="1" value="0">
-              <small>分</small>
-            </label>
+            <label><input id="daysInput" type="number" min="0" step="1" value="0"><small>日</small></label>
+            <label><input id="hoursInput" type="number" min="0" max="23" step="1" value="1"><small>時間</small></label>
+            <label><input id="minutesInput" type="number" min="0" max="59" step="1" value="0"><small>分</small></label>
           </div>
           <small class="hint">追加時からこの時間で開始します</small>
         </div>
