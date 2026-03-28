@@ -49,6 +49,11 @@
         <input type="hidden" id="imageMode" value="default">
 
         <label class="field">
+          <span>タイマー名</span>
+          <input id="timerNameInput" type="text" placeholder="未設定">
+        </label>
+
+        <label class="field">
           <span>マップ</span>
           <select id="mapSelect" required>
             <option value="">選択してください</option>
@@ -67,18 +72,13 @@
 
         <div class="field">
           <span>マップ画像</span>
-          <div id="imagePreview" class="image-preview is-empty">
-            <div id="imagePreviewLabel" class="image-preview-label">NO IMAGE</div>
-          </div>
-
-          <div class="image-actions">
-            <label class="file-btn">
-              <input id="imageInput" type="file" accept="image/*">
-              <span>画像を変更</span>
-            </label>
-            <button id="useDefaultImageBtn" class="secondary-btn" type="button">デフォルトに戻す</button>
-          </div>
-          <small class="hint">同階層のデフォルト画像を自動使用。追加時・編集時に個別変更もできます。</small>
+          <input id="imageInput" type="file" accept="image/*" class="hidden-input">
+          <button id="imagePreviewButton" class="image-preview-button" type="button">
+            <div id="imagePreview" class="image-preview is-empty">
+              <div id="imagePreviewLabel" class="image-preview-label">NO IMAGE</div>
+            </div>
+          </button>
+          <small class="hint">画像プレビューをタップすると変更できます。長押しや細かいボタン操作は不要です。</small>
         </div>
 
         <label class="field">
@@ -119,6 +119,17 @@
         <button id="submitBtn" class="submit-btn" type="submit">追加して開始</button>
       </form>
     </section>
+
+    <div id="confirmOverlay" class="confirm-overlay hidden">
+      <div class="confirm-box">
+        <h3 id="confirmTitle">確認</h3>
+        <p id="confirmText">実行しますか？</p>
+        <div class="confirm-actions">
+          <button id="confirmCancel" class="confirm-btn ghost" type="button">キャンセル</button>
+          <button id="confirmOk" class="confirm-btn solid" type="button">OK</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>
