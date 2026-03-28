@@ -1,19 +1,131 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>arkTimer</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>arkTimer</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <p class="eyebrow">ARK TIMER MANAGER</p>
+        <h1>arkTimer</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="summary-pill">
+          <span>稼働中</span>
+          <strong id="activeCount">0</strong>
+        </div>
+      </div>
+    </header>
 
-<div class="header">arkTimer</div>
+    <main class="content">
+      <section id="emptyState" class="empty-state">
+        <div class="empty-icon">⌛</div>
+        <h2>タイマーがありません</h2>
+        <p>右下の＋ボタンから追加してください</p>
+      </section>
 
-<div id="list"></div>
+      <section id="list" class="timer-list"></section>
+    </main>
 
-<button id="add">＋</button>
+    <button id="add" class="fab" type="button" aria-label="タイマー追加">＋</button>
 
-<script src="app.js"></script>
+    <div id="overlay" class="overlay hidden"></div>
+
+    <section id="modal" class="modal hidden" aria-modal="true" role="dialog">
+      <div class="modal-header">
+        <div>
+          <p class="modal-sub">TIMER SETTING</p>
+          <h2 id="modalTitle">タイマー追加</h2>
+        </div>
+        <button id="closeModal" class="icon-btn" type="button" aria-label="閉じる">×</button>
+      </div>
+
+      <form id="timerForm" class="form">
+        <input type="hidden" id="editId" value="">
+
+        <label class="field">
+          <span>マップ</span>
+          <select id="mapSelect" required>
+            <option value="">選択してください</option>
+            <option value="アイランド">アイランド</option>
+            <option value="スコーチドアース">スコーチドアース</option>
+            <option value="センター">センター</option>
+            <option value="アベレーション">アベレーション</option>
+            <option value="エクスティンクション">エクスティンクション</option>
+            <option value="アストレオス">アストレオス</option>
+            <option value="ラグナロク">ラグナロク</option>
+            <option value="バルゲロ">バルゲロ</option>
+            <option value="ロストコロニー">ロストコロニー</option>
+            <option value="その他">その他</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>種類</span>
+          <select id="typeSelect" required>
+            <option value="building">建築タイマー</option>
+            <option value="other">その他</option>
+          </select>
+        </label>
+
+        <div id="materialField" class="field">
+          <span>建材</span>
+          <div class="chip-grid">
+            <label class="chip">
+              <input type="radio" name="material" value="わら" checked>
+              <span>わら</span>
+            </label>
+            <label class="chip">
+              <input type="radio" name="material" value="木">
+              <span>木</span>
+            </label>
+            <label class="chip">
+              <input type="radio" name="material" value="石">
+              <span>石</span>
+            </label>
+            <label class="chip">
+              <input type="radio" name="material" value="金属">
+              <span>金属</span>
+            </label>
+            <label class="chip">
+              <input type="radio" name="material" value="TEK">
+              <span>TEK</span>
+            </label>
+          </div>
+          <small class="hint">追加時から自動で開始します</small>
+        </div>
+
+        <div id="otherField" class="field hidden">
+          <span>その他タイマー</span>
+          <div class="time-grid">
+            <label>
+              <input id="daysInput" type="number" min="0" step="1" value="0">
+              <small>日</small>
+            </label>
+            <label>
+              <input id="hoursInput" type="number" min="0" max="23" step="1" value="1">
+              <small>時間</small>
+            </label>
+            <label>
+              <input id="minutesInput" type="number" min="0" max="59" step="1" value="0">
+              <small>分</small>
+            </label>
+          </div>
+          <small class="hint">追加時からこの時間で開始します</small>
+        </div>
+
+        <label class="field">
+          <span>メモ</span>
+          <textarea id="memoInput" rows="3" placeholder="任意で入力"></textarea>
+        </label>
+
+        <button id="submitBtn" class="submit-btn" type="submit">追加して開始</button>
+      </form>
+    </section>
+  </div>
 </body>
 </html>
