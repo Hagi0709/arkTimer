@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'arkTimer_store_v3';
+const STORAGE_KEY = 'arkTimer_store_v4';
 
 const MAPS = [
   'アイランド',
@@ -51,17 +51,25 @@ const typeSelect = document.getElementById('typeSelect');
 const materialField = document.getElementById('materialField');
 const otherField = document.getElementById('otherField');
 const memoInput = document.getElementById('memoInput');
+const timerNameInput = document.getElementById('timerNameInput');
 const daysInput = document.getElementById('daysInput');
 const hoursInput = document.getElementById('hoursInput');
 const minutesInput = document.getElementById('minutesInput');
 const imageInput = document.getElementById('imageInput');
 const imagePreview = document.getElementById('imagePreview');
 const imagePreviewLabel = document.getElementById('imagePreviewLabel');
-const useDefaultImageBtn = document.getElementById('useDefaultImageBtn');
+const imagePreviewButton = document.getElementById('imagePreviewButton');
+
+const confirmOverlay = document.getElementById('confirmOverlay');
+const confirmTitle = document.getElementById('confirmTitle');
+const confirmText = document.getElementById('confirmText');
+const confirmCancel = document.getElementById('confirmCancel');
+const confirmOk = document.getElementById('confirmOk');
 
 const state = {
   timers: [],
-  pendingCustomImage: ''
+  pendingCustomImage: '',
+  confirmResolver: null
 };
 
 function load(){
@@ -105,22 +113,13 @@ function setPreviewImage(src, labelText){
 
 function refreshImagePreviewForCurrentForm(){
   const map = mapSelect.value;
-
   if (imageModeInput.value === 'custom' && state.pendingCustomImage){
     setPreviewImage(state.pendingCustomImage, 'CUSTOM');
     return;
   }
-
   const defaultImage = getDefaultImageForMap(map);
   if (defaultImage) setPreviewImage(defaultImage, 'DEFAULT');
   else setPreviewImage('', 'NO IMAGE');
-}
-
-function resetPendingImageToDefault(){
-  state.pendingCustomImage = '';
-  imageModeInput.value = 'default';
-  imageInput.value = '';
-  refreshImagePreviewForCurrentForm();
 }
 
 function openModal(editTarget = null){
@@ -134,14 +133,13 @@ function openModal(editTarget = null){
     imageModeInput.value = 'default';
     state.pendingCustomImage = '';
     typeSelect.value = 'building';
-
     const straw = document.querySelector('input[name="material"][value="わら"]');
     if (straw) straw.checked = true;
-
     daysInput.value = 0;
     hoursInput.value = 1;
     minutesInput.value = 0;
     memoInput.value = '';
+    timerNameInput.value = '';
     modalTitle.textContent = 'タイマー追加';
     submitBtn.textContent = '追加して開始';
     syncTypeUI();
@@ -153,6 +151,7 @@ function openModal(editTarget = null){
   mapSelect.value = MAPS.includes(editTarget.map) ? editTarget.map : 'その他';
   typeSelect.value = editTarget.type;
   memoInput.value = editTarget.memo || '';
+  timerNameInput.value = editTarget.timerName || '';
   modalTitle.textContent = 'タイマー編集';
   submitBtn.textContent = '保存';
 
@@ -189,6 +188,25 @@ function closeModal(){
   document.body.style.overflow = '';
 }
 
+function openConfirm(title, text){
+  confirmTitle.textContent = title || '確認';
+  confirmText.textContent = text || '実行しますか？';
+  confirmOverlay.classList.remove('hidden');
+
+  return new Promise((resolve) => {
+    state.confirmResolver = resolve;
+  });
+}
+
+function closeConfirm(result){
+  confirmOverlay.classList.add('hidden');
+  if (state.confirmResolver){
+    const resolver = state.confirmResolver;
+    state.confirmResolver = null;
+    resolver(!!result);
+  }
+}
+
 function formatDateWithWeekday(timestamp){
   const date = new Date(timestamp);
   const weekdays = ['日','月','火','水','木','金','土'];
@@ -219,13 +237,23 @@ function getRemainingMs(timer){
 }
 
 function getRemainClass(ms){
-  if (ms <= 0) return 'danger';
-  if (ms <= 24 * 60 * 60 * 1000) return 'warn';
-  return '';
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  if (ms >= 14 * dayMs) return 'green';
+  if (ms >= 7 * dayMs) return 'orange';
+  if (ms <= 0) return 'red5';
+
+  const daysLeft = ms / dayMs;
+  if (daysLeft > 6) return 'red0';
+  if (daysLeft > 5) return 'red1';
+  if (daysLeft > 3) return 'red2';
+  if (daysLeft > 2) return 'red3';
+  if (daysLeft > 1) return 'red4';
+  return 'red5';
 }
 
 function buildTypeLabel(timer){
-  return timer.type === 'building' ? `建築 / ${timer.material}` : 'その他';
+  return timer.type === 'building' ? `${timer.material}` : 'その他';
 }
 
 function getDurationMsFromInput(type){
@@ -267,6 +295,7 @@ function render(){
 
     const remainClass = getRemainClass(remainMs);
     const imageSrc = getTimerImageSrc(timer);
+    const timerName = (timer.timerName || '').trim() || '未設定';
 
     const card = document.createElement('article');
     card.className = `card${remainMs <= 0 ? ' expired' : ''}`;
@@ -274,21 +303,24 @@ function render(){
       <div class="img ${imageSrc ? '' : 'no-image'}"></div>
       <div class="info">
         <div class="top-row">
-          <div class="map-name">${escapeHtml(timer.map)}</div>
-          <span class="type-badge">${escapeHtml(buildTypeLabel(timer))}</span>
+          <div class="timer-name">${escapeHtml(timerName)}</div>
+          <span class="tag map-tag">${escapeHtml(timer.map)}</span>
+          <span class="tag type-tag">${escapeHtml(buildTypeLabel(timer))}</span>
         </div>
 
-        <div class="small start-row"><span>開始</span><strong>${formatDateWithWeekday(timer.startedAt)}</strong></div>
-        <div class="small end-row"><span>終了</span><strong>${formatDateWithWeekday(timer.endsAt)}</strong></div>
+        <div class="collapse-row">
+          <div class="small"><span>崩壊</span><strong>${formatDateWithWeekday(timer.endsAt)}</strong></div>
+        </div>
 
         <div class="remain">
           <span class="remain-label">残り</span>
-          <span class="remain-value${remainClass ? ' ' + remainClass : ''}">${formatRemaining(remainMs)}</span>
+          <span class="remain-value ${remainClass}">${formatRemaining(remainMs)}</span>
         </div>
 
         <div class="actions">
           <button class="action-btn reset-btn" type="button" data-action="reset" data-id="${timer.id}">リセット</button>
           <button class="action-btn edit-btn" type="button" data-action="edit" data-id="${timer.id}">編集</button>
+          <button class="action-btn delete-btn" type="button" data-action="delete" data-id="${timer.id}">削除</button>
         </div>
       </div>
     `;
@@ -315,6 +347,7 @@ function buildTimerPayload(now, keepId = null){
   const map = mapSelect.value;
   const type = typeSelect.value;
   const memo = memoInput.value.trim();
+  const timerName = timerNameInput.value.trim();
   const durationMs = getDurationMsFromInput(type);
 
   if (!map){
@@ -329,6 +362,7 @@ function buildTimerPayload(now, keepId = null){
 
   return {
     id: keepId || generateId(),
+    timerName,
     map,
     type,
     material: type === 'building' ? getSelectedMaterial() : null,
@@ -364,9 +398,12 @@ function addTimerFromForm(event){
   closeModal();
 }
 
-function resetTimer(id){
+async function resetTimer(id){
   const target = state.timers.find(timer => timer.id === id);
   if (!target) return;
+
+  const ok = await openConfirm('リセット確認', 'このタイマーを現在時刻から再スタートしますか？');
+  if (!ok) return;
 
   const durationMs = target.type === 'building'
     ? BUILDING_DURATIONS[target.material] * 24 * 60 * 60 * 1000
@@ -386,6 +423,19 @@ function editTimer(id){
   openModal(target);
 }
 
+async function deleteTimer(id){
+  const target = state.timers.find(timer => timer.id === id);
+  if (!target) return;
+
+  const name = (target.timerName || '').trim() || '未設定';
+  const ok = await openConfirm('削除確認', `「${name}」を削除しますか？`);
+  if (!ok) return;
+
+  state.timers = state.timers.filter(timer => timer.id !== id);
+  save();
+  render();
+}
+
 function bindListActions(event){
   const button = event.target.closest('button[data-action]');
   if (!button) return;
@@ -395,6 +445,7 @@ function bindListActions(event){
 
   if (action === 'reset') return resetTimer(id);
   if (action === 'edit') return editTimer(id);
+  if (action === 'delete') return deleteTimer(id);
 }
 
 function handleImageChange(event){
@@ -426,7 +477,13 @@ function bindEvents(){
     if (imageModeInput.value !== 'custom') refreshImagePreviewForCurrentForm();
   });
   imageInput.addEventListener('change', handleImageChange);
-  useDefaultImageBtn.addEventListener('click', resetPendingImageToDefault);
+  imagePreviewButton.addEventListener('click', () => imageInput.click());
+
+  confirmCancel.addEventListener('click', () => closeConfirm(false));
+  confirmOk.addEventListener('click', () => closeConfirm(true));
+  confirmOverlay.addEventListener('click', (event) => {
+    if (event.target === confirmOverlay) closeConfirm(false);
+  });
 }
 
 function init(){
