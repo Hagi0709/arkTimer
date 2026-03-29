@@ -1,7 +1,5 @@
-const STORAGE_KEY = 'arkTimer_store_v5';
-
+const STORAGE_KEY = 'arkTimer_store_v6';
 const MAPS = ['アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー','その他'];
-
 const DEFAULT_MAP_IMAGES = {
   'アイランド':'IMG_3555.jpeg',
   'スコーチドアース':'IMG_3556.jpeg',
@@ -14,7 +12,7 @@ const DEFAULT_MAP_IMAGES = {
   'ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png',
   'その他':'IMG_3570.jpeg'
 };
-
+const DRIVE_TOWER_ICON = '7369529A-E04B-4212-8F0A-F320CC106E5E.png';
 const BUILDING_DURATIONS = {'わら':4,'木':8,'石':12,'金属':16,'TEK':35};
 
 const list = document.getElementById('list');
@@ -32,7 +30,7 @@ const imageModeInput = document.getElementById('imageMode');
 const mapSelect = document.getElementById('mapSelect');
 const typeSelect = document.getElementById('typeSelect');
 const materialField = document.getElementById('materialField');
-const otherField = document.getElementById('otherField');
+const customTimerField = document.getElementById('customTimerField');
 const memoInput = document.getElementById('memoInput');
 const timerNameInput = document.getElementById('timerNameInput');
 const latInput = document.getElementById('latInput');
@@ -42,7 +40,6 @@ const hoursInput = document.getElementById('hoursInput');
 const minutesInput = document.getElementById('minutesInput');
 const imageInput = document.getElementById('imageInput');
 const imagePreview = document.getElementById('imagePreview');
-const imagePreviewLabel = document.getElementById('imagePreviewLabel');
 const imagePreviewButton = document.getElementById('imagePreviewButton');
 const confirmOverlay = document.getElementById('confirmOverlay');
 const confirmTitle = document.getElementById('confirmTitle');
@@ -61,7 +58,6 @@ function load(){
     state.timers = [];
   }
 }
-
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state.timers)); }
 function generateId(){ return `timer_${Date.now()}_${Math.random().toString(36).slice(2,9)}`; }
 function getSelectedMaterial(){
@@ -69,25 +65,22 @@ function getSelectedMaterial(){
   return checked ? checked.value : 'わら';
 }
 function syncTypeUI(){
-  const isBuilding = typeSelect.value === 'building';
-  materialField.classList.toggle('hidden', !isBuilding);
-  otherField.classList.toggle('hidden', isBuilding);
+  const type = typeSelect.value;
+  materialField.classList.toggle('hidden', type !== 'building');
+  customTimerField.classList.toggle('hidden', type === 'building');
 }
 function getDefaultImageForMap(mapName){ return DEFAULT_MAP_IMAGES[mapName] || ''; }
-function setPreviewImage(src, labelText){
+function setPreviewImage(src){
   imagePreview.style.backgroundImage = src ? `url("${src}")` : '';
   imagePreview.classList.toggle('is-empty', !src);
-  imagePreviewLabel.textContent = labelText;
 }
 function refreshImagePreviewForCurrentForm(){
   const map = mapSelect.value;
-  if (imageModeInput.value === 'custom' && state.pendingCustomImage){
-    setPreviewImage(state.pendingCustomImage, 'CUSTOM');
-    return;
-  }
   const defaultImage = getDefaultImageForMap(map);
-  if (defaultImage) setPreviewImage(defaultImage, 'DEFAULT');
-  else setPreviewImage('', 'NO IMAGE');
+  imageModeInput.value = 'default';
+  state.pendingCustomImage = '';
+  imageInput.value = '';
+  setPreviewImage(defaultImage || '');
 }
 function openModal(editTarget = null){
   overlay.classList.remove('hidden');
@@ -102,13 +95,8 @@ function openModal(editTarget = null){
     typeSelect.value = 'building';
     const straw = document.querySelector('input[name="material"][value="わら"]');
     if (straw) straw.checked = true;
-    daysInput.value = 0;
-    hoursInput.value = 1;
-    minutesInput.value = 0;
-    memoInput.value = '';
-    timerNameInput.value = '';
-    latInput.value = '';
-    lngInput.value = '';
+    daysInput.value = 0; hoursInput.value = 1; minutesInput.value = 0;
+    memoInput.value = ''; timerNameInput.value = ''; latInput.value = ''; lngInput.value = '';
     modalTitle.textContent = 'タイマー追加';
     submitBtn.textContent = '追加して開始';
     syncTypeUI();
@@ -129,9 +117,7 @@ function openModal(editTarget = null){
   if (editTarget.type === 'building'){
     const radio = document.querySelector(`input[name="material"][value="${editTarget.material}"]`);
     if (radio) radio.checked = true;
-    daysInput.value = 0;
-    hoursInput.value = 1;
-    minutesInput.value = 0;
+    daysInput.value = 0; hoursInput.value = 1; minutesInput.value = 0;
   }else{
     const durationMs = Math.max(60000, (editTarget.endsAt - editTarget.startedAt));
     const totalMinutes = Math.floor(durationMs / 60000);
@@ -143,14 +129,13 @@ function openModal(editTarget = null){
   if (editTarget.imageMode === 'custom' && editTarget.imageSrc){
     imageModeInput.value = 'custom';
     state.pendingCustomImage = editTarget.imageSrc;
+    setPreviewImage(editTarget.imageSrc);
   }else{
-    imageModeInput.value = 'default';
-    state.pendingCustomImage = '';
+    refreshImagePreviewForCurrentForm();
   }
 
   imageInput.value = '';
   syncTypeUI();
-  refreshImagePreviewForCurrentForm();
 }
 function closeModal(){
   overlay.classList.add('hidden');
@@ -206,7 +191,11 @@ function getRemainClass(ms){
   if (daysLeft > 1) return 'red4';
   return 'red5';
 }
-function buildTypeLabel(timer){ return timer.type === 'building' ? `${timer.material}` : 'その他'; }
+function buildTypeLabel(timer){
+  if (timer.type === 'building') return `建材${timer.material}`;
+  if (timer.type === 'drive_tower') return 'ドライブタワー';
+  return 'その他';
+}
 function getDurationMsFromInput(type){
   if (type === 'building'){
     const material = getSelectedMaterial();
@@ -224,14 +213,12 @@ function getTimerImageSrc(timer){
 function escapeHtml(value){
   return String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 }
-function normalizeCoord(value){
-  return String(value || '').trim();
-}
+function normalizeCoord(value){ return String(value || '').trim(); }
 function buildCoordTag(timer){
   const lat = normalizeCoord(timer.lat);
   const lng = normalizeCoord(timer.lng);
   if (!lat || !lng) return '';
-  return `${lat}/${lng}`;
+  return `座標${lat}/${lng}`;
 }
 function render(){
   const sorted = [...state.timers].sort((a,b) => a.endsAt - b.endsAt);
@@ -241,7 +228,6 @@ function render(){
   sorted.forEach((timer) => {
     const remainMs = getRemainingMs(timer);
     if (remainMs > 0) active += 1;
-
     const remainClass = getRemainClass(remainMs);
     const imageSrc = getTimerImageSrc(timer);
     const timerName = (timer.timerName || '').trim() || '未設定';
@@ -252,8 +238,10 @@ function render(){
     card.innerHTML = `
       <div class="img ${imageSrc ? '' : 'no-image'}"></div>
       <div class="info">
-        <div class="top-row">
+        <div class="name-row">
           <div class="timer-name">${escapeHtml(timerName)}</div>
+        </div>
+        <div class="tags-row">
           <span class="tag map-tag">${escapeHtml(timer.map)}</span>
           <span class="tag type-tag">${escapeHtml(buildTypeLabel(timer))}</span>
           ${coordTag ? `<span class="tag coord-tag">${escapeHtml(coordTag)}</span>` : ''}
@@ -272,10 +260,15 @@ function render(){
         </div>
       </div>
     `;
-
     const imgEl = card.querySelector('.img');
     if (imageSrc) imgEl.style.backgroundImage = `url("${imageSrc}")`;
-
+    if (timer.type === 'drive_tower'){
+      const badge = document.createElement('img');
+      badge.className = 'overlay-badge';
+      badge.src = DRIVE_TOWER_ICON;
+      badge.alt = 'ドライブタワー';
+      imgEl.appendChild(badge);
+    }
     if (timer.memo && timer.memo.trim()){
       const memo = document.createElement('div');
       memo.className = 'small';
@@ -283,7 +276,6 @@ function render(){
       memo.innerHTML = `<span>メモ</span><strong>${escapeHtml(timer.memo)}</strong>`;
       card.querySelector('.info').appendChild(memo);
     }
-
     list.appendChild(card);
   });
 
@@ -304,21 +296,15 @@ function buildTimerPayload(now, keepId = null){
     return null;
   }
   if (durationMs <= 0){
-    alert('その他タイマーは1分以上で入力してください');
+    alert('タイマーは1分以上で入力してください');
     return null;
   }
 
   return {
     id: keepId || generateId(),
-    timerName,
-    map,
-    lat,
-    lng,
-    type,
+    timerName, map, lat, lng, type,
     material: type === 'building' ? getSelectedMaterial() : null,
-    memo,
-    startedAt: now,
-    endsAt: now + durationMs,
+    memo, startedAt: now, endsAt: now + durationMs,
     imageMode: imageModeInput.value === 'custom' && state.pendingCustomImage ? 'custom' : 'default',
     imageSrc: imageModeInput.value === 'custom' && state.pendingCustomImage ? state.pendingCustomImage : ''
   };
@@ -329,7 +315,6 @@ function addTimerFromForm(event){
   const editingId = editIdInput.value;
   const payload = buildTimerPayload(now, editingId || null);
   if (!payload) return;
-
   if (editingId){
     const index = state.timers.findIndex(timer => timer.id === editingId);
     if (index === -1){
@@ -340,26 +325,20 @@ function addTimerFromForm(event){
   }else{
     state.timers.push(payload);
   }
-
-  save();
-  render();
-  closeModal();
+  save(); render(); closeModal();
 }
 async function resetTimer(id){
   const target = state.timers.find(timer => timer.id === id);
   if (!target) return;
   const ok = await openConfirm('リセット確認', 'このタイマーを現在時刻から再スタートしますか？');
   if (!ok) return;
-
   const durationMs = target.type === 'building'
     ? BUILDING_DURATIONS[target.material] * 24 * 60 * 60 * 1000
     : Math.max(60000, target.endsAt - target.startedAt);
-
   const now = Date.now();
   target.startedAt = now;
   target.endsAt = now + durationMs;
-  save();
-  render();
+  save(); render();
 }
 function editTimer(id){
   const target = state.timers.find(timer => timer.id === id);
@@ -372,10 +351,8 @@ async function deleteTimer(id){
   const name = (target.timerName || '').trim() || '未設定';
   const ok = await openConfirm('削除確認', `「${name}」を削除しますか？`);
   if (!ok) return;
-
   state.timers = state.timers.filter(timer => timer.id !== id);
-  save();
-  render();
+  save(); render();
 }
 function bindListActions(event){
   const button = event.target.closest('button[data-action]');
@@ -393,7 +370,7 @@ function handleImageChange(event){
   reader.onload = () => {
     state.pendingCustomImage = String(reader.result || '');
     imageModeInput.value = 'custom';
-    refreshImagePreviewForCurrentForm();
+    setPreviewImage(state.pendingCustomImage);
   };
   reader.readAsDataURL(file);
 }
@@ -405,9 +382,7 @@ function bindEvents(){
   typeSelect.addEventListener('change', syncTypeUI);
   timerForm.addEventListener('submit', addTimerFromForm);
   list.addEventListener('click', bindListActions);
-  mapSelect.addEventListener('change', () => {
-    if (imageModeInput.value !== 'custom') refreshImagePreviewForCurrentForm();
-  });
+  mapSelect.addEventListener('change', refreshImagePreviewForCurrentForm);
   imageInput.addEventListener('change', handleImageChange);
   imagePreviewButton.addEventListener('click', () => imageInput.click());
   confirmCancel.addEventListener('click', () => closeConfirm(false));
@@ -417,11 +392,6 @@ function bindEvents(){
   });
 }
 function init(){
-  load();
-  bindEvents();
-  syncTypeUI();
-  refreshImagePreviewForCurrentForm();
-  render();
-  startTicker();
+  load(); bindEvents(); syncTypeUI(); refreshImagePreviewForCurrentForm(); render(); startTicker();
 }
 init();
