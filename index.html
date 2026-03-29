@@ -4,21 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>arkTimer</title>
+  <link rel="apple-touch-icon" href="3A438E39-9D68-43D7-A208-45C20F63CE40.jpeg">
+  <link rel="icon" href="3A438E39-9D68-43D7-A208-45C20F63CE40.jpeg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand-block">
-        <p class="eyebrow">ARK TIMER MANAGER</p>
-        <h1>arkTimer</h1>
+      <div class="brand-row">
+        <div class="brand-title">ARK TIMER MANAGER</div>
+        <img class="brand-icon" src="6A24B32B-C572-492B-AA91-5B2667D4133F.png" alt="icon">
       </div>
-      <div class="topbar-right">
-        <div class="summary-pill">
-          <span>稼働中</span>
-          <strong id="activeCount">0</strong>
-        </div>
-      </div>
+      <div class="summary-pill"><span>稼働中</span><strong id="activeCount">0</strong></div>
     </header>
 
     <main class="content">
@@ -27,7 +24,6 @@
         <h2>タイマーがありません</h2>
         <p>右下の＋ボタンから追加してください</p>
       </section>
-
       <section id="list" class="timer-list"></section>
     </main>
 
@@ -74,32 +70,23 @@
           <span>マップ画像</span>
           <input id="imageInput" type="file" accept="image/*" class="hidden-input">
           <button id="imagePreviewButton" class="image-preview-button" type="button">
-            <div id="imagePreview" class="image-preview is-empty">
-              <div id="imagePreviewLabel" class="image-preview-label">NO IMAGE</div>
-            </div>
+            <div id="imagePreview" class="image-preview is-empty"></div>
           </button>
-          <small class="hint">画像プレビューをタップすると変更できます。</small>
         </div>
 
         <div class="field">
           <span>座標（任意）</span>
           <div class="coord-grid">
-            <label>
-              <input id="latInput" type="text" inputmode="decimal" placeholder="緯度">
-              <small>緯度</small>
-            </label>
-            <label>
-              <input id="lngInput" type="text" inputmode="decimal" placeholder="経度">
-              <small>経度</small>
-            </label>
+            <input id="latInput" type="text" inputmode="decimal" placeholder="緯度">
+            <input id="lngInput" type="text" inputmode="decimal" placeholder="経度">
           </div>
-          <small class="hint">両方入力した場合のみ「緯度/経度」でタグ表示します。</small>
         </div>
 
         <label class="field">
           <span>種類</span>
           <select id="typeSelect" required>
             <option value="building">建築タイマー</option>
+            <option value="drive_tower">ドライブタワー</option>
             <option value="other">その他</option>
           </select>
         </label>
@@ -113,17 +100,15 @@
             <label class="chip"><input type="radio" name="material" value="金属"><span>金属</span></label>
             <label class="chip"><input type="radio" name="material" value="TEK"><span>TEK</span></label>
           </div>
-          <small class="hint">追加時から自動で開始します</small>
         </div>
 
-        <div id="otherField" class="field hidden">
-          <span>その他タイマー</span>
+        <div id="customTimerField" class="field hidden">
+          <span>タイマー</span>
           <div class="time-grid">
-            <label><input id="daysInput" type="number" min="0" step="1" value="0"><small>日</small></label>
-            <label><input id="hoursInput" type="number" min="0" max="23" step="1" value="1"><small>時間</small></label>
-            <label><input id="minutesInput" type="number" min="0" max="59" step="1" value="0"><small>分</small></label>
+            <input id="daysInput" type="number" min="0" step="1" value="0" placeholder="日">
+            <input id="hoursInput" type="number" min="0" max="23" step="1" value="1" placeholder="時間">
+            <input id="minutesInput" type="number" min="0" max="59" step="1" value="0" placeholder="分">
           </div>
-          <small class="hint">追加時からこの時間で開始します</small>
         </div>
 
         <label class="field">
@@ -146,7 +131,6 @@
       </div>
     </div>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>
