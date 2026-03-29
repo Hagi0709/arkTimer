@@ -86,7 +86,7 @@
           <span>種類</span>
           <select id="typeSelect" required>
             <option value="building">建築タイマー</option>
-            <option value="drive_tower">ドライブタワー</option>
+            <option value="tribe_tower">トライブタワー</option>
             <option value="other">その他</option>
           </select>
         </label>
@@ -100,14 +100,15 @@
             <label class="chip"><input type="radio" name="material" value="金属"><span>金属</span></label>
             <label class="chip"><input type="radio" name="material" value="TEK"><span>TEK</span></label>
           </div>
+          <div id="materialDays" class="material-days">わら 4日</div>
         </div>
 
         <div id="customTimerField" class="field hidden">
           <span>タイマー</span>
           <div class="time-grid">
-            <input id="daysInput" type="number" min="0" step="1" value="0" placeholder="日">
-            <input id="hoursInput" type="number" min="0" max="23" step="1" value="1" placeholder="時間">
-            <input id="minutesInput" type="number" min="0" max="59" step="1" value="0" placeholder="分">
+            <input id="daysInput" type="number" min="0" step="1" value="" placeholder="日">
+            <input id="hoursInput" type="number" min="0" max="23" step="1" value="" placeholder="時間">
+            <input id="minutesInput" type="number" min="0" max="59" step="1" value="" placeholder="分">
           </div>
         </div>
 
