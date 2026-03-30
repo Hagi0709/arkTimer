@@ -16,24 +16,14 @@
     </header>
 
     <main class="content">
-      <section class="toolbar-card">
-        <div class="toolbar-head">
-          <div>
-            <div class="toolbar-title">並び設定</div>
-            <div class="toolbar-sub">通常は期限が近い順。必要なら手動でも並び替え可能。</div>
-          </div>
-          <div class="counter-chip">有効 <strong id="activeCount">0</strong></div>
-        </div>
-        <label class="field compact-field">
-          <span>表示順</span>
-          <select id="sortSelect">
-            <option value="dueSoon">期限が近い順</option>
-            <option value="dueLate">期限が遠い順</option>
-            <option value="name">名前順</option>
-            <option value="map">マップ順</option>
-            <option value="manual">手動並び替え</option>
-          </select>
-        </label>
+      <section class="toolbar-card toolbar-card-compact">
+        <select id="sortSelect" aria-label="並び順">
+          <option value="dueSoon">期限が近い順</option>
+          <option value="dueLate">期限が遠い順</option>
+          <option value="name">名前順</option>
+          <option value="map">マップ順</option>
+          <option value="manual">手動並び替え</option>
+        </select>
       </section>
 
       <section id="emptyState" class="empty-state">
