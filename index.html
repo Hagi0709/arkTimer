@@ -16,6 +16,26 @@
     </header>
 
     <main class="content">
+      <section class="toolbar-card">
+        <div class="toolbar-head">
+          <div>
+            <div class="toolbar-title">並び設定</div>
+            <div class="toolbar-sub">通常は期限が近い順。必要なら手動でも並び替え可能。</div>
+          </div>
+          <div class="counter-chip">有効 <strong id="activeCount">0</strong></div>
+        </div>
+        <label class="field compact-field">
+          <span>表示順</span>
+          <select id="sortSelect">
+            <option value="dueSoon">期限が近い順</option>
+            <option value="dueLate">期限が遠い順</option>
+            <option value="name">名前順</option>
+            <option value="map">マップ順</option>
+            <option value="manual">手動並び替え</option>
+          </select>
+        </label>
+      </section>
+
       <section id="emptyState" class="empty-state">
         <div class="empty-icon">⌛</div>
         <h2>タイマーがありません</h2>
@@ -66,8 +86,10 @@
         <div class="field">
           <span>マップ画像</span>
           <input id="imageInput" type="file" accept="image/*" class="hidden-input">
-          <button id="imagePreviewButton" class="image-preview-button" type="button">
-            <div id="imagePreview" class="image-preview is-empty"></div>
+          <button id="imagePreviewButton" class="map-preview-button" type="button" aria-label="マップ画像を変更">
+            <div id="imagePreview" class="map-preview is-empty">
+              <div id="imagePreviewPin" class="map-pin hidden" aria-hidden="true"></div>
+            </div>
           </button>
         </div>
 
@@ -77,6 +99,10 @@
             <input id="latInput" type="text" inputmode="decimal" placeholder="緯度">
             <input id="lngInput" type="text" inputmode="decimal" placeholder="経度">
           </div>
+          <label class="check-row">
+            <input id="showPinInput" type="checkbox" checked>
+            <span>座標にピンを表示</span>
+          </label>
         </div>
 
         <label class="field">
