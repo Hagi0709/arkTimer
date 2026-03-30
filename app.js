@@ -128,12 +128,12 @@ function formatDateWithWeekday(timestamp){const date=new Date(timestamp);const w
 function formatRemaining(ms){if(ms<=0)return '期限切れ';const totalMinutes=Math.floor(ms/60000);const days=Math.floor(totalMinutes/1440);const hours=Math.floor((totalMinutes%1440)/60);const minutes=totalMinutes%60;if(days>0)return `${days}日 ${hours}時間 ${minutes}分`;if(hours>0)return `${hours}時間 ${minutes}分`;return `${minutes}分`}
 function getRemainingMs(timer){return timer.endsAt-Date.now()}
 function getRemainClass(ms){const dayMs=24*60*60*1000;if(ms>=14*dayMs)return 'green';if(ms>=7*dayMs)return 'orange';if(ms<=0)return 'red5';const daysLeft=ms/dayMs;if(daysLeft>6)return 'red0';if(daysLeft>5)return 'red1';if(daysLeft>3)return 'red2';if(daysLeft>2)return 'red3';if(daysLeft>1)return 'red4';return 'red5'}
-function buildTypeLabel(timer){if(timer.type==='building')return `建材${timer.material}`;if(timer.type==='tribe_tower')return 'トライブタワー';if(timer.type==='generator')return 'ジェネレータ';return 'その他'}
+function buildTypeLabel(timer){if(timer.type==='building')return `建材:${timer.material}`;if(timer.type==='tribe_tower')return 'トライブタワー';if(timer.type==='generator')return 'ジェネレータ';return 'その他'}
 function getDurationMsFromInput(type){if(type==='building'){return BUILDING_DURATIONS[getSelectedMaterial()]*24*60*60*1000}const days=Number(daysInput.value||0),hours=Number(hoursInput.value||0),minutes=Number(minutesInput.value||0);return ((((days*24)+hours)*60)+minutes)*60*1000}
 function getTimerImageSrc(timer){if(timer.imageMode==='custom'&&timer.imageSrc)return timer.imageSrc;return getDefaultImageForMap(timer.map)}
 function escapeHtml(value){return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
 function normalizeCoord(value){return String(value||'').trim()}
-function buildCoordTag(timer){const lat=normalizeCoord(timer.lat),lng=normalizeCoord(timer.lng);if(!lat||!lng)return '';return `座標${lat}/${lng}`}
+function buildCoordTag(timer){const lat=normalizeCoord(timer.lat),lng=normalizeCoord(timer.lng);if(!lat||!lng)return '';return `座標:${lat}/${lng}`}
 function getNextSortOrder(){return state.timers.reduce((max,timer)=>Math.max(max,Number(timer.sortOrder)||0),-1)+1}
 function getSortedTimers(){
   const timers=[...state.timers];
@@ -151,6 +151,38 @@ function getSortedTimers(){
       return timers.sort((a,b)=>a.endsAt-b.endsAt||a.sortOrder-b.sortOrder);
   }
 }
+function openMapViewer(timer){
+  const imageSrc=getTimerImageSrc(timer);
+  if(!imageSrc)return;
+  const viewer=document.createElement('div');
+  viewer.className='map-viewer';
+  viewer.innerHTML='<div class="map-viewer-backdrop"></div><div class="map-viewer-panel"><button type="button" class="map-viewer-close" aria-label="閉じる">×</button><div class="map-viewer-image"></div></div>';
+  const imageEl=viewer.querySelector('.map-viewer-image');
+  imageEl.style.backgroundImage=`url("${imageSrc}")`;
+  const pin=document.createElement('div');
+  pin.className='map-pin viewer-pin hidden';
+  imageEl.appendChild(pin);
+  setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false);
+  if(timer.type==='tribe_tower'){
+    const badge=document.createElement('img');
+    badge.className='overlay-badge';
+    badge.src=TRIBE_TOWER_ICON;
+    badge.alt='トライブタワー';
+    imageEl.appendChild(badge);
+  }
+  if(timer.type==='generator'){
+    const badge=document.createElement('img');
+    badge.className='overlay-badge';
+    badge.src=GENERATOR_ICON;
+    badge.alt='ジェネレータ';
+    imageEl.appendChild(badge);
+  }
+  const close=()=>viewer.remove();
+  viewer.querySelector('.map-viewer-close').addEventListener('click',close);
+  viewer.querySelector('.map-viewer-backdrop').addEventListener('click',close);
+  viewer.addEventListener('click',event=>{if(event.target===viewer)close()});
+  document.body.appendChild(viewer);
+}
 function render(){
   const sorted=getSortedTimers();
   list.innerHTML='';
@@ -163,9 +195,11 @@ function render(){
     const remainClass=getRemainClass(remainMs),imageSrc=getTimerImageSrc(timer),timerName=(timer.timerName||'').trim()||'未設定',coordTag=buildCoordTag(timer);
     const card=document.createElement('article');
     card.className=`card${remainMs<=0?' expired':''}`;
-    card.innerHTML=`<div class="img"></div><div class="info"><div class="name-row"><div class="timer-name">${escapeHtml(timerName)}</div></div><div class="tags-row"><span class="tag map-tag">${escapeHtml(timer.map)}</span><span class="tag type-tag">${escapeHtml(buildTypeLabel(timer))}</span>${coordTag?`<span class="tag coord-tag">${escapeHtml(coordTag)}</span>`:''}</div><div class="collapse-row"><div class="small"><span>崩壊</span><strong>${formatDateWithWeekday(timer.endsAt)}</strong></div></div><div class="remain"><span class="remain-label">残り</span><span class="remain-value ${remainClass}">${formatRemaining(remainMs)}</span></div><div class="actions">${manualMode?`<div class="move-actions"><button class="action-btn move-btn" type="button" data-action="move-up" data-id="${timer.id}" ${i===0?'disabled':''}>↑</button><button class="action-btn move-btn" type="button" data-action="move-down" data-id="${timer.id}" ${i===sorted.length-1?'disabled':''}>↓</button></div>`:''}<button class="action-btn reset-btn" type="button" data-action="reset" data-id="${timer.id}">リセット</button><button class="action-btn edit-btn" type="button" data-action="edit" data-id="${timer.id}">編集</button><button class="action-btn delete-btn" type="button" data-action="delete" data-id="${timer.id}">削除</button></div></div>`;
+    card.innerHTML=`<div class="img" role="button" tabindex="0" aria-label="マップを拡大"></div><div class="info"><div class="name-row"><div class="timer-name">${escapeHtml(timerName)}</div></div><div class="tags-row"><span class="tag map-tag">${escapeHtml(timer.map)}</span><span class="tag type-tag">${escapeHtml(buildTypeLabel(timer))}</span>${coordTag?`<span class="tag coord-tag">${escapeHtml(coordTag)}</span>`:''}</div><div class="collapse-row"><div class="small"><span>崩壊</span><strong>${formatDateWithWeekday(timer.endsAt)}</strong></div></div><div class="remain"><span class="remain-label">残り</span><span class="remain-value ${remainClass}">${formatRemaining(remainMs)}</span></div><div class="actions">${manualMode?`<div class="move-actions"><button class="action-btn move-btn" type="button" data-action="move-up" data-id="${timer.id}" ${i===0?'disabled':''}>↑</button><button class="action-btn move-btn" type="button" data-action="move-down" data-id="${timer.id}" ${i===sorted.length-1?'disabled':''}>↓</button></div>`:''}<button class="action-btn reset-btn" type="button" data-action="reset" data-id="${timer.id}">リセット</button><button class="action-btn edit-btn" type="button" data-action="edit" data-id="${timer.id}">編集</button><button class="action-btn delete-btn" type="button" data-action="delete" data-id="${timer.id}">削除</button></div></div>`;
     const imgEl=card.querySelector('.img');
     if(imageSrc)imgEl.style.backgroundImage=`url("${imageSrc}")`;
+    imgEl.addEventListener('click',()=>openMapViewer(timer));
+    imgEl.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openMapViewer(timer)}});
     const pin=document.createElement('div');
     pin.className='map-pin card-pin hidden';
     imgEl.appendChild(pin);
