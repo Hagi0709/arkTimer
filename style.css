@@ -988,3 +988,5 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
 .saved-server-row span{flex:1;overflow-wrap:anywhere;font-size:13px}
 #serverSettingsDialog .form{padding-bottom:18px}
 @media(max-width:380px){.character-avatar{width:76px}.character-card{gap:9px}.character-meta-list span{grid-template-columns:66px minmax(0,1fr)}}
+
+.server-memo{display:block;color:var(--muted);font-size:12px;margin-top:5px;white-space:pre-wrap;overflow-wrap:anywhere}
