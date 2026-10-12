@@ -985,6 +985,19 @@ input:focus,select:focus,textarea:focus{
 button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-tabs [role=tab]{touch-action:manipulation}
 @media(max-width:380px){.character-fields{padding:0 12px}.character-field-buttons{gap:4px}.manager-small-btn{padding:9px 8px;font-size:12px}}
 
+
+/* Character list refinements */
+.character-card{align-items:stretch;padding:8px 12px 8px 7px;min-height:126px;gap:12px}
+.character-avatar{width:94px;height:auto;min-height:110px;align-self:stretch;object-fit:contain;object-position:center;background:transparent;border-radius:12px}
+.character-summary{align-self:center;padding:5px 0}
+.character-chevron{align-self:center}
+.character-meta-list{gap:4px}
+.server-settings-bar{display:flex;justify-content:flex-end;margin:-2px 0 4px}
+.server-settings-list{display:grid;gap:8px;padding:0 0 8px}
+.saved-server-row{display:flex;align-items:center;gap:7px;padding:10px;border:1px solid var(--line);border-radius:12px}
+.saved-server-row span{flex:1;overflow-wrap:anywhere;font-size:13px}
+#serverSettingsDialog .form{padding-bottom:18px}
+@media(max-width:380px){.character-avatar{width:76px}.character-card{gap:9px}.character-meta-list span{grid-template-columns:66px minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -1000,7 +1013,7 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
     </nav>
     <main id="characterPage" class="content" role="tabpanel" aria-labelledby="characterTab">
       <div id="characterListPage">
-        <div class="section-heading"><h1>キャラ一覧</h1><span id="characterCount">0人</span></div>
+        <div class="section-heading"><h1>キャラ一覧</h1><span id="characterCount">0人</span></div><div class="server-settings-bar"><button id="openServerSettings" type="button" class="manager-small-btn">⚙ マップ・サーバー設定</button></div>
         <section id="characterEmpty" class="empty-state"><div class="empty-icon">◉</div><h2>キャラがありません</h2><p>右下の＋ボタンから追加してください</p></section>
         <div id="characterList" class="character-list"></div>
       </div>
@@ -1011,6 +1024,7 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
       <div class="modal-header"><h2 id="characterDialogTitle">キャラ追加</h2><button id="closeCharacterDialog" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
       <form id="characterForm" class="form"><div id="characterFormFields"></div><button id="characterSubmit" class="submit-btn" type="submit">保存</button></form>
     </dialog>
+    <dialog id="serverSettingsDialog" class="character-dialog"><div class="modal-header"><h2>マップ・サーバー設定</h2><button type="button" id="closeServerSettings" class="icon-btn">×</button></div><form id="serverSettingsForm" class="form"><label class="field"><span>マップ</span><select id="settingsMap" required></select></label><label class="field"><span>サーバー番号</span><input id="settingsServer" type="text" inputmode="numeric" required placeholder="例：5999"></label><button class="submit-btn" type="submit">組み合わせを登録</button></form><div id="serverSettingsList" class="server-settings-list"></div></dialog>
     <input id="characterImageInput" class="hidden-input" type="file" accept="image/*">
     <dialog id="characterViewer" class="character-viewer" aria-label="画像を拡大"><button id="closeCharacterViewer" class="icon-btn" type="button" aria-label="閉じる">×</button><img id="characterViewerImage" alt=""></dialog>
     <div id="managerToast" class="manager-toast hidden" role="status"></div>
@@ -1445,6 +1459,15 @@ init();
 (()=>{
  const CHARACTER_MAPS=['アイランド','センター','スコーチドアース','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ジェネシス1','ドラゴントピア','クリスタルアイルズ','ロストアイランド','フィヨルド','ジェネシス2','アトランティス'];
  const CHARACTER_STORAGE_KEY='arkManager_characters_local_v1';
+ const SERVER_STORAGE_KEY='arkManager_saved_servers_v1';
+ let savedServers=[];
+ try{const value=JSON.parse(localStorage.getItem(SERVER_STORAGE_KEY)||'[]');savedServers=Array.isArray(value)?value.filter(x=>x&&x.map&&x.serverNo):[]}catch(e){}
+ function saveServers(){localStorage.setItem(SERVER_STORAGE_KEY,JSON.stringify(savedServers))}
+ function mapOptions(){return CHARACTER_MAPS.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}
+ function serverChoiceOptions(map='',server=''){return `<option value="">マップのみ選択・番号を手入力</option>`+savedServers.map((s,i)=>`<option value="${i}" ${s.map===map&&s.serverNo===server?'selected':''}>${esc(s.map)} / ${esc(s.serverNo)}</option>`).join('')}
+ function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row"><span>${esc(s.map)} / ${esc(s.serverNo)}</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みの組み合わせはありません。</p>'}
+ let editingServerIndex=-1;
+
  const labels={name:'サバイバー名',level:'レベル',map:'在住マップ',serverNo:'サーバー番号',eosId:'EOS ID',steamId:'Steam ID'};
  const help='シングルプレイ（ローカル）を開始し、コンソール（コマンド入力画面）を開いて whoami';
  let records=[],selectedId=null,editingField=null,imageField=null,imageContext='detail',pendingFormImages={appearance:'',implant:''},toastTimeout,db=null,ready=false,returnFocus=null;
@@ -1462,7 +1485,7 @@ init();
  function selected(){return records.find(c=>c.id===selectedId)}
  function renderCharacters(){
   $('characterCount').textContent=`${records.length}人`;$('characterEmpty').classList.toggle('hidden',records.length>0);
-  $('characterList').innerHTML=records.map(c=>`<button class="character-card" data-character="${esc(c.id)}" type="button">${c.appearance?`<img class="character-avatar" src="${esc(c.appearance)}" alt="">`:'<span class="character-avatar" aria-hidden="true">◉</span>'}<span class="character-summary"><span class="character-name">${esc(c.name||'名前未設定')}</span><span class="character-meta-list"><span><b>マップ</b>${esc(c.map||'未設定')}</span><span><b>サーバー</b>${esc(c.serverNo||'未設定')}</span><span><b>Steam ID</b>${esc(c.steamId||'未設定')}</span></span></span><span class="character-chevron" aria-hidden="true">›</span></button>`).join('');
+  $('characterList').innerHTML=records.map(c=>`<button class="character-card" data-character="${esc(c.id)}" type="button">${c.appearance?`<img class="character-avatar" src="${esc(c.appearance)}" alt="">`:'<span class="character-avatar" aria-hidden="true">◉</span>'}<span class="character-summary"><span class="character-name">${esc(c.name||'名前未設定')}</span><span class="character-meta-list"><span><b>レベル</b>${esc(c.level||'未設定')}</span><span><b>マップ</b>${esc(c.map||'未設定')}</span><span><b>サーバー</b>${esc(c.serverNo||'未設定')}</span></span></span><span class="character-chevron" aria-hidden="true">›</span></button>`).join('');
  }
  function imageBlock(c,field,label){return `<button type="button" class="character-image-button" data-photo="${field}" aria-label="${label}${c[field]?'を拡大':'を登録'}">${c[field]?`<img class="character-photo" src="${esc(c[field])}" alt="${label}">`:`<span class="photo-placeholder">＋ ${label}を登録</span>`}</button>${c[field]?`<div class="photo-actions"><button class="manager-small-btn" data-upload="${field}" type="button">画像を変更</button><button class="manager-small-btn" data-remove-photo="${field}" type="button">画像を削除</button></div>`:''}`}
  function renderDetail(){
@@ -1472,14 +1495,34 @@ init();
  function showList(){selectedId=null;$('characterListPage').classList.remove('hidden');$('characterDetail').classList.add('hidden');$('addCharacter').classList.remove('hidden');renderCharacters()}
  function showDetail(id){selectedId=id;$('characterListPage').classList.add('hidden');$('characterDetail').classList.remove('hidden');$('addCharacter').classList.add('hidden');renderDetail();window.scrollTo(0,0)}
  function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
- function formField(key,value=''){const label=labels[key];return `<label class="field"><span>${label}${key==='name'?'（必須）':''}</span>${key==='map'?`<select name="map"><option value="">選択してください</option>${CHARACTER_MAPS.map(m=>`<option ${value===m?'selected':''}>${m}</option>`).join('')}</select>`:`<input name="${key}" type="${key==='level'?'number':'text'}" ${key==='level'?'min="1" step="1" inputmode="numeric"':''} ${key==='name'?'required maxlength="100"':''} value="${esc(value)}" autocomplete="off">`}${key==='eosId'?`<small class="eos-help">${help}</small>`:''}</label>`}
+ function formField(key,value=''){
+  const label=labels[key];
+  if(key==='map')return `<label class="field"><span>登録済みマップ・サーバー</span><select name="serverPreset" id="characterServerPreset">${serverChoiceOptions(value,selected()?.serverNo||'')}</select></label><label class="field"><span>${label}</span><select name="map" id="characterMapSelect"><option value="">選択してください</option>${CHARACTER_MAPS.map(m=>`<option value="${esc(m)}" ${value===m?'selected':''}>${esc(m)}</option>`).join('')}</select></label>`;
+  return `<label class="field"><span>${label}${key==='name'?'（必須）':''}</span><input name="${key}" type="${key==='level'?'number':'text'}" ${key==='level'?'min="1" step="1" inputmode="numeric"':''} ${key==='name'?'required maxlength="100"':''} value="${esc(value)}" autocomplete="off">${key==='eosId'?`<small class="eos-help">${help}</small>`:''}</label>`;
+ }
+
  function formImageInner(field,label){const src=pendingFormImages[field];return `<span class="form-image-label">${label}</span><button class="form-image-picker" data-form-upload="${field}" type="button">${src?`<img src="${esc(src)}" alt="${label}"><span>画像を変更</span>`:`<span class="form-image-placeholder">＋ 画像を選択</span>`}</button>${src?`<button class="form-image-remove" data-form-remove="${field}" type="button">画像を削除</button>`:''}`}
  function formImagePicker(field,label){return `<div class="form-image-field" data-form-image="${field}">${formImageInner(field,label)}</div>`}
  function refreshFormImage(field){const box=document.querySelector(`[data-form-image="${field}"]`);if(box)box.innerHTML=formImageInner(field,field==='appearance'?'キャラの見た目画像':'インプラント画像')}
- function showEditor(key=null){if(!ready){toast('キャラ保存機能を読み込み中です');return}editingField=key;const c=selected();$('characterDialogTitle').textContent=key?`${labels[key]}を編集`:'キャラ追加';if(key){$('characterFormFields').innerHTML=formField(key,c[key])}else{pendingFormImages={appearance:'',implant:''};$('characterFormFields').innerHTML=formImagePicker('appearance','キャラの見た目画像')+Object.keys(labels).map(k=>formField(k)).join('')+formImagePicker('implant','インプラント画像')}returnFocus=document.activeElement;openDialog($('characterDialog'));$('characterFormFields').querySelector('input,select,button').focus()}
+ function showEditor(key=null){if(!ready){toast('キャラ保存機能を読み込み中です');return}editingField=key;const c=selected();$('characterDialogTitle').textContent=key?`${labels[key]}を編集`:'キャラ追加';if(key){$('characterFormFields').innerHTML=formField(key,c[key])+(key==='map'?formField('serverNo',c.serverNo||''):'')}else{pendingFormImages={appearance:'',implant:''};$('characterFormFields').innerHTML=formImagePicker('appearance','キャラの見た目画像')+Object.keys(labels).map(k=>formField(k)).join('')+formImagePicker('implant','インプラント画像')}returnFocus=document.activeElement;openDialog($('characterDialog'));$('characterFormFields').querySelector('input,select,button').focus()}
  $('characterDialog').addEventListener('close',()=>returnFocus?.isConnected&&returnFocus.focus());
  async function persistChange(next){try{await writeRecord(next);records=records.map(c=>c.id===next.id?next:c);renderCharacters();renderDetail();return true}catch(e){toast('保存できませんでした。端末の空き容量・ブラウザ設定を確認してください');return false}}
- $('characterForm').addEventListener('submit',async e=>{e.preventDefault();const values=Object.fromEntries(new FormData(e.target));for(const k of Object.keys(values))values[k]=String(values[k]).trim();if('name'in values&&!values.name){toast('サバイバー名を入力してください');return}if(values.level&&!/^[1-9]\d*$/.test(values.level)){toast('レベルは1以上の整数を入力してください');return}const button=$('characterSubmit');button.disabled=true;try{if(editingField){if(await persistChange({...selected(),...values}))closeDialog($('characterDialog'))}else{const c={id:generateId(),appearance:pendingFormImages.appearance,implant:pendingFormImages.implant,createdAt:Date.now(),...values};await writeRecord(c);records.push(c);closeDialog($('characterDialog'));renderCharacters();showDetail(c.id)}}catch(e){toast('保存できませんでした。画像サイズを小さくするか、端末の空き容量・ブラウザ設定を確認してください')}finally{button.disabled=false}});
+ $('characterFormFields').addEventListener('change',e=>{
+  if(e.target.id==='characterServerPreset'&&e.target.value!==''){
+   const server=savedServers[Number(e.target.value)];if(!server)return;
+   const map=$('characterMapSelect'),number=$('characterFormFields').querySelector('[name="serverNo"]');
+   if(map)map.value=server.map;if(number)number.value=server.serverNo;
+  }
+  if(e.target.id==='characterMapSelect'){
+   const preset=$('characterServerPreset');if(preset)preset.value='';
+  }
+ });
+ $('settingsMap').innerHTML='<option value="">選択してください</option>'+mapOptions();
+ $('openServerSettings').addEventListener('click',()=>{editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();openDialog($('serverSettingsDialog'))});
+ $('closeServerSettings').addEventListener('click',()=>closeDialog($('serverSettingsDialog')));
+ $('serverSettingsForm').addEventListener('submit',e=>{e.preventDefault();const map=$('settingsMap').value,serverNo=$('settingsServer').value.trim();if(!map||!serverNo)return;const entry={map,serverNo};if(savedServers.some((s,i)=>i!==editingServerIndex&&s.map===map&&s.serverNo===serverNo)){toast('同じ組み合わせが登録されています');return}if(editingServerIndex>=0)savedServers[editingServerIndex]=entry;else savedServers.push(entry);try{saveServers()}catch(e){toast('設定を保存できませんでした');return}editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();toast('保存しました')});
+ $('serverSettingsList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.editServer!==undefined){editingServerIndex=Number(b.dataset.editServer);const s=savedServers[editingServerIndex];$('settingsMap').value=s.map;$('settingsServer').value=s.serverNo;$('settingsMap').focus()}else if(b.dataset.removeServer!==undefined){savedServers.splice(Number(b.dataset.removeServer),1);saveServers();renderServerSettings()}});
+ $('characterForm').addEventListener('submit',async e=>{e.preventDefault();const values=Object.fromEntries(new FormData(e.target));for(const k of Object.keys(values))values[k]=String(values[k]).trim();delete values.serverPreset;if('name'in values&&!values.name){toast('サバイバー名を入力してください');return}if(values.level&&!/^[1-9]\d*$/.test(values.level)){toast('レベルは1以上の整数を入力してください');return}const button=$('characterSubmit');button.disabled=true;try{if(editingField){if(await persistChange({...selected(),...values}))closeDialog($('characterDialog'))}else{const c={id:generateId(),appearance:pendingFormImages.appearance,implant:pendingFormImages.implant,createdAt:Date.now(),...values};await writeRecord(c);records.push(c);closeDialog($('characterDialog'));renderCharacters();showDetail(c.id)}}catch(e){toast('保存できませんでした。画像サイズを小さくするか、端末の空き容量・ブラウザ設定を確認してください')}finally{button.disabled=false}});
  async function copyField(key){const value=selected()?.[key];if(!value)return;try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(String(value))}else{const input=document.createElement('textarea');input.value=String(value);input.style.cssText='position:fixed;top:0;opacity:0';document.body.appendChild(input);input.focus();input.select();input.setSelectionRange(0,input.value.length);const ok=document.execCommand('copy');input.remove();if(!ok)throw Error('copy')}toast(`${labels[key]}をコピーしました`)}catch(e){toast('コピーできませんでした。編集画面で長押ししてコピーしてください')}}
  function upload(field,context='detail'){imageField=field;imageContext=context;$('characterImageInput').value='';$('characterImageInput').click()}
  function compressImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/'))return reject(Error('image'));const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{try{const scale=Math.min(1,1200/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.8))}catch(e){reject(e)}finally{URL.revokeObjectURL(url)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('decode'))};img.src=url})}
