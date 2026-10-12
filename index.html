@@ -3,19 +3,1017 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>arkTimer</title>
+  <title>ARK Manager</title>
   <link rel="apple-touch-icon" href="3A438E39-9D68-43D7-A208-45C20F63CE40.jpeg">
   <link rel="icon" href="3A438E39-9D68-43D7-A208-45C20F63CE40.jpeg">
-  <link rel="stylesheet" href="style.css">
+  <style>
+:root{
+  --bg:#08111c;
+  --bg2:#0d1827;
+  --line:rgba(255,255,255,.09);
+  --text:#eef6ff;
+  --muted:#91a5bb;
+  --blue:#67bbff;
+  --cyan:#73f0d1;
+  --yellow:#ffb24d;
+  --green:#70e0a5;
+  --danger0:#ffb4b4;
+  --danger1:#ff9b9b;
+  --danger2:#ff8585;
+  --danger3:#ff6f6f;
+  --danger4:#ff5858;
+  --danger5:#ff4545;
+  --shadow:0 16px 40px rgba(0,0,0,.28);
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  min-height:100%;
+  height:100%;
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(circle at top, rgba(103,187,255,.16), transparent 32%),
+    linear-gradient(180deg,var(--bg),var(--bg2));
+  background-repeat:no-repeat;
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+}
+
+body{
+  min-height:100dvh;
+}
+
+button,input,select,textarea{
+  font:inherit;
+}
+
+button{
+  border:none;
+  cursor:pointer;
+}
+
+input,select,textarea{
+  width:100%;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.045);
+  color:var(--text);
+  border-radius:14px;
+  padding:12px 14px;
+  outline:none;
+}
+
+textarea{
+  resize:vertical;
+  min-height:92px;
+}
+
+input:focus,select:focus,textarea:focus{
+  border-color:rgba(103,187,255,.75);
+  box-shadow:0 0 0 3px rgba(103,187,255,.12);
+}
+
+.app-shell{
+  width:min(100%,820px);
+  margin:0 auto;
+  min-height:100dvh;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom));
+  background:transparent;
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:calc(16px + env(safe-area-inset-top)) 16px 14px;
+  backdrop-filter:blur(14px);
+  background:rgba(7,13,21,.78);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.brand-title{
+  font-size:28px;
+  font-weight:900;
+  line-height:1.02;
+  letter-spacing:.10em;
+  color:#eef7ff;
+  text-shadow:
+    0 0 18px rgba(103,187,255,.18),
+    0 2px 10px rgba(0,0,0,.35);
+}
+
+.brand-icon{
+  width:52px;
+  height:52px;
+  object-fit:contain;
+  flex:0 0 auto;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));
+}
+
+.content{
+  padding:16px;
+  display:grid;
+  gap:12px;
+}
+
+.toolbar-card{
+  display:grid;
+  gap:12px;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:22px;
+  background:linear-gradient(180deg, rgba(16,30,45,.96), rgba(10,18,29,.96));
+  box-shadow:var(--shadow);
+}
+
+.toolbar-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.toolbar-title{
+  font-size:15px;
+  font-weight:900;
+}
+
+.toolbar-sub{
+  margin-top:4px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.45;
+}
+
+.counter-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:34px;
+  padding:0 12px;
+  border-radius:999px;
+  background:rgba(103,187,255,.12);
+  border:1px solid rgba(103,187,255,.2);
+  color:#dceeff;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.counter-chip strong{
+  font-size:15px;
+}
+
+.compact-field{
+  gap:6px;
+}
+
+.empty-state{
+  display:grid;
+  place-items:center;
+  text-align:center;
+  gap:6px;
+  padding:48px 18px;
+  border:1px dashed rgba(255,255,255,.12);
+  border-radius:26px;
+  background:rgba(255,255,255,.03);
+  color:var(--muted);
+}
+
+.empty-state.hidden{
+  display:none !important;
+}
+
+.empty-state h2{
+  margin:0;
+  color:var(--text);
+  font-size:22px;
+}
+
+.empty-state p{
+  margin:0;
+  font-size:14px;
+}
+
+.empty-icon{
+  font-size:42px;
+}
+
+.timer-list{
+  display:grid;
+  gap:10px;
+}
+
+.card{
+  display:grid;
+  grid-template-columns:96px minmax(0,1fr);
+  gap:10px;
+  padding:10px;
+  background:linear-gradient(180deg, rgba(17,33,50,.96), rgba(12,24,37,.96));
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+}
+
+.card.expired{
+  border-color:rgba(255,117,117,.4);
+}
+
+.img{
+  width:96px;
+  aspect-ratio:1/1;
+  border-radius:16px;
+  background:
+    linear-gradient(135deg, rgba(103,187,255,.18), rgba(115,240,209,.08)),
+    rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  position:relative;
+  overflow:hidden;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+}
+
+.overlay-badge{
+  position:absolute;
+  right:0;
+  bottom:0;
+  width:50%;
+  height:50%;
+  object-fit:contain;
+  border-top-left-radius:8px;
+  background:rgba(6,12,20,.4);
+  backdrop-filter:blur(2px);
+}
+
+.info{
+  min-width:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:
+    "name actions"
+    "tags actions"
+    "collapse actions"
+    "remain actions";
+  column-gap:10px;
+  row-gap:6px;
+  align-items:start;
+}
+
+.name-row{
+  grid-area:name;
+  min-width:0;
+}
+
+.tags-row{
+  grid-area:tags;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  min-width:0;
+}
+
+.timer-name{
+  font-size:16px;
+  font-weight:800;
+  line-height:1.2;
+  word-break:break-word;
+}
+
+.tag{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:0 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.map-tag{
+  background:rgba(103,187,255,.14);
+  color:#cae7ff;
+}
+
+.type-tag{
+  background:rgba(255,210,124,.14);
+  color:#ffdca2;
+}
+
+.coord-tag{
+  background:rgba(112,224,165,.14);
+  color:#c8f3d9;
+}
+
+.collapse-row{
+  grid-area:collapse;
+  display:grid;
+  gap:4px;
+}
+
+.small{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  min-width:0;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.25;
+}
+
+.small strong{
+  color:#dbe9f7;
+  font-size:12px;
+  font-weight:700;
+}
+
+.remain{
+  grid-area:remain;
+  display:flex;
+  gap:8px;
+  align-items:flex-end;
+  min-width:0;
+}
+
+.remain-label{
+  color:var(--muted);
+  font-size:11px;
+  white-space:nowrap;
+}
+
+.remain-value{
+  font-size:18px;
+  font-weight:800;
+  line-height:1.15;
+  letter-spacing:.02em;
+}
+
+.remain-value.green{color:var(--green);}
+.remain-value.orange{color:var(--yellow);}
+.remain-value.red0{color:var(--danger0);}
+.remain-value.red1{color:var(--danger1);}
+.remain-value.red2{color:var(--danger2);}
+.remain-value.red3{color:var(--danger3);}
+.remain-value.red4{color:var(--danger4);}
+.remain-value.red5{color:var(--danger5);}
+
+.actions{
+  grid-area:actions;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-self:stretch;
+}
+
+.action-btn{
+  min-width:72px;
+  min-height:32px;
+  padding:0 12px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+  color:var(--text);
+}
+
+.reset-btn{
+  background:rgba(103,187,255,.12);
+  border:1px solid rgba(103,187,255,.26);
+}
+
+.edit-btn{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.09);
+}
+
+.delete-btn{
+  background:rgba(255,90,90,.12);
+  border:1px solid rgba(255,90,90,.24);
+  color:#ffd0d0;
+}
+
+.move-actions{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:6px;
+}
+
+.move-btn{
+  min-width:0;
+  padding:0;
+  font-size:15px;
+  background:rgba(115,240,209,.1);
+  border:1px solid rgba(115,240,209,.18);
+}
+
+.move-btn:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+}
+
+.fab{
+  position:fixed;
+  right:18px;
+  bottom:calc(18px + env(safe-area-inset-bottom));
+  z-index:30;
+  width:62px;
+  height:62px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  color:#062238;
+  font-size:34px;
+  font-weight:900;
+  box-shadow:0 20px 40px rgba(0,0,0,.35);
+}
+
+.hidden{
+  display:none !important;
+}
+
+.hidden-input{
+  display:none !important;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:39;
+  background:rgba(0,0,0,.52);
+  backdrop-filter:blur(4px);
+}
+
+.modal{
+  position:fixed;
+  left:50%;
+  bottom:calc(12px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  z-index:40;
+  width:min(calc(100% - 20px),760px);
+  max-height:min(86vh,920px);
+  overflow:auto;
+  border-radius:28px;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(18,33,49,.98), rgba(9,16,26,.98));
+  box-shadow:0 30px 70px rgba(0,0,0,.45);
+}
+
+.modal-sub{
+  margin:0 0 4px;
+  font-size:11px;
+  letter-spacing:.18em;
+  color:var(--blue);
+}
+
+.modal-header{
+  position:sticky;
+  top:0;
+  z-index:2;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding:18px 16px 14px;
+  background:rgba(10,18,29,.9);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.modal-header h2{
+  margin:0;
+  line-height:1.1;
+}
+
+.icon-btn{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-size:24px;
+  flex:0 0 auto;
+}
+
+.form{
+  display:grid;
+  gap:16px;
+  padding:16px;
+}
+
+.field{
+  display:grid;
+  gap:8px;
+}
+
+.field > span{
+  font-size:14px;
+  font-weight:800;
+}
+
+.map-preview-button{
+  display:block;
+  width:100%;
+  padding:0;
+  background:none;
+  border:none;
+}
+
+.map-preview{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(135deg, rgba(103,187,255,.18), rgba(115,240,209,.1)),
+    rgba(255,255,255,.04);
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  overflow:hidden;
+}
+
+.map-preview.is-empty{
+  background:
+    linear-gradient(135deg, rgba(103,187,255,.12), rgba(115,240,209,.06)),
+    rgba(255,255,255,.04);
+}
+
+.map-pin{
+  position:absolute;
+  left:0;
+  top:0;
+  width:20px;
+  height:20px;
+  border-radius:50% 50% 50% 0;
+  transform:translate(-50%,-100%) rotate(-45deg);
+  background:linear-gradient(135deg,#ff7b7b,#ff3f3f);
+  border:2px solid rgba(255,255,255,.9);
+  box-shadow:0 8px 18px rgba(0,0,0,.35);
+  z-index:3;
+}
+
+.map-pin::after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius:50%;
+  background:rgba(255,255,255,.94);
+}
+
+.check-row{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  width:fit-content;
+  font-size:14px;
+  font-weight:700;
+  color:#dcecff;
+}
+
+.check-row input{
+  width:18px;
+  height:18px;
+  padding:0;
+  margin:0;
+  accent-color:#67bbff;
+}
+
+.coord-grid,
+.time-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.time-grid{
+  grid-template-columns:repeat(3,1fr);
+}
+
+.chip-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.chip{
+  position:relative;
+}
+
+.chip input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+.chip span{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  padding:0 14px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.045);
+  font-size:13px;
+  font-weight:700;
+}
+
+.chip input:checked + span{
+  border-color:rgba(103,187,255,.58);
+  background:rgba(103,187,255,.14);
+  color:#d7eeff;
+}
+
+.material-days{
+  font-size:12px;
+  color:#cfe6ff;
+}
+
+.submit-btn{
+  min-height:52px;
+  border-radius:16px;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  color:#062238;
+  font-size:16px;
+  font-weight:900;
+}
+
+.confirm-overlay{
+  position:fixed;
+  inset:0;
+  z-index:80;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(4px);
+}
+
+.confirm-box{
+  width:min(92vw,360px);
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg, rgba(18,33,49,.98), rgba(9,16,26,.98));
+  box-shadow:0 30px 70px rgba(0,0,0,.45);
+  padding:18px;
+}
+
+.confirm-box h3{
+  margin:0 0 10px;
+  font-size:18px;
+}
+
+.confirm-box p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.confirm-actions{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+}
+
+.confirm-btn{
+  flex:1;
+  min-height:44px;
+  border-radius:14px;
+  font-weight:800;
+}
+
+.confirm-btn.ghost{
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+}
+
+.confirm-btn.solid{
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  color:#062238;
+}
+
+@media (max-width:560px){
+  .brand-title{
+    font-size:24px;
+  }
+
+  .brand-icon{
+    width:40px;
+    height:40px;
+  }
+
+  .toolbar-head{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .counter-chip{
+    width:fit-content;
+  }
+
+  .card{
+    grid-template-columns:78px minmax(0,1fr);
+    gap:8px;
+    padding:8px;
+  }
+
+  .img{
+    width:78px;
+    border-radius:14px;
+  }
+
+  .info{
+    grid-template-columns:minmax(0,1fr) 70px;
+    row-gap:5px;
+  }
+
+  .timer-name{
+    font-size:15px;
+  }
+
+  .remain-value{
+    font-size:16px;
+  }
+
+  .action-btn{
+    min-width:70px;
+    min-height:30px;
+    padding:0 8px;
+    font-size:11px;
+  }
+
+  .modal{
+    width:min(calc(100% - 12px),760px);
+    bottom:calc(6px + env(safe-area-inset-bottom));
+    max-height:min(88vh,920px);
+  }
+}
+
+
+.toolbar-card{
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:end;
+}
+
+.compact-field{
+  justify-self:end;
+  width:auto;
+  min-width:164px;
+}
+
+.compact-field > span{
+  font-size:11px;
+  line-height:1;
+  color:var(--muted);
+}
+
+#sortSelect{
+  min-width:164px;
+  width:auto;
+  height:36px;
+  padding:6px 34px 6px 12px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:800;
+  background:rgba(255,255,255,.06);
+}
+
+.overlay.hidden,
+.confirm-overlay.hidden{
+  pointer-events:none;
+}
+
+.fab{
+  z-index:90;
+}
+
+.card-pin{
+  width:16px;
+  height:16px;
+  border-width:1.5px;
+  box-shadow:0 6px 12px rgba(0,0,0,.28);
+}
+
+.card-pin::after{
+  inset:3px;
+}
+
+@media (max-width:560px){
+  .toolbar-card{
+    grid-template-columns:1fr auto;
+    gap:10px;
+  }
+
+  .toolbar-head{
+    min-width:0;
+  }
+
+  .toolbar-title{
+    font-size:14px;
+  }
+
+  .toolbar-sub{
+    font-size:11px;
+    line-height:1.35;
+  }
+
+  .compact-field{
+    min-width:132px;
+  }
+
+  #sortSelect{
+    min-width:132px;
+    max-width:150px;
+    height:32px;
+    padding:4px 28px 4px 10px;
+    font-size:11px;
+    border-radius:10px;
+  }
+
+  .toolbar-head{
+    flex-direction:row;
+    align-items:center;
+  }
+}
+
+
+.toolbar-card-compact{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding:10px 12px;
+}
+
+.toolbar-card-compact #sortSelect{
+  width:auto;
+  min-width:152px;
+  max-width:100%;
+  height:34px;
+  padding:4px 30px 4px 10px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.img{
+  cursor:pointer;
+}
+
+.img:focus-visible{
+  outline:2px solid rgba(103,187,255,.9);
+  outline-offset:2px;
+}
+
+.map-viewer{
+  position:fixed;
+  inset:0;
+  z-index:120;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+
+.map-viewer-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(4px);
+}
+
+.map-viewer-panel{
+  position:relative;
+  z-index:1;
+  width:min(92vw,720px);
+}
+
+.map-viewer-image{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.12);
+  background-color:#07101a;
+  background-size:contain;
+  background-position:center;
+  background-repeat:no-repeat;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+  overflow:hidden;
+}
+
+.map-viewer-close{
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:2;
+  width:38px;
+  height:38px;
+  border-radius:999px;
+  background:rgba(7,13,21,.72);
+  border:1px solid rgba(255,255,255,.12);
+  color:#eef6ff;
+  font-size:24px;
+  line-height:1;
+}
+
+.viewer-pin{
+  width:24px;
+  height:24px;
+}
+
+.viewer-pin::after{
+  inset:5px;
+}
+
+@media (max-width:560px){
+  .toolbar-card-compact{
+    padding:8px 10px;
+  }
+
+  .toolbar-card-compact #sortSelect{
+    min-width:138px;
+    height:32px;
+    font-size:11px;
+  }
+
+  .map-viewer{
+    padding:12px;
+  }
+
+  .map-viewer-panel{
+    width:min(100vw - 24px,720px);
+  }
+
+  .map-viewer-image{
+    border-radius:16px;
+  }
+
+  .map-viewer-close{
+    top:8px;
+    right:8px;
+    width:34px;
+    height:34px;
+    font-size:22px;
+  }
+}
+
+/* ARK Manager: characters */
+.brand-title{font-size:26px;letter-spacing:.025em}
+.manager-tabs{display:flex;gap:8px;padding:14px 16px 0}
+.manager-tabs button{flex:1;padding:13px;border-radius:14px;background:rgba(255,255,255,.05);color:var(--muted);font-weight:700;border:1px solid var(--line)}
+.manager-tabs .selected{background:rgba(103,187,255,.16);color:var(--blue);border-color:rgba(103,187,255,.4)}
+.section-heading{display:flex;align-items:center;justify-content:space-between;margin:8px 0 18px}.section-heading h1{font-size:22px;margin:0}.section-heading span{color:var(--muted)}
+.character-list{display:grid;gap:12px}.character-card{width:100%;display:flex;align-items:center;gap:14px;text-align:left;padding:16px;background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:20px;color:var(--text)}
+.character-avatar{width:64px;height:64px;border-radius:16px;object-fit:cover;background:rgba(103,187,255,.1);display:grid;place-items:center;color:var(--blue);font-size:28px;flex-shrink:0}.character-summary{min-width:0;flex:1}.character-name{font-size:18px;font-weight:700;overflow-wrap:anywhere}.character-meta{margin-top:7px;color:var(--muted);font-size:13px}.character-chevron{color:var(--blue);font-size:24px}
+.character-back{background:none;color:var(--blue);padding:8px 0 18px}.character-photo{width:100%;max-height:360px;object-fit:contain;border-radius:20px;background:rgba(255,255,255,.04)}.photo-placeholder{width:100%;height:190px;display:grid;place-items:center;border:1px dashed rgba(103,187,255,.3);border-radius:20px;background:rgba(103,187,255,.05);color:var(--muted)}
+.character-image-button{display:block;width:100%;padding:0;background:none;color:var(--text)}.photo-actions{display:flex;gap:8px;margin:10px 0 20px}.manager-small-btn{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.05);color:var(--blue);white-space:nowrap;font-size:13px}.manager-small-btn:disabled{opacity:.35;cursor:default}
+.character-fields{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:20px;padding:0 16px}.character-field{padding:17px 0;border-bottom:1px solid var(--line)}.character-field:last-child{border-bottom:0}.character-field-label{font-size:12px;color:var(--muted);margin-bottom:8px}.character-field-row{display:flex;gap:8px;align-items:center}.character-field-value{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.5}.character-field-buttons{display:flex;gap:6px;flex-shrink:0}.eos-help{color:var(--muted);font-size:12px;line-height:1.7;margin:10px 0 0}.implant-section{margin-top:24px}.implant-section h2{font-size:17px}.implant-section .photo-placeholder{height:130px}.character-delete{margin:14px 0;background:rgba(255,69,69,.1);border:1px solid rgba(255,69,69,.25);color:#ff9b9b;width:100%;padding:14px;border-radius:14px}
+.character-dialog{width:min(calc(100% - 28px),560px);max-height:85dvh;overflow:auto;border:1px solid var(--line);border-radius:22px;padding:22px;background:#101d2d;color:var(--text)}.character-dialog::backdrop,.character-viewer::backdrop{background:rgba(0,0,0,.72)}#characterFormFields{display:grid;gap:18px}.character-dialog .form{gap:20px}.character-viewer{width:min(calc(100% - 20px),850px);padding:14px;background:#08111c;color:var(--text);border:1px solid var(--line);border-radius:20px}.character-viewer img{display:block;max-width:100%;max-height:80dvh;margin:auto;object-fit:contain}.character-viewer .icon-btn{display:block;margin-left:auto;margin-bottom:8px}.manager-toast{position:fixed;bottom:calc(100px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:2000;max-width:90%;padding:12px 18px;background:#24435c;border:1px solid rgba(103,187,255,.3);color:white;border-radius:12px;box-shadow:var(--shadow);text-align:center}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-tabs [role=tab]{touch-action:manipulation}
+@media(max-width:380px){.character-fields{padding:0 12px}.character-field-buttons{gap:4px}.manager-small-btn{padding:9px 8px;font-size:12px}}
+
+</style>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand-title">ARK TIMER MANAGER</div>
+      <div class="brand-title">ARK Manager</div>
       <img class="brand-icon" src="6A24B32B-C572-492B-AA91-5B2667D4133F.png" alt="icon">
     </header>
 
-    <main class="content">
+    <nav class="manager-tabs" aria-label="管理機能">
+      <button id="characterTab" class="selected" role="tab" aria-selected="true" aria-controls="characterPage">キャラ管理</button>
+      <button id="timerTab" role="tab" aria-selected="false" aria-controls="timerPage">タイマー</button>
+    </nav>
+    <main id="characterPage" class="content" role="tabpanel" aria-labelledby="characterTab">
+      <div id="characterListPage">
+        <div class="section-heading"><h1>キャラ一覧</h1><span id="characterCount">0人</span></div>
+        <section id="characterEmpty" class="empty-state"><div class="empty-icon">◉</div><h2>キャラがありません</h2><p>右下の＋ボタンから追加してください</p></section>
+        <div id="characterList" class="character-list"></div>
+      </div>
+      <section id="characterDetail" class="hidden"></section>
+    </main>
+    <button id="addCharacter" class="fab" type="button" aria-label="キャラ追加">＋</button>
+    <dialog id="characterDialog" class="character-dialog" aria-labelledby="characterDialogTitle">
+      <div class="modal-header"><h2 id="characterDialogTitle">キャラ追加</h2><button id="closeCharacterDialog" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
+      <form id="characterForm" class="form"><div id="characterFormFields"></div><button id="characterSubmit" class="submit-btn" type="submit">保存</button></form>
+    </dialog>
+    <input id="characterImageInput" class="hidden-input" type="file" accept="image/*">
+    <dialog id="characterViewer" class="character-viewer" aria-label="画像を拡大"><button id="closeCharacterViewer" class="icon-btn" type="button" aria-label="閉じる">×</button><img id="characterViewerImage" alt=""></dialog>
+    <div id="managerToast" class="manager-toast hidden" role="status"></div>
+    <main id="timerPage" class="content hidden" role="tabpanel" aria-labelledby="timerTab">
       <section class="toolbar-card toolbar-card-compact">
         <select id="sortSelect" aria-label="並び順">
           <option value="dueSoon">期限が近い順</option>
@@ -34,7 +1032,7 @@
       <section id="list" class="timer-list"></section>
     </main>
 
-    <button id="add" class="fab" type="button" aria-label="タイマー追加">＋</button>
+    <button id="add" class="fab hidden" type="button" aria-label="タイマー追加">＋</button>
 
     <div id="overlay" class="overlay hidden"></div>
 
@@ -146,6 +1144,345 @@
       </div>
     </div>
   </div>
-  <script src="app.js"></script>
+  <script>
+const STORAGE_KEY='arkTimer_store_v8';
+const MAPS=['アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー','その他'];
+const DEFAULT_MAP_IMAGES={'アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
+const MAP_BOUNDS={'アイランド':{width:100,height:100},'スコーチドアース':{width:100,height:100},'センター':{width:100,height:100},'アベレーション':{width:100,height:100},'エクスティンクション':{width:100,height:100},'アストレオス':{width:100,height:100},'ラグナロク':{width:100,height:100},'バルゲロ':{width:100,height:100},'ロストコロニー':{width:100,height:100},'その他':{width:100,height:100}};
+const TRIBE_TOWER_ICON='7369529A-E04B-4212-8F0A-F320CC106E5E.png';
+const GENERATOR_ICON='026D0A6D-7E86-4E5E-823D-3DE7D2909B98.png';
+const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':35};
+const SORT_KEY='arkTimer_sort_mode';
+const $=id=>document.getElementById(id);
+const list=$('list'),addBtn=$('add'),sortSelect=$('sortSelect'),activeCount=$('activeCount'),emptyState=$('emptyState'),overlay=$('overlay'),modal=$('modal'),closeModalBtn=$('closeModal'),modalTitle=$('modalTitle'),submitBtn=$('submitBtn'),timerForm=$('timerForm'),editIdInput=$('editId'),imageModeInput=$('imageMode'),mapSelect=$('mapSelect'),typeSelect=$('typeSelect'),materialField=$('materialField'),customTimerField=$('customTimerField'),memoInput=$('memoInput'),timerNameInput=$('timerNameInput'),latInput=$('latInput'),lngInput=$('lngInput'),daysInput=$('daysInput'),hoursInput=$('hoursInput'),minutesInput=$('minutesInput'),imageInput=$('imageInput'),imagePreview=$('imagePreview'),imagePreviewButton=$('imagePreviewButton'),imagePreviewPin=$('imagePreviewPin'),showPinInput=$('showPinInput'),confirmOverlay=$('confirmOverlay'),confirmTitle=$('confirmTitle'),confirmText=$('confirmText'),confirmCancel=$('confirmCancel'),confirmOk=$('confirmOk'),materialDays=$('materialDays');
+const state={timers:[],pendingCustomImage:'',confirmResolver:null,sortMode:'dueSoon'};
+
+function load(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    state.timers=raw?JSON.parse(raw):[];
+  }catch(e){
+    state.timers=[];
+  }
+  try{
+    state.sortMode=localStorage.getItem(SORT_KEY)||'dueSoon';
+  }catch(e){
+    state.sortMode='dueSoon';
+  }
+  normalizeTimers();
+}
+
+function normalizeTimers(){
+  state.timers=state.timers.map((timer,index)=>({
+    showPin:timer.showPin!==false,
+    sortOrder:Number.isFinite(Number(timer.sortOrder))?Number(timer.sortOrder):index,
+    ...timer
+  }));
+}
+
+function save(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state.timers));
+  localStorage.setItem(SORT_KEY,state.sortMode);
+}
+
+function generateId(){return `timer_${Date.now()}_${Math.random().toString(36).slice(2,9)}`}
+function getSelectedMaterial(){const checked=document.querySelector('input[name="material"]:checked');return checked?checked.value:'TEK'}
+function updateMaterialDays(){const material=getSelectedMaterial();materialDays.textContent=`${material} ${BUILDING_DURATIONS[material]}日`}
+function syncTypeUI(){const type=typeSelect.value;materialField.classList.toggle('hidden',type!=='building');customTimerField.classList.toggle('hidden',type==='building');if(type!=='building'){daysInput.value='';hoursInput.value='';minutesInput.value=''}updateMaterialDays()}
+function getDefaultImageForMap(mapName){return DEFAULT_MAP_IMAGES[mapName]||''}
+function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src}")`:'';imagePreview.classList.toggle('is-empty',!src)}
+function getMapBounds(mapName){return MAP_BOUNDS[mapName]||{width:100,height:100}}
+function clamp(num,min,max){return Math.min(max,Math.max(min,num))}
+function parseCoord(value){const num=Number(String(value||'').trim());return Number.isFinite(num)?num:null}
+function getPinPosition(mapName,lat,lng){
+  const latNum=parseCoord(lat),lngNum=parseCoord(lng);
+  if(latNum===null||lngNum===null)return null;
+  const bounds=getMapBounds(mapName);
+  const left=clamp((lngNum/bounds.width)*100,0,100);
+  const top=clamp((latNum/bounds.height)*100,0,100);
+  return {left,top};
+}
+function setPinElement(pinEl,mapName,lat,lng,showPin=true){
+  if(!pinEl)return;
+  const pos=showPin?getPinPosition(mapName,lat,lng):null;
+  if(!pos){pinEl.classList.add('hidden');return}
+  pinEl.classList.remove('hidden');
+  pinEl.style.left=`${pos.left}%`;
+  pinEl.style.top=`${pos.top}%`;
+}
+function refreshPreviewPin(){setPinElement(imagePreviewPin,mapSelect.value,latInput.value,lngInput.value,showPinInput.checked)}
+function refreshImagePreviewForCurrentForm(){const defaultImage=getDefaultImageForMap(mapSelect.value);imageModeInput.value='default';state.pendingCustomImage='';imageInput.value='';setPreviewImage(defaultImage||'');refreshPreviewPin()}
+
+function openModal(editTarget=null){
+  overlay.classList.remove('hidden');
+  modal.classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  if(!editTarget){
+    timerForm.reset();
+    editIdInput.value='';
+    imageModeInput.value='default';
+    state.pendingCustomImage='';
+    typeSelect.value='building';
+    if(showPinInput)showPinInput.checked=true;
+    const tek=document.querySelector('input[name="material"][value="TEK"]');
+    if(tek)tek.checked=true;
+    daysInput.value='';hoursInput.value='';minutesInput.value='';memoInput.value='';timerNameInput.value='';latInput.value='';lngInput.value='';
+    modalTitle.textContent='タイマー追加';
+    submitBtn.textContent='追加して開始';
+    syncTypeUI();
+    refreshImagePreviewForCurrentForm();
+    return;
+  }
+  editIdInput.value=editTarget.id;
+  mapSelect.value=MAPS.includes(editTarget.map)?editTarget.map:'その他';
+  typeSelect.value=editTarget.type;
+  memoInput.value=editTarget.memo||'';
+  timerNameInput.value=editTarget.timerName||'';
+  latInput.value=editTarget.lat||'';
+  lngInput.value=editTarget.lng||'';
+  if(showPinInput)showPinInput.checked=editTarget.showPin!==false;
+  modalTitle.textContent='タイマー編集';
+  submitBtn.textContent='保存';
+  if(editTarget.type==='building'){
+    const radio=document.querySelector(`input[name="material"][value="${editTarget.material}"]`);
+    if(radio)radio.checked=true;
+    daysInput.value='';hoursInput.value='';minutesInput.value='';
+  }else{
+    const durationMs=Math.max(60000,editTarget.endsAt-editTarget.startedAt);
+    const totalMinutes=Math.floor(durationMs/60000);
+    daysInput.value=Math.floor(totalMinutes/1440)||'';
+    hoursInput.value=Math.floor((totalMinutes%1440)/60)||'';
+    minutesInput.value=totalMinutes%60||'';
+  }
+  if(editTarget.imageMode==='custom'&&editTarget.imageSrc){
+    imageModeInput.value='custom';
+    state.pendingCustomImage=editTarget.imageSrc;
+    setPreviewImage(editTarget.imageSrc);
+  }else{
+    const defaultImage=getDefaultImageForMap(mapSelect.value);
+    imageModeInput.value='default';
+    state.pendingCustomImage='';
+    setPreviewImage(defaultImage||'');
+  }
+  imageInput.value='';
+  syncTypeUI();
+  refreshPreviewPin();
+}
+function closeModal(){overlay.classList.add('hidden');modal.classList.add('hidden');document.body.style.overflow=''}
+function openConfirm(title,text){confirmTitle.textContent=title||'確認';confirmText.textContent=text||'実行しますか？';confirmOverlay.classList.remove('hidden');return new Promise(resolve=>{state.confirmResolver=resolve})}
+function closeConfirm(result){confirmOverlay.classList.add('hidden');if(state.confirmResolver){const resolver=state.confirmResolver;state.confirmResolver=null;resolver(!!result)}}
+function formatDateWithWeekday(timestamp){const date=new Date(timestamp);const w=['日','月','火','水','木','金','土'][date.getDay()];const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,'0');const d=String(date.getDate()).padStart(2,'0');const hh=String(date.getHours()).padStart(2,'0');const mm=String(date.getMinutes()).padStart(2,'0');return `${y}/${m}/${d}(${w}) ${hh}:${mm}`}
+function formatRemaining(ms){if(ms<=0)return '期限切れ';const totalMinutes=Math.floor(ms/60000);const days=Math.floor(totalMinutes/1440);const hours=Math.floor((totalMinutes%1440)/60);const minutes=totalMinutes%60;if(days>0)return `${days}日 ${hours}時間 ${minutes}分`;if(hours>0)return `${hours}時間 ${minutes}分`;return `${minutes}分`}
+function getRemainingMs(timer){return timer.endsAt-Date.now()}
+function getRemainClass(ms){const dayMs=24*60*60*1000;if(ms>=14*dayMs)return 'green';if(ms>=7*dayMs)return 'orange';if(ms<=0)return 'red5';const daysLeft=ms/dayMs;if(daysLeft>6)return 'red0';if(daysLeft>5)return 'red1';if(daysLeft>3)return 'red2';if(daysLeft>2)return 'red3';if(daysLeft>1)return 'red4';return 'red5'}
+function buildTypeLabel(timer){if(timer.type==='building')return `建材:${timer.material}`;if(timer.type==='tribe_tower')return 'トライブタワー';if(timer.type==='generator')return 'ジェネレータ';return 'その他'}
+function getDurationMsFromInput(type){if(type==='building'){return BUILDING_DURATIONS[getSelectedMaterial()]*24*60*60*1000}const days=Number(daysInput.value||0),hours=Number(hoursInput.value||0),minutes=Number(minutesInput.value||0);return ((((days*24)+hours)*60)+minutes)*60*1000}
+function getTimerImageSrc(timer){if(timer.imageMode==='custom'&&timer.imageSrc)return timer.imageSrc;return getDefaultImageForMap(timer.map)}
+function escapeHtml(value){return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
+function normalizeCoord(value){return String(value||'').trim()}
+function buildCoordTag(timer){const lat=normalizeCoord(timer.lat),lng=normalizeCoord(timer.lng);if(!lat||!lng)return '';return `座標:${lat}/${lng}`}
+function getNextSortOrder(){return state.timers.reduce((max,timer)=>Math.max(max,Number(timer.sortOrder)||0),-1)+1}
+function getSortedTimers(){
+  const timers=[...state.timers];
+  switch(state.sortMode){
+    case 'dueLate':
+      return timers.sort((a,b)=>b.endsAt-a.endsAt||a.sortOrder-b.sortOrder);
+    case 'name':
+      return timers.sort((a,b)=>(a.timerName||'').localeCompare((b.timerName||''),'ja')||a.sortOrder-b.sortOrder);
+    case 'map':
+      return timers.sort((a,b)=>(a.map||'').localeCompare((b.map||''),'ja')||a.endsAt-b.endsAt||a.sortOrder-b.sortOrder);
+    case 'manual':
+      return timers.sort((a,b)=>a.sortOrder-b.sortOrder);
+    case 'dueSoon':
+    default:
+      return timers.sort((a,b)=>a.endsAt-b.endsAt||a.sortOrder-b.sortOrder);
+  }
+}
+function openMapViewer(timer){
+  const imageSrc=getTimerImageSrc(timer);
+  if(!imageSrc)return;
+  const viewer=document.createElement('div');
+  viewer.className='map-viewer';
+  viewer.innerHTML='<div class="map-viewer-backdrop"></div><div class="map-viewer-panel"><button type="button" class="map-viewer-close" aria-label="閉じる">×</button><div class="map-viewer-image"></div></div>';
+  const imageEl=viewer.querySelector('.map-viewer-image');
+  imageEl.style.backgroundImage=`url("${imageSrc}")`;
+  const pin=document.createElement('div');
+  pin.className='map-pin viewer-pin hidden';
+  imageEl.appendChild(pin);
+  setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false);
+  if(timer.type==='tribe_tower'){
+    const badge=document.createElement('img');
+    badge.className='overlay-badge';
+    badge.src=TRIBE_TOWER_ICON;
+    badge.alt='トライブタワー';
+    imageEl.appendChild(badge);
+  }
+  if(timer.type==='generator'){
+    const badge=document.createElement('img');
+    badge.className='overlay-badge';
+    badge.src=GENERATOR_ICON;
+    badge.alt='ジェネレータ';
+    imageEl.appendChild(badge);
+  }
+  const close=()=>viewer.remove();
+  viewer.querySelector('.map-viewer-close').addEventListener('click',close);
+  viewer.querySelector('.map-viewer-backdrop').addEventListener('click',close);
+  viewer.addEventListener('click',event=>{if(event.target===viewer)close()});
+  document.body.appendChild(viewer);
+}
+function render(){
+  const sorted=getSortedTimers();
+  list.innerHTML='';
+  let active=0;
+  const manualMode=state.sortMode==='manual';
+  for(let i=0;i<sorted.length;i++){
+    const timer=sorted[i];
+    const remainMs=getRemainingMs(timer);
+    if(remainMs>0)active+=1;
+    const remainClass=getRemainClass(remainMs),imageSrc=getTimerImageSrc(timer),timerName=(timer.timerName||'').trim()||'未設定',coordTag=buildCoordTag(timer);
+    const card=document.createElement('article');
+    card.className=`card${remainMs<=0?' expired':''}`;
+    card.innerHTML=`<div class="img" role="button" tabindex="0" aria-label="マップを拡大"></div><div class="info"><div class="name-row"><div class="timer-name">${escapeHtml(timerName)}</div></div><div class="tags-row"><span class="tag map-tag">${escapeHtml(timer.map)}</span><span class="tag type-tag">${escapeHtml(buildTypeLabel(timer))}</span>${coordTag?`<span class="tag coord-tag">${escapeHtml(coordTag)}</span>`:''}</div><div class="collapse-row"><div class="small"><span>崩壊</span><strong>${formatDateWithWeekday(timer.endsAt)}</strong></div></div><div class="remain"><span class="remain-label">残り</span><span class="remain-value ${remainClass}">${formatRemaining(remainMs)}</span></div><div class="actions">${manualMode?`<div class="move-actions"><button class="action-btn move-btn" type="button" data-action="move-up" data-id="${timer.id}" ${i===0?'disabled':''}>↑</button><button class="action-btn move-btn" type="button" data-action="move-down" data-id="${timer.id}" ${i===sorted.length-1?'disabled':''}>↓</button></div>`:''}<button class="action-btn reset-btn" type="button" data-action="reset" data-id="${timer.id}">リセット</button><button class="action-btn edit-btn" type="button" data-action="edit" data-id="${timer.id}">編集</button><button class="action-btn delete-btn" type="button" data-action="delete" data-id="${timer.id}">削除</button></div></div>`;
+    const imgEl=card.querySelector('.img');
+    if(imageSrc)imgEl.style.backgroundImage=`url("${imageSrc}")`;
+    imgEl.addEventListener('click',()=>openMapViewer(timer));
+    imgEl.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openMapViewer(timer)}});
+    const pin=document.createElement('div');
+    pin.className='map-pin card-pin hidden';
+    imgEl.appendChild(pin);
+    setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false);
+    if(timer.type==='tribe_tower'){const badge=document.createElement('img');badge.className='overlay-badge';badge.src=TRIBE_TOWER_ICON;badge.alt='トライブタワー';imgEl.appendChild(badge)}
+    if(timer.type==='generator'){const badge=document.createElement('img');badge.className='overlay-badge';badge.src=GENERATOR_ICON;badge.alt='ジェネレータ';imgEl.appendChild(badge)}
+    if(timer.memo&&timer.memo.trim()){const memo=document.createElement('div');memo.className='small';memo.style.gridColumn='1 / -1';memo.innerHTML=`<span>メモ</span><strong>${escapeHtml(timer.memo)}</strong>`;card.querySelector('.info').appendChild(memo)}
+    list.appendChild(card)
+  }
+  if(activeCount)activeCount.textContent=String(active);
+  emptyState.classList.toggle('hidden',sorted.length>0)
+}
+function buildTimerPayload(now,keepId=null,existingSortOrder=null){
+  const map=mapSelect.value,type=typeSelect.value,memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'未設定',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
+  if(!map){alert('マップを選択してください');return null}
+  if(durationMs<=0){alert('タイマーは1分以上で入力してください');return null}
+  return {id:keepId||generateId(),timerName,map,lat,lng,showPin:showPinInput?showPinInput.checked:true,type,material:type==='building'?getSelectedMaterial():null,memo,startedAt:now,endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
+}
+function addTimerFromForm(event){
+  event.preventDefault();
+  const now=Date.now(),editingId=editIdInput.value;
+  if(editingId){
+    const index=state.timers.findIndex(timer=>timer.id===editingId);
+    if(index===-1){alert('編集対象が見つかりません');return}
+    const payload=buildTimerPayload(now,editingId,state.timers[index].sortOrder);
+    if(!payload)return;
+    state.timers[index]=payload;
+  }else{
+    const payload=buildTimerPayload(now,null,null);
+    if(!payload)return;
+    state.timers.push(payload);
+  }
+  save();render();closeModal()
+}
+async function resetTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;const ok=await openConfirm('リセット確認','このタイマーを現在時刻から再スタートしますか？');if(!ok)return;const durationMs=target.type==='building'?BUILDING_DURATIONS[target.material]*24*60*60*1000:Math.max(60000,target.endsAt-target.startedAt);const now=Date.now();target.startedAt=now;target.endsAt=now+durationMs;save();render()}
+function editTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;openModal(target)}
+async function deleteTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;const name=(target.timerName||'').trim()||'未設定';const ok=await openConfirm('削除確認',`「${name}」を削除しますか？`);if(!ok)return;state.timers=state.timers.filter(timer=>timer.id!==id);save();render()}
+function swapSortOrder(id,direction){
+  const manual=state.timers.slice().sort((a,b)=>a.sortOrder-b.sortOrder);
+  const index=manual.findIndex(timer=>timer.id===id);
+  if(index===-1)return;
+  const targetIndex=index+direction;
+  if(targetIndex<0||targetIndex>=manual.length)return;
+  const current=manual[index],target=manual[targetIndex];
+  const tmp=current.sortOrder;
+  current.sortOrder=target.sortOrder;
+  target.sortOrder=tmp;
+  save();render();
+}
+function bindListActions(event){
+  const button=event.target.closest('button[data-action]');
+  if(!button)return;
+  const action=button.dataset.action,id=button.dataset.id;
+  if(action==='reset')return resetTimer(id);
+  if(action==='edit')return editTimer(id);
+  if(action==='delete')return deleteTimer(id);
+  if(action==='move-up')return swapSortOrder(id,-1);
+  if(action==='move-down')return swapSortOrder(id,1);
+}
+function handleImageChange(event){const file=event.target.files&&event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{state.pendingCustomImage=String(reader.result||'');imageModeInput.value='custom';setPreviewImage(state.pendingCustomImage);refreshPreviewPin()};reader.readAsDataURL(file)}
+function handleSortChange(){state.sortMode=sortSelect&&sortSelect.value?sortSelect.value:'dueSoon';save();render()}
+function bindMaterialEvents(){document.querySelectorAll('input[name="material"]').forEach(r=>r.addEventListener('change',updateMaterialDays))}
+function startTicker(){render();setInterval(render,30000)}
+function bindEvents(){
+  if(addBtn)addBtn.addEventListener('click',()=>openModal());
+  closeModalBtn.addEventListener('click',closeModal);
+  overlay.addEventListener('click',closeModal);
+  typeSelect.addEventListener('change',syncTypeUI);
+  timerForm.addEventListener('submit',addTimerFromForm);
+  list.addEventListener('click',bindListActions);
+  mapSelect.addEventListener('change',refreshImagePreviewForCurrentForm);
+  latInput.addEventListener('input',refreshPreviewPin);
+  lngInput.addEventListener('input',refreshPreviewPin);
+  if(showPinInput)showPinInput.addEventListener('change',refreshPreviewPin);
+  imageInput.addEventListener('change',handleImageChange);
+  imagePreviewButton.addEventListener('click',()=>imageInput.click());
+  confirmCancel.addEventListener('click',()=>closeConfirm(false));
+  confirmOk.addEventListener('click',()=>closeConfirm(true));
+  confirmOverlay.addEventListener('click',e=>{if(e.target===confirmOverlay)closeConfirm(false)});
+  if(sortSelect)sortSelect.addEventListener('change',handleSortChange);
+  bindMaterialEvents()
+}
+function init(){
+  load();
+  if(sortSelect)sortSelect.value=state.sortMode;
+  bindEvents();
+  syncTypeUI();
+  refreshImagePreviewForCurrentForm();
+  render();
+  startTicker();
+}
+init();
+
+// Character records and images live separately from the original timer storage.
+(()=>{
+ const CHARACTER_MAPS=['アイランド','センター','スコーチドアース','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ジェネシス1','ドラゴントピア','クリスタルアイルズ','ロストアイランド','フィヨルド','ジェネシス2','アトランティス'];
+ const labels={name:'サバイバー名',level:'レベル',map:'在住マップ',eosId:'EOS ID',steamId:'Steam ID'};
+ const help='シングルプレイ（ローカル）を開始し、コンソール（コマンド入力画面）を開いて whoami';
+ let records=[],selectedId=null,editingField=null,imageField=null,toastTimeout,db=null,ready=false,returnFocus=null;
+ const esc=escapeHtml;
+ function toast(text){$('managerToast').textContent=text;$('managerToast').classList.remove('hidden');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>$('managerToast').classList.add('hidden'),3000)}
+ function openDatabase(){return new Promise((resolve,reject)=>{const req=indexedDB.open('arkManager_characters_v1',1);req.onupgradeneeded=()=>req.result.createObjectStore('characters',{keyPath:'id'});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+ function readRecords(){return new Promise((resolve,reject)=>{const tx=db.transaction('characters','readonly');const req=tx.objectStore('characters').getAll();req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+ function writeRecord(record,remove=false){return new Promise((resolve,reject)=>{const tx=db.transaction('characters','readwrite');const store=tx.objectStore('characters');remove?store.delete(record.id):store.put(record);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}
+ function selected(){return records.find(c=>c.id===selectedId)}
+ function renderCharacters(){
+  $('characterCount').textContent=`${records.length}人`;$('characterEmpty').classList.toggle('hidden',records.length>0);
+  $('characterList').innerHTML=records.map(c=>`<button class="character-card" data-character="${esc(c.id)}" type="button">${c.appearance?`<img class="character-avatar" src="${esc(c.appearance)}" alt="">`:'<span class="character-avatar" aria-hidden="true">◉</span>'}<span class="character-summary"><span class="character-name">${esc(c.name)}</span><span class="character-meta" style="display:block">${esc(c.map||'マップ未設定')} · Lv. ${esc(c.level||'未設定')}</span></span><span class="character-chevron" aria-hidden="true">›</span></button>`).join('');
+ }
+ function imageBlock(c,field,label){return `<button type="button" class="character-image-button" data-photo="${field}" aria-label="${label}${c[field]?'を拡大':'を登録'}">${c[field]?`<img class="character-photo" src="${esc(c[field])}" alt="${label}">`:`<span class="photo-placeholder">＋ ${label}を登録</span>`}</button>${c[field]?`<div class="photo-actions"><button class="manager-small-btn" data-upload="${field}" type="button">画像を変更</button><button class="manager-small-btn" data-remove-photo="${field}" type="button">画像を削除</button></div>`:''}`}
+ function renderDetail(){
+  const c=selected();if(!c)return showList();
+  $('characterDetail').innerHTML=`<button class="character-back" data-back type="button">‹ キャラ一覧</button>${imageBlock(c,'appearance','見た目画像')}<div class="section-heading"><h1>${esc(c.name)}</h1></div><div class="character-fields">${Object.entries(labels).map(([key,label])=>`<div class="character-field"><div class="character-field-label">${label}</div><div class="character-field-row"><span class="character-field-value">${esc(c[key]||'未設定')}</span><div class="character-field-buttons">${key!=='map'?`<button type="button" class="manager-small-btn" data-copy="${key}" aria-label="${label}をコピー" ${c[key]?'':'disabled'}>コピー</button>`:''}<button type="button" class="manager-small-btn" data-edit="${key}" aria-label="${label}を編集">編集</button></div></div>${key==='eosId'?`<p class="eos-help">${help}</p>`:''}</div>`).join('')}</div><div class="implant-section"><h2>インプラント画像</h2>${imageBlock(c,'implant','インプラント画像')}</div><button class="character-delete" type="button" data-delete-character>キャラを削除</button>`;
+ }
+ function showList(){selectedId=null;$('characterListPage').classList.remove('hidden');$('characterDetail').classList.add('hidden');$('addCharacter').classList.remove('hidden');renderCharacters()}
+ function showDetail(id){selectedId=id;$('characterListPage').classList.add('hidden');$('characterDetail').classList.remove('hidden');$('addCharacter').classList.add('hidden');renderDetail();window.scrollTo(0,0)}
+ function switchTab(tab){closeModal();$('characterDialog').close();$('characterViewer').close();const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
+ function formField(key,value=''){const label=labels[key];return `<label class="field"><span>${label}${key==='name'?'（必須）':''}</span>${key==='map'?`<select name="map"><option value="">選択してください</option>${CHARACTER_MAPS.map(m=>`<option ${value===m?'selected':''}>${m}</option>`).join('')}</select>`:`<input name="${key}" type="${key==='level'?'number':'text'}" ${key==='level'?'min="1" step="1" inputmode="numeric"':''} ${key==='name'?'required maxlength="100"':''} value="${esc(value)}" autocomplete="off">`}${key==='eosId'?`<small class="eos-help">${help}</small>`:''}</label>`}
+ function showEditor(key=null){if(!ready){toast('キャラ保存機能を読み込み中です');return}editingField=key;const c=selected();$('characterDialogTitle').textContent=key?`${labels[key]}を編集`:'キャラ追加';$('characterFormFields').innerHTML=key?formField(key,c[key]):Object.keys(labels).map(k=>formField(k)).join('');returnFocus=document.activeElement;$('characterDialog').showModal();$('characterFormFields').querySelector('input,select').focus()}
+ $('characterDialog').addEventListener('close',()=>returnFocus?.isConnected&&returnFocus.focus());
+ async function persistChange(next){try{await writeRecord(next);records=records.map(c=>c.id===next.id?next:c);renderCharacters();renderDetail();return true}catch(e){toast('保存できませんでした。端末の空き容量・ブラウザ設定を確認してください');return false}}
+ $('characterForm').addEventListener('submit',async e=>{e.preventDefault();const values=Object.fromEntries(new FormData(e.target));for(const k of Object.keys(values))values[k]=values[k].trim();if('name'in values&&!values.name){toast('サバイバー名を入力してください');return}if(values.level&&!/^[1-9]\d*$/.test(values.level)){toast('レベルは1以上の整数を入力してください');return}const button=$('characterSubmit');button.disabled=true;try{if(editingField){if(await persistChange({...selected(),...values}))$('characterDialog').close()}else{const c={id:generateId(),appearance:'',implant:'',createdAt:Date.now(),...values};await writeRecord(c);records.push(c);$('characterDialog').close();renderCharacters();showDetail(c.id)}}catch(e){toast('保存できませんでした。端末の空き容量・ブラウザ設定を確認してください')}finally{button.disabled=false}});
+ async function copyField(key){const value=selected()?.[key];if(!value)return;try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(String(value))}else{const input=document.createElement('textarea');input.value=String(value);input.style.cssText='position:fixed;top:0;opacity:0';document.body.appendChild(input);input.focus();input.select();input.setSelectionRange(0,input.value.length);const ok=document.execCommand('copy');input.remove();if(!ok)throw Error('copy')}toast(`${labels[key]}をコピーしました`)}catch(e){toast('コピーできませんでした。編集画面で長押ししてコピーしてください')}}
+ function upload(field){imageField=field;$('characterImageInput').value='';$('characterImageInput').click()}
+ function compressImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/'))return reject(Error('image'));const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{try{const scale=Math.min(1,1800/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.88))}catch(e){reject(e)}finally{URL.revokeObjectURL(url)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('decode'))};img.src=url})}
+ $('characterImageInput').addEventListener('change',async e=>{const file=e.target.files[0],c=selected(),field=imageField;if(!file||!c)return;toast('画像を保存しています…');try{const src=await compressImage(file);const current=records.find(r=>r.id===c.id);if(current&&await persistChange({...current,[field]:src}))toast('画像を保存しました')}catch(e){toast('画像を読み込めませんでした。JPEG・PNGなどで再選択してください')}});
+ $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];$('characterViewerImage').alt=field==='appearance'?'見た目画像':'インプラント画像';return $('characterViewer').showModal()}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('画像の削除','この画像を削除しますか？'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('キャラの削除',`「${c.name}」を削除しますか？`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('キャラを削除しました')}catch(e){toast('削除できませんでした')}}});
+ $('characterList').addEventListener('click',e=>{const btn=e.target.closest('[data-character]');if(btn)showDetail(btn.dataset.character)});
+ $('addCharacter').addEventListener('click',()=>showEditor());$('characterTab').addEventListener('click',()=>switchTab('characters'));$('timerTab').addEventListener('click',()=>switchTab('timers'));
+ document.querySelector('.manager-tabs').setAttribute('role','tablist');document.querySelector('.manager-tabs').addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const target=e.key==='Home'?$('characterTab'):e.key==='End'?$('timerTab'):document.activeElement===$('characterTab')?$('timerTab'):$('characterTab');target.click();target.focus()}});
+ $('closeCharacterDialog').addEventListener('click',()=>$('characterDialog').close());$('closeCharacterViewer').addEventListener('click',()=>$('characterViewer').close());
+ for(const id of ['characterDialog','characterViewer'])$(id).addEventListener('click',e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$(id).close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmOverlay.classList.contains('hidden'))closeConfirm(false);else if(!modal.classList.contains('hidden'))closeModal()}});
+ renderCharacters();openDatabase().then(async database=>{db=database;records=await readRecords();records.sort((a,b)=>a.createdAt-b.createdAt);ready=true;renderCharacters()}).catch(()=>{toast('キャラ保存機能を利用できません。ブラウザの保存設定を確認してください');$('addCharacter').disabled=true});
+})();
+
+</script>
 </body>
 </html>
