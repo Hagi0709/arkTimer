@@ -1019,3 +1019,6 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
 .level-setting-row button{flex:none}
 .level-rule-form{display:grid;gap:12px}
 .server-settings-bar{flex-wrap:wrap}
+ .manager-settings-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;width:100%}
+ .manager-settings-bottom .manager-small-btn{width:100%;min-width:0;min-height:56px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.35;padding:10px 8px;font-size:13px}
+ @media(max-width:360px){.manager-settings-bottom .manager-small-btn{font-size:12px}}
