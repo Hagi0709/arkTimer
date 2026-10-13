@@ -1510,17 +1510,27 @@ init();
   {id:'master_controller',name:'ジェネシス1：汚染された支配者を討伐',points:15},
   {id:'abyssalus_shallocis',name:'アストレオス：AbyssalusとShallocisを両方討伐',points:15},
   {id:'explorer_notes',name:'アイランド・スコーチドアース：探検家の記録をすべて集める',points:10},
-  {id:'bobs_tall_tales',name:'スコーチドアース・アベレーション・エクスティンクション：「ボブのほら話」を全回収',points:15},
+  {id:'bobs_sc',name:'スコーチドアース：「ボブのほら話」を全回収',points:5},
+  {id:'bobs_ab',name:'アベレーション：「ボブのほら話」を全回収',points:5},
+  {id:'bobs_ex',name:'エクスティンクション：「ボブのほら話」を全回収',points:5},
   {id:'chibi',name:'ちびペットのレベルを上げる',points:5},
   {id:'tides_of_fortune',name:'ジェネシス1：Tides of Fortuneのマイルストーンと全記録を達成',points:5}
  ];
  let levelRules=[];
  try{const raw=localStorage.getItem(LEVEL_RULES_KEY);const parsed=raw?JSON.parse(raw):null;levelRules=Array.isArray(parsed)?parsed.filter(r=>r&&typeof r.id==='string'&&typeof r.name==='string'&&Number.isFinite(Number(r.points))):DEFAULT_LEVEL_RULES.map(r=>({...r}))}catch(e){levelRules=DEFAULT_LEVEL_RULES.map(r=>({...r}))}
+ // Convert the old combined Bob's Tall Tales rule without resetting custom settings.
+ const oldBobIndex=levelRules.findIndex(r=>r.id==='bobs_tall_tales');
+ if(oldBobIndex!==-1){
+  const old=levelRules[oldBobIndex];
+  const split=[{id:'bobs_sc',name:'スコーチドアース：「ボブのほら話」を全回収',points:5},{id:'bobs_ab',name:'アベレーション：「ボブのほら話」を全回収',points:5},{id:'bobs_ex',name:'エクスティンクション：「ボブのほら話」を全回収',points:5}];
+  levelRules.splice(oldBobIndex,1,...split.filter(r=>!levelRules.some(x=>x.id===r.id)));
+  try{localStorage.setItem(LEVEL_RULES_KEY,JSON.stringify(levelRules))}catch(e){}
+ }
  function saveLevelRules(){localStorage.setItem(LEVEL_RULES_KEY,JSON.stringify(levelRules))}
- function checkedLevelIds(c){return Array.isArray(c.levelUnlocks)?c.levelUnlocks:[]}
+ function checkedLevelIds(c){const ids=Array.isArray(c.levelUnlocks)?c.levelUnlocks:[];return ids.includes('bobs_tall_tales')?[...new Set([...ids,'bobs_sc','bobs_ab','bobs_ex'])]:ids}
  function getLevelTotal(c){return LEVEL_BASE+levelRules.filter(r=>checkedLevelIds(c).includes(r.id)).reduce((sum,r)=>sum+Number(r.points),0)}
  function levelPanel(c){const selectedIds=checkedLevelIds(c),total=getLevelTotal(c),possible=LEVEL_BASE+levelRules.reduce((sum,r)=>sum+Number(r.points),0);
-  return `<section class="level-panel"><h2>レベル上限解放</h2><div class="level-summary">現在の上限：Lv ${total}</div><div class="level-progress">基本 Lv ${LEVEL_BASE} ＋ 解放 ${total-LEVEL_BASE} / ${possible-LEVEL_BASE}（登録条件 ${levelRules.length}件）</div><div class="level-check-list">${levelRules.map(r=>`<label class="level-check-item"><input type="checkbox" data-level-id="${esc(r.id)}" ${selectedIds.includes(r.id)?'checked':''}><span>${esc(r.name)}</span><strong>+${Number(r.points)}</strong></label>`).join('')}</div></section>`}
+  return `<section class="level-panel"><h2>レベル上限解放</h2><div class="level-summary">現在の上限：Lv ${total}</div><div class="level-check-list">${levelRules.map(r=>`<label class="level-check-item"><input type="checkbox" data-level-id="${esc(r.id)}" ${selectedIds.includes(r.id)?'checked':''}><span>${esc(r.name)}</span><strong>+${Number(r.points)}</strong></label>`).join('')}</div></section>`}
  function renderLevelSettings(){const list=$('levelSettingsList');list.innerHTML=levelRules.map(r=>`<div class="level-setting-row"><span>${esc(r.name)}（+${Number(r.points)} Lv）</span><button class="manager-small-btn" data-level-edit="${esc(r.id)}" type="button">編集</button><button class="manager-small-btn" data-level-delete="${esc(r.id)}" type="button">削除</button></div>`).join('')||'<p>登録条件はありません。</p>'}
  function openLevelSettings(){renderLevelSettings();openDialog($('levelSettingsDialog'))}
 
@@ -1537,7 +1547,7 @@ init();
  let editingServerIndex=-1;
 
  const labels={name:'サバイバー名',level:'レベル',map:'在住マップ',serverNo:'サーバー番号',eosId:'EOS ID',steamId:'Steam ID'};
- const help='シングルプレイ（ローカル）を開始し、コンソール（コマンド入力画面）を開いて whoami';
+ const help='シングルプレイでコンソールを開いて whoami';
  let reorderMode=false;let records=[],selectedId=null,editingField=null,imageField=null,imageContext='detail',pendingFormImages={appearance:'',implant:''},toastTimeout,db=null,ready=false,returnFocus=null;
  const esc=escapeHtml;
  function toast(text){$('managerToast').textContent=text;$('managerToast').classList.remove('hidden');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>$('managerToast').classList.add('hidden'),3000)}
@@ -1554,7 +1564,7 @@ init();
  function renderCharacters(){
   records.sort((a,b)=>(a.sortOrder??a.createdAt??0)-(b.sortOrder??b.createdAt??0));
   $('characterCount').textContent=`${records.length}人`;$('characterEmpty').classList.toggle('hidden',records.length>0);
-  $('characterList').innerHTML=records.map((c,i)=>`<div class="character-list-item" data-id="${esc(c.id)}"><button class="character-card" data-character="${esc(c.id)}" type="button">${c.appearance?`<img class="character-avatar" src="${esc(c.appearance)}" alt="">`:'<span class="character-avatar" aria-hidden="true">◉</span>'}<span class="character-summary"><span class="character-name">${esc(c.name||'名前未設定')}</span><span class="character-meta-list"><span><b>レベル</b>${esc(c.level||'未設定')} / 上限 ${getLevelTotal(c)}</span><span><b>マップ</b>${esc(c.map||'未設定')}</span><span><b>サーバー</b>${esc(c.serverNo||'未設定')}</span></span></span><span class="character-chevron" aria-hidden="true">›</span></button><div class="character-drag-handle" data-drag="${esc(c.id)}" aria-label="長押しして並び替え">☰</div></div>`).join('');
+  $('characterList').innerHTML=records.map((c,i)=>`<div class="character-list-item" data-id="${esc(c.id)}"><button class="character-card" data-character="${esc(c.id)}" type="button">${c.appearance?`<img class="character-avatar" src="${esc(c.appearance)}" alt="">`:'<span class="character-avatar" aria-hidden="true">◉</span>'}<span class="character-summary"><span class="character-name">${esc(c.name||'名前未設定')}</span><span class="character-meta-list"><span><b>レベル</b>${esc(c.level||'未設定')} / Max ${getLevelTotal(c)}</span><span><b>マップ</b>${esc(c.map||'未設定')}</span><span><b>サーバー</b>${esc(c.serverNo||'未設定')}</span></span></span><span class="character-chevron" aria-hidden="true">›</span></button><div class="character-drag-handle" data-drag="${esc(c.id)}" aria-label="長押しして並び替え">☰</div></div>`).join('');
  }
  function imageBlock(c,field,label){return `<button type="button" class="character-image-button" data-photo="${field}" aria-label="${label}${c[field]?'を拡大':'を登録'}">${c[field]?`<img class="character-photo" src="${esc(c[field])}" alt="${label}">`:`<span class="photo-placeholder">＋ ${label}を登録</span>`}</button>${c[field]?`<div class="photo-actions"><button class="manager-small-btn" data-upload="${field}" type="button">画像を変更</button><button class="manager-small-btn" data-remove-photo="${field}" type="button">画像を削除</button></div>`:''}`}
  function tribeMapKey(map,server){return JSON.stringify([map||'',server||''])}
@@ -1611,9 +1621,9 @@ init();
   $('levelRuleForm').reset();$('levelRuleEditId').value='';$('levelRuleCancel').classList.add('hidden');renderLevelSettings();renderCharacters();if(selectedId)renderDetail();toast('解放条件を保存しました')});
  $('levelSettingsList').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;const id=btn.dataset.levelEdit??btn.dataset.levelDelete;const rule=levelRules.find(r=>r.id===id);if(!rule)return;
   if(btn.dataset.levelEdit!==undefined){$('levelRuleEditId').value=id;$('levelRuleName').value=rule.name;$('levelRulePoints').value=rule.points;$('levelRuleCancel').classList.remove('hidden');$('levelRuleName').focus();return}
-  if(!await openConfirm('解放条件を削除',`「${rule.name}」を削除しますか？ キャラの上限計算からも除外されます。`))return;
+  if(!window.confirm(`「${rule.name}」を削除しますか？\nキャラの上限計算からも除外されます。`))return;
   const old=levelRules;levelRules=levelRules.filter(r=>r.id!==id);try{saveLevelRules()}catch(err){levelRules=old;return toast('削除できませんでした')}renderLevelSettings();renderCharacters();if(selectedId)renderDetail()});
- $('characterDetail').addEventListener('change',async e=>{const tribe=e.target.closest('[data-tribe-map]');if(tribe){const c=selected();if(!c)return;const next={...c,tribeByMap:{...(c.tribeByMap||{}),[tribe.dataset.tribeMap]:tribe.checked}};if(!await persistChange(next))tribe.checked=!tribe.checked;return}const input=e.target.closest('[data-level-id]');if(!input)return;const c=selected();if(!c)return;const id=input.dataset.levelId;if(!levelRules.some(r=>r.id===id))return;const ids=new Set(checkedLevelIds(c));if(input.checked)ids.add(id);else ids.delete(id);const ok=await persistChange({...c,levelUnlocks:[...ids]});if(!ok)input.checked=!input.checked});
+ $('characterDetail').addEventListener('change',async e=>{const tribe=e.target.closest('[data-tribe-map]');if(tribe){const c=selected();if(!c)return;const next={...c,tribeByMap:{...(c.tribeByMap||{}),[tribe.dataset.tribeMap]:tribe.checked}};if(!await persistChange(next))tribe.checked=!tribe.checked;return}const input=e.target.closest('[data-level-id]');if(!input)return;const c=selected();if(!c)return;const id=input.dataset.levelId;if(!levelRules.some(r=>r.id===id))return;const ids=new Set(checkedLevelIds(c));if(input.checked)ids.add(id);else{ids.delete(id);if(id.startsWith('bobs_'))ids.delete('bobs_tall_tales');if(ids.size===0&&checkedLevelIds(c).length>0&&!window.confirm('レベル上限解放のチェックをすべて外しますか？')){input.checked=true;return}}const ok=await persistChange({...c,levelUnlocks:[...ids]});if(!ok)input.checked=!input.checked});
  $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.hasAttribute('data-open-level-settings'))return openLevelSettings();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];$('characterViewerImage').alt=field==='appearance'?'見た目画像':'インプラント画像';openDialog($('characterViewer'));return}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('画像の削除','この画像を削除しますか？'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('キャラの削除',`「${c.name}」を削除しますか？`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('キャラを削除しました')}catch(e){toast('削除できませんでした')}}});
  function installReorder(container,handleSelector,itemSelector,onOrder){
  let active=null,pointer=null,startY=0,engaged=false,timer=null;
