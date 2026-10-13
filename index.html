@@ -1129,7 +1129,7 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
             <label class="chip"><input type="radio" name="material" value="金属"><span>金属</span></label>
             <label class="chip"><input type="radio" name="material" value="TEK" checked><span>TEK</span></label>
           </div>
-          <div id="materialDays" class="material-days">TEK 35日</div>
+          <div id="materialDays" class="material-days">TEK 20日</div>
         </div>
 
         <div id="customTimerField" class="field hidden">
@@ -1168,7 +1168,7 @@ const DEFAULT_MAP_IMAGES={'アイランド':'IMG_3555.jpeg','スコーチドア�
 const MAP_BOUNDS={'アイランド':{width:100,height:100},'スコーチドアース':{width:100,height:100},'センター':{width:100,height:100},'アベレーション':{width:100,height:100},'エクスティンクション':{width:100,height:100},'アストレオス':{width:100,height:100},'ラグナロク':{width:100,height:100},'バルゲロ':{width:100,height:100},'ロストコロニー':{width:100,height:100},'その他':{width:100,height:100}};
 const TRIBE_TOWER_ICON='7369529A-E04B-4212-8F0A-F320CC106E5E.png';
 const GENERATOR_ICON='026D0A6D-7E86-4E5E-823D-3DE7D2909B98.png';
-const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':35};
+const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':20};
 const SORT_KEY='arkTimer_sort_mode';
 const $=id=>document.getElementById(id);
 const list=$('list'),addBtn=$('add'),sortSelect=$('sortSelect'),activeCount=$('activeCount'),emptyState=$('emptyState'),overlay=$('overlay'),modal=$('modal'),closeModalBtn=$('closeModal'),modalTitle=$('modalTitle'),submitBtn=$('submitBtn'),timerForm=$('timerForm'),editIdInput=$('editId'),imageModeInput=$('imageMode'),mapSelect=$('mapSelect'),typeSelect=$('typeSelect'),materialField=$('materialField'),customTimerField=$('customTimerField'),memoInput=$('memoInput'),timerNameInput=$('timerNameInput'),latInput=$('latInput'),lngInput=$('lngInput'),daysInput=$('daysInput'),hoursInput=$('hoursInput'),minutesInput=$('minutesInput'),imageInput=$('imageInput'),imagePreview=$('imagePreview'),imagePreviewButton=$('imagePreviewButton'),imagePreviewPin=$('imagePreviewPin'),showPinInput=$('showPinInput'),confirmOverlay=$('confirmOverlay'),confirmTitle=$('confirmTitle'),confirmText=$('confirmText'),confirmCancel=$('confirmCancel'),confirmOk=$('confirmOk'),materialDays=$('materialDays');
