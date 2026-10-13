@@ -1063,3 +1063,9 @@ body.manager-dialog-open dialog[open]{pointer-events:auto}
 .level-boss-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .level-boss-row>span{flex:1 1 160px;min-width:0}
 .level-boss-row select{width:auto;max-width:100%;min-width:132px;padding:9px 10px;border-radius:12px;font-size:14px}
+
+.level-boss-label{display:flex;align-items:center;gap:10px;flex:1 1 160px;min-width:0}
+.level-boss-label input{width:22px;height:22px;flex:0 0 22px;accent-color:#67bbff}
+.level-boss-controls{display:flex;align-items:center;gap:10px;margin-left:auto}
+.level-boss-controls select{min-width:64px;width:70px}
+.level-boss-controls strong{min-width:35px;text-align:right;color:#a9e3ff}
