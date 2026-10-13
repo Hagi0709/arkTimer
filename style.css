@@ -1069,3 +1069,10 @@ body.manager-dialog-open dialog[open]{pointer-events:auto}
 .level-boss-controls{display:flex;align-items:center;gap:10px;margin-left:auto}
 .level-boss-controls select{min-width:64px;width:70px}
 .level-boss-controls strong{min-width:35px;text-align:right;color:#a9e3ff}
+
+/* Server settings: label-first layout, reorder handle on the right */
+.saved-server-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto 42px;gap:8px;align-items:center;padding:10px 12px}
+.saved-server-row .server-entry-label{min-width:0;flex:none;font-size:14px;line-height:1.45;overflow-wrap:normal;word-break:normal}
+.saved-server-row .manager-small-btn{padding:9px 10px;white-space:nowrap}
+.saved-server-row .server-drag-handle{grid-column:4;grid-row:1;display:grid;place-items:center;width:42px;min-height:44px;padding:0;border-radius:12px;background:rgba(103,187,255,.09);font-size:22px}
+@media(max-width:390px){.saved-server-row{grid-template-columns:minmax(0,1fr) auto auto 36px;gap:5px;padding:9px 7px}.saved-server-row .manager-small-btn{padding:8px 7px;font-size:12px}.saved-server-row .server-drag-handle{grid-column:4;width:36px}}
