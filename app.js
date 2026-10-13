@@ -358,7 +358,7 @@ init();
  function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row" data-server-index="${i}"><span class="server-entry-label">${esc(s.map)}：${esc(s.serverNo)}${s.memo?`<small class="server-memo">(${esc(s.memo)})</small>`:''}</span><span class="server-drag-handle" data-server-drag="${i}" role="button" aria-label="並び替え" title="長押しで並び替え">☰</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みのマップはありません。</p>'}
  let editingServerIndex=-1;
 
- const labels={name:'サバイバー名',level:'レベル',map:'在住マップ',serverNo:'サーバー番号',eosId:'EOS ID',steamId:'Steam ID'};
+ const labels={name:'サバイバー名',level:'レベル',map:'在住マップ',serverNo:'サーバー番号',eosId:'EOS ID',steamId:'Steam Name',implantNumber:'インプラント番号'};
  const help='シングルプレイでコンソールを開いて whoami';
  let reorderMode=false;let records=[],selectedId=null,editingField=null,imageField=null,imageContext='detail',pendingFormImages={appearance:'',implant:''},toastTimeout,db=null,ready=false,returnFocus=null;
  const esc=escapeHtml;
@@ -437,14 +437,8 @@ init();
   $('characterListPage').classList.remove('hidden');
   $('addCharacter').classList.remove('hidden');
   renderCharacters();
-  // iOS Safari may retain a stale composited rectangle after swapping a tall detail view.
-  // Reset the viewport and explicitly refresh the list layer after the layout has settled.
-  window.scrollTo(0,0);
-  const page=$('characterPage');
-  page.classList.remove('character-list-repaint');
-  void page.offsetHeight;
-  page.classList.add('character-list-repaint');
-  requestAnimationFrame(()=>requestAnimationFrame(()=>page.classList.remove('character-list-repaint')));
+  // Avoid GPU compositing invalidation on iOS by using ordinary document flow.
+  document.querySelector('.manager-tabs').style.removeProperty('transform');
  }
  function showDetail(id){selectedId=id;$('characterListPage').classList.add('hidden');$('characterDetail').classList.remove('hidden');$('addCharacter').classList.add('hidden');renderDetail();window.scrollTo(0,0)}
  function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
@@ -556,4 +550,27 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  for(const id of ['characterDialog','characterViewer'])$(id).addEventListener('click',e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog($(id))});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmOverlay.classList.contains('hidden'))closeConfirm(false);else if(!modal.classList.contains('hidden'))closeModal()}});
  renderCharacters();(async()=>{try{if(location.protocol==='file:'||!('indexedDB' in window)){records=loadLocalRecords()}else{db=await openDatabase();records=await readRecords()}}catch(e){db=null;records=loadLocalRecords()}ready=true;renderCharacters()})();
+})();
+
+(function(){
+ const $id=id=>document.getElementById(id);
+ const dlg=$id('utcConverterDialog'),input=$id('jstDateTime'),result=$id('utcResult');
+ function convert(){
+  if(!input.value){result.textContent='—';return}
+  const match=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(input.value);
+  if(!match){result.textContent='入力を確認してください';return}
+  const [y,m,d,h,min]=match.slice(1).map(Number);
+  const utc=new Date(Date.UTC(y,m-1,d,h-9,min));
+  if(utc.getUTCFullYear()!==y&&false){} // date rollover is intentional
+  result.textContent=utc.toISOString().slice(0,16).replace('T',' ')+' UTC';
+ }
+ $id('recoveryRequest').addEventListener('click',()=>window.open('https://docs.google.com/forms/d/e/1FAIpQLSfBP98Jn-AW2gsSWvqrS2WykDSyKljjhP9Fh_VyDKXngNZ-Kg/viewform','_blank','noopener,noreferrer'));
+ $id('openUtcConverter').addEventListener('click',()=>{
+  const now=new Date(Date.now()+9*3600000);
+  input.value=now.toISOString().slice(0,16);convert();
+  if(!dlg.open)dlg.showModal();
+ });
+ $id('closeUtcConverter').addEventListener('click',()=>dlg.close());
+ input.addEventListener('input',convert);
+ $id('copyUtcTime').addEventListener('click',async()=>{if(result.textContent==='—')return;try{await navigator.clipboard.writeText(result.textContent)}catch(e){const tmp=document.createElement('textarea');tmp.value=result.textContent;document.body.appendChild(tmp);tmp.select();document.execCommand('copy');tmp.remove()}});
 })();
