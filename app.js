@@ -311,7 +311,7 @@ init();
   {id:'overseer',type:'boss',name:'アイランド：TEK洞窟の監督者を討伐',points:15},
   {id:'manticore',type:'boss',name:'スコーチドアース：マンティコアを討伐',points:15},
   {id:'rockwell',type:'boss',name:'アベレーション：ロックウェルを討伐',points:15},
-  {id:'king_titan',type:'boss',name:'エクスティンクション：キングタイタンαを討伐',points:15},
+  {id:'king_titan',type:'boss',name:'エクスティンクション：キングタイタンを討伐',points:15},
   {id:'lost_queen',type:'boss',name:'ロストコロニー：ロストクイーンを討伐',points:15},
   {id:'master_controller',type:'boss',name:'ジェネシス1：汚染された支配者を討伐',points:15},
   {id:'abyssalus_shallocis',type:'boss',name:'アストレオス：AbyssalusとShallocisを両方討伐',points:15},
