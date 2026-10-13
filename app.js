@@ -304,7 +304,7 @@ init();
  function mapOptions(){return CHARACTER_MAPS.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}
  function serverChoiceOptions(map='',server=''){
   const presets=savedServers.map((s,i)=>`<option value="preset:${i}" ${s.map===map&&s.serverNo===server?'selected':''}>${esc(s.map)} / ${esc(s.serverNo)}${s.memo?' — '+esc(s.memo):''}</option>`).join('');
-  const maps=CHARACTER_MAPS.map(m=>`<option value="map:${esc(m)}" ${m===map&&!savedServers.some(s=>s.map===map&&s.serverNo===server)?'selected':''}>${esc(m)}（番号を手入力）</option>`).join('');
+  const maps=CHARACTER_MAPS.map(m=>`<option value="map:${esc(m)}" ${m===map&&!savedServers.some(s=>s.map===map&&s.serverNo===server)?'selected':''}>${esc(m)}</option>`).join('');
   return '<option value="">選択してください</option><optgroup label="登録済みマップ・サーバー">'+presets+'</optgroup><optgroup label="マップのみ選択">'+maps+'</optgroup>';
  }
  function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row"><span>${esc(s.map)} / ${esc(s.serverNo)}${s.memo?`<small class="server-memo">${esc(s.memo)}</small>`:''}</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みの組み合わせはありません。</p>'}
