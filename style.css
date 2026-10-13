@@ -1022,3 +1022,14 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
  .manager-settings-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;width:100%}
  .manager-settings-bottom .manager-small-btn{width:100%;min-width:0;min-height:56px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.35;padding:10px 8px;font-size:13px}
  @media(max-width:360px){.manager-settings-bottom .manager-small-btn{font-size:12px}}
+
+/* Keep background inert and prevent iOS scroll chaining while a dialog is open. */
+body.manager-dialog-open{position:fixed;left:0;right:0;width:100%;overflow:hidden;overscroll-behavior:none}
+.character-dialog,.character-viewer{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.character-dialog::backdrop,.character-viewer::backdrop{touch-action:none}
+
+/* Prevent background interactions while retaining popup scrolling on iOS. */
+.character-dialog,.character-viewer{overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
+body.manager-dialog-open .app-shell{pointer-events:none}
+body.manager-dialog-open dialog[open]{pointer-events:auto}
+#customMapInput{margin-top:8px}
