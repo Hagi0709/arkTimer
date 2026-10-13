@@ -295,9 +295,34 @@ init();
 
 // Character records and images live separately from the original timer storage.
 (()=>{
- const CHARACTER_MAPS=['アイランド','センター','スコーチドアース','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ジェネシス1','ドラゴントピア','クリスタルアイルズ','ロストアイランド','フィヨルド','ジェネシス2','アトランティス'];
+ const CHARACTER_MAPS=['アップロード中','アイランド','センター','スコーチドアース','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ジェネシス1','ドラゴントピア','クリスタルアイルズ','ロストアイランド','フィヨルド','ジェネシス2','アトランティス'];
  const CHARACTER_STORAGE_KEY='arkManager_characters_local_v1';
  const SERVER_STORAGE_KEY='arkManager_saved_servers_v1';
+ const LEVEL_RULES_KEY='arkManager_level_rules_v1';
+ const LEVEL_BASE=105;
+ const DEFAULT_LEVEL_RULES=[
+  {id:'overseer',name:'アイランド：TEK洞窟の監督者を討伐',points:15},
+  {id:'manticore',name:'スコーチドアース：マンティコアを討伐',points:15},
+  {id:'rockwell',name:'アベレーション：ロックウェルを討伐',points:15},
+  {id:'king_titan',name:'エクスティンクション：キングタイタンαを討伐',points:15},
+  {id:'lost_queen',name:'ロストコロニー：ロストクイーンを討伐',points:15},
+  {id:'master_controller',name:'ジェネシス1：汚染された支配者を討伐',points:15},
+  {id:'abyssalus_shallocis',name:'アストレオス：AbyssalusとShallocisを両方討伐',points:15},
+  {id:'explorer_notes',name:'アイランド・スコーチドアース：探検家の記録をすべて集める',points:10},
+  {id:'bobs_tall_tales',name:'スコーチドアース・アベレーション・エクスティンクション：「ボブのほら話」を全回収',points:15},
+  {id:'chibi',name:'ちびペットのレベルを上げる',points:5},
+  {id:'tides_of_fortune',name:'ジェネシス1：Tides of Fortuneのマイルストーンと全記録を達成',points:5}
+ ];
+ let levelRules=[];
+ try{const raw=localStorage.getItem(LEVEL_RULES_KEY);const parsed=raw?JSON.parse(raw):null;levelRules=Array.isArray(parsed)?parsed.filter(r=>r&&typeof r.id==='string'&&typeof r.name==='string'&&Number.isFinite(Number(r.points))):DEFAULT_LEVEL_RULES.map(r=>({...r}))}catch(e){levelRules=DEFAULT_LEVEL_RULES.map(r=>({...r}))}
+ function saveLevelRules(){localStorage.setItem(LEVEL_RULES_KEY,JSON.stringify(levelRules))}
+ function checkedLevelIds(c){return Array.isArray(c.levelUnlocks)?c.levelUnlocks:[]}
+ function getLevelTotal(c){return LEVEL_BASE+levelRules.filter(r=>checkedLevelIds(c).includes(r.id)).reduce((sum,r)=>sum+Number(r.points),0)}
+ function levelPanel(c){const selectedIds=checkedLevelIds(c),total=getLevelTotal(c),possible=LEVEL_BASE+levelRules.reduce((sum,r)=>sum+Number(r.points),0);
+  return `<section class="level-panel"><h2>レベル上限解放</h2><div class="level-summary">現在の上限：Lv ${total}</div><div class="level-progress">基本 Lv ${LEVEL_BASE} ＋ 解放 ${total-LEVEL_BASE} / ${possible-LEVEL_BASE}（登録条件 ${levelRules.length}件）</div><div class="level-check-list">${levelRules.map(r=>`<label class="level-check-item"><input type="checkbox" data-level-id="${esc(r.id)}" ${selectedIds.includes(r.id)?'checked':''}><span>${esc(r.name)}</span><strong>+${Number(r.points)}</strong></label>`).join('')}</div><button class="manager-small-btn" type="button" data-open-level-settings style="margin-top:12px">⚙ 解放条件を管理</button></section>`}
+ function renderLevelSettings(){const list=$('levelSettingsList');list.innerHTML=levelRules.map(r=>`<div class="level-setting-row"><span>${esc(r.name)}（+${Number(r.points)} Lv）</span><button class="manager-small-btn" data-level-edit="${esc(r.id)}" type="button">編集</button><button class="manager-small-btn" data-level-delete="${esc(r.id)}" type="button">削除</button></div>`).join('')||'<p>登録条件はありません。</p>'}
+ function openLevelSettings(){renderLevelSettings();openDialog($('levelSettingsDialog'))}
+
  let savedServers=[];
  try{const value=JSON.parse(localStorage.getItem(SERVER_STORAGE_KEY)||'[]');savedServers=Array.isArray(value)?value.filter(x=>x&&x.map&&x.serverNo):[]}catch(e){}
  function saveServers(){localStorage.setItem(SERVER_STORAGE_KEY,JSON.stringify(savedServers))}
@@ -307,12 +332,12 @@ init();
   const maps=CHARACTER_MAPS.map(m=>`<option value="map:${esc(m)}" ${m===map&&!savedServers.some(s=>s.map===map&&s.serverNo===server)?'selected':''}>${esc(m)}</option>`).join('');
   return '<option value="">選択してください</option><optgroup label="登録済みマップ・サーバー">'+presets+'</optgroup><optgroup label="マップのみ選択">'+maps+'</optgroup>';
  }
- function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row"><span>${esc(s.map)} / ${esc(s.serverNo)}${s.memo?`<small class="server-memo">${esc(s.memo)}</small>`:''}</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みの組み合わせはありません。</p>'}
+ function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row" data-server-index="${i}"><span class="server-drag-handle" data-server-drag="${i}">☰</span><span>${esc(s.map)} / ${esc(s.serverNo)}${s.memo?`<small class="server-memo">${esc(s.memo)}</small>`:''}</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みの組み合わせはありません。</p>'}
  let editingServerIndex=-1;
 
- const labels={name:'サバイバー名',level:'レベル',map:'在住マップ',serverNo:'サーバー番号',eosId:'EOS ID',steamId:'Steam ID'};
+ const labels={name:'サバイバー名',level:'レベル',map:'在住マップ',serverNo:'サーバー番号',tribeMember:'トライブ所属',eosId:'EOS ID',steamId:'Steam ID'};
  const help='シングルプレイ（ローカル）を開始し、コンソール（コマンド入力画面）を開いて whoami';
- let records=[],selectedId=null,editingField=null,imageField=null,imageContext='detail',pendingFormImages={appearance:'',implant:''},toastTimeout,db=null,ready=false,returnFocus=null;
+ let reorderMode=false;let records=[],selectedId=null,editingField=null,imageField=null,imageContext='detail',pendingFormImages={appearance:'',implant:''},toastTimeout,db=null,ready=false,returnFocus=null;
  const esc=escapeHtml;
  function toast(text){$('managerToast').textContent=text;$('managerToast').classList.remove('hidden');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>$('managerToast').classList.add('hidden'),3000)}
  function openDatabase(){return new Promise((resolve,reject)=>{const req=indexedDB.open('arkManager_characters_v1',1);req.onupgradeneeded=()=>req.result.createObjectStore('characters',{keyPath:'id'});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
@@ -326,19 +351,22 @@ init();
  function closeDialog(dialog){if(!dialog)return;if(typeof dialog.close==='function'){if(dialog.open)dialog.close()}else dialog.removeAttribute('open')}
  function selected(){return records.find(c=>c.id===selectedId)}
  function renderCharacters(){
+  records.sort((a,b)=>(a.sortOrder??a.createdAt??0)-(b.sortOrder??b.createdAt??0));
   $('characterCount').textContent=`${records.length}人`;$('characterEmpty').classList.toggle('hidden',records.length>0);
-  $('characterList').innerHTML=records.map(c=>`<button class="character-card" data-character="${esc(c.id)}" type="button">${c.appearance?`<img class="character-avatar" src="${esc(c.appearance)}" alt="">`:'<span class="character-avatar" aria-hidden="true">◉</span>'}<span class="character-summary"><span class="character-name">${esc(c.name||'名前未設定')}</span><span class="character-meta-list"><span><b>レベル</b>${esc(c.level||'未設定')}</span><span><b>マップ</b>${esc(c.map||'未設定')}</span><span><b>サーバー</b>${esc(c.serverNo||'未設定')}</span></span></span><span class="character-chevron" aria-hidden="true">›</span></button>`).join('');
+  $('characterList').innerHTML=records.map((c,i)=>`<div class="character-list-item" data-id="${esc(c.id)}"><button class="character-card" data-character="${esc(c.id)}" type="button">${c.appearance?`<img class="character-avatar" src="${esc(c.appearance)}" alt="">`:'<span class="character-avatar" aria-hidden="true">◉</span>'}<span class="character-summary"><span class="character-name">${esc(c.name||'名前未設定')}</span><span class="character-meta-list"><span><b>レベル</b>${esc(c.level||'未設定')} / 上限 ${getLevelTotal(c)}</span><span><b>マップ</b>${esc(c.map||'未設定')}</span><span><b>サーバー</b>${esc(c.serverNo||'未設定')}</span></span></span><span class="character-chevron" aria-hidden="true">›</span></button><div class="character-drag-handle" data-drag="${esc(c.id)}" aria-label="長押しして並び替え">☰</div></div>`).join('');
  }
  function imageBlock(c,field,label){return `<button type="button" class="character-image-button" data-photo="${field}" aria-label="${label}${c[field]?'を拡大':'を登録'}">${c[field]?`<img class="character-photo" src="${esc(c[field])}" alt="${label}">`:`<span class="photo-placeholder">＋ ${label}を登録</span>`}</button>${c[field]?`<div class="photo-actions"><button class="manager-small-btn" data-upload="${field}" type="button">画像を変更</button><button class="manager-small-btn" data-remove-photo="${field}" type="button">画像を削除</button></div>`:''}`}
  function renderDetail(){
   const c=selected();if(!c)return showList();
-  $('characterDetail').innerHTML=`<button class="character-back" data-back type="button">‹ キャラ一覧</button>${imageBlock(c,'appearance','見た目画像')}<div class="section-heading"><h1>${esc(c.name)}</h1></div><div class="character-fields">${Object.entries(labels).map(([key,label])=>`<div class="character-field"><div class="character-field-label">${label}</div><div class="character-field-row"><span class="character-field-value">${esc(c[key]||'未設定')}</span><div class="character-field-buttons">${key!=='map'?`<button type="button" class="manager-small-btn" data-copy="${key}" aria-label="${label}をコピー" ${c[key]?'':'disabled'}>コピー</button>`:''}<button type="button" class="manager-small-btn" data-edit="${key}" aria-label="${label}を編集">編集</button></div></div>${key==='eosId'?`<p class="eos-help">${help}</p>`:''}</div>`).join('')}</div><div class="implant-section"><h2>インプラント画像</h2>${imageBlock(c,'implant','インプラント画像')}</div><button class="character-delete" type="button" data-delete-character>キャラを削除</button>`;
+  $('characterDetail').innerHTML=`<button class="character-back" data-back type="button">‹ キャラ一覧</button>${imageBlock(c,'appearance','見た目画像')}<div class="section-heading"><h1>${esc(c.name)}</h1></div><div class="character-fields">${Object.entries(labels).map(([key,label])=>`<div class="character-field"><div class="character-field-label">${label}</div><div class="character-field-row"><span class="character-field-value">${key==='tribeMember'?(c.tribeMember?'所属':'未所属'):esc(c[key]||'未設定')}</span><div class="character-field-buttons">${key!=='map'&&key!=='tribeMember'?`<button type="button" class="manager-small-btn" data-copy="${key}" aria-label="${label}をコピー" ${c[key]?'':'disabled'}>コピー</button>`:''}<button type="button" class="manager-small-btn" data-edit="${key}" aria-label="${label}を編集">編集</button></div></div>${key==='eosId'?`<p class="eos-help">${help}</p>`:''}</div>`).join('')}</div>${levelPanel(c)}<div class="implant-section"><h2>インプラント画像</h2>${imageBlock(c,'implant','インプラント画像')}</div><button class="character-delete" type="button" data-delete-character>キャラを削除</button>`;
  }
  function showList(){selectedId=null;$('characterListPage').classList.remove('hidden');$('characterDetail').classList.add('hidden');$('addCharacter').classList.remove('hidden');renderCharacters()}
  function showDetail(id){selectedId=id;$('characterListPage').classList.add('hidden');$('characterDetail').classList.remove('hidden');$('addCharacter').classList.add('hidden');renderDetail();window.scrollTo(0,0)}
  function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
  function formField(key,value=''){
   const label=labels[key];
+  if(key==='tribeMember')return `<label class="field tribe-check"><input name="tribeMember" type="checkbox" value="yes" ${(value===true||value==='yes')?'checked':''}><span>トライブに所属している</span></label>`;
+  if(key==='tribeMember')return `<label class="field tribe-check"><input name="tribeMember" type="checkbox" value="yes" ${value===true||value==='yes'?'checked':''}><span>トライブに所属している</span></label>`;
   if(key==='map')return `<label class="field"><span>在住マップ</span><select name="mapChoice" id="characterMapChoice">${serverChoiceOptions(value,selected()?.serverNo||'')}</select></label>`;
   return `<label class="field"><span>${label}${key==='name'?'（必須）':''}</span><input name="${key}" type="${key==='level'?'number':'text'}" ${key==='level'?'min="1" step="1" inputmode="numeric"':''} ${key==='name'?'required maxlength="100"':''} value="${esc(value)}" autocomplete="off">${key==='eosId'?`<small class="eos-help">${help}</small>`:''}</label>`;
  }
@@ -355,25 +383,78 @@ init();
   if(e.target.value.startsWith('preset:')){
    const server=savedServers[Number(e.target.value.slice(7))];
    if(server&&number)number.value=server.serverNo;
-  }else if(e.target.value.startsWith('map:')&&number){number.value='';}
+  }else if(e.target.value.startsWith('map:')&&number){const uploading=e.target.value==='map:アップロード中';number.value=uploading?'-':'';number.readOnly=uploading;}
  });
- $('settingsMap').innerHTML='<option value="">選択してください</option>'+mapOptions();
+ $('settingsMap').innerHTML='<option value="">選択してください</option>'+mapOptions();$('settingsMap').addEventListener('change',()=>{const u=$('settingsMap').value==='アップロード中';$('settingsServer').value=u?'-':'';$('settingsServer').readOnly=u});
  $('openServerSettings').addEventListener('click',()=>{editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();openDialog($('serverSettingsDialog'))});
  $('closeServerSettings').addEventListener('click',()=>closeDialog($('serverSettingsDialog')));
- $('serverSettingsForm').addEventListener('submit',e=>{e.preventDefault();const map=$('settingsMap').value,serverNo=$('settingsServer').value.trim();if(!map||!serverNo)return;const entry={map,serverNo,memo:$('settingsMemo').value.trim()};if(savedServers.some((s,i)=>i!==editingServerIndex&&s.map===map&&s.serverNo===serverNo)){toast('同じ組み合わせが登録されています');return}if(editingServerIndex>=0)savedServers[editingServerIndex]=entry;else savedServers.push(entry);try{saveServers()}catch(e){toast('設定を保存できませんでした');return}editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();toast('保存しました')});
- $('serverSettingsList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.editServer!==undefined){editingServerIndex=Number(b.dataset.editServer);const s=savedServers[editingServerIndex];$('settingsMap').value=s.map;$('settingsServer').value=s.serverNo;$('settingsMemo').value=s.memo||'';$('settingsMap').focus()}else if(b.dataset.removeServer!==undefined){savedServers.splice(Number(b.dataset.removeServer),1);saveServers();renderServerSettings()}});
- $('characterForm').addEventListener('submit',async e=>{e.preventDefault();const values=Object.fromEntries(new FormData(e.target));for(const k of Object.keys(values))values[k]=String(values[k]).trim();if('mapChoice' in values){const choice=values.mapChoice;if(choice.startsWith('preset:')){const s=savedServers[Number(choice.slice(7))];if(!s){toast('登録済みマップを再選択してください');return}values.map=s.map;values.serverNo=s.serverNo}else if(choice.startsWith('map:')){values.map=choice.slice(4)}else{toast('在住マップを選択してください');return}delete values.mapChoice}if('name'in values&&!values.name){toast('サバイバー名を入力してください');return}if(values.level&&!/^[1-9]\d*$/.test(values.level)){toast('レベルは1以上の整数を入力してください');return}const button=$('characterSubmit');button.disabled=true;try{if(editingField){if(await persistChange({...selected(),...values}))closeDialog($('characterDialog'))}else{const c={id:generateId(),appearance:pendingFormImages.appearance,implant:pendingFormImages.implant,createdAt:Date.now(),...values};await writeRecord(c);records.push(c);closeDialog($('characterDialog'));renderCharacters();showDetail(c.id)}}catch(e){toast('保存できませんでした。画像サイズを小さくするか、端末の空き容量・ブラウザ設定を確認してください')}finally{button.disabled=false}});
+ $('serverSettingsForm').addEventListener('submit',e=>{e.preventDefault();const map=$('settingsMap').value,serverNo=map==='アップロード中'?'-':$('settingsServer').value.trim();if(!map||!serverNo)return;const entry={map,serverNo,memo:$('settingsMemo').value.trim()};if(savedServers.some((s,i)=>i!==editingServerIndex&&s.map===map&&s.serverNo===serverNo)){toast('同じ組み合わせが登録されています');return}if(editingServerIndex>=0)savedServers[editingServerIndex]=entry;else savedServers.push(entry);try{saveServers()}catch(e){toast('設定を保存できませんでした');return}editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();toast('保存しました')});
+ $('serverSettingsList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.editServer!==undefined){editingServerIndex=Number(b.dataset.editServer);const s=savedServers[editingServerIndex];$('settingsMap').value=s.map;$('settingsServer').value=s.serverNo;$('settingsServer').readOnly=s.map==='アップロード中';$('settingsMemo').value=s.memo||'';$('settingsMap').focus()}else if(b.dataset.removeServer!==undefined){savedServers.splice(Number(b.dataset.removeServer),1);saveServers();renderServerSettings()}});
+ $('characterForm').addEventListener('submit',async e=>{e.preventDefault();const values=Object.fromEntries(new FormData(e.target));for(const k of Object.keys(values))values[k]=String(values[k]).trim();if(!editingField||editingField==='tribeMember')values.tribeMember=values.tribeMember==='yes';if('mapChoice' in values){const choice=values.mapChoice;if(choice.startsWith('preset:')){const s=savedServers[Number(choice.slice(7))];if(!s){toast('登録済みマップを再選択してください');return}values.map=s.map;values.serverNo=s.serverNo}else if(choice.startsWith('map:')){values.map=choice.slice(4);if(values.map==='アップロード中')values.serverNo='-'}else{toast('在住マップを選択してください');return}delete values.mapChoice}if(values.map==='アップロード中')values.serverNo='-';if('name'in values&&!values.name){toast('サバイバー名を入力してください');return}if(values.level&&!/^[1-9]\d*$/.test(values.level)){toast('レベルは1以上の整数を入力してください');return}const button=$('characterSubmit');button.disabled=true;try{if(editingField){if(await persistChange({...selected(),...values}))closeDialog($('characterDialog'))}else{const c={id:generateId(),sortOrder:records.length?Math.max(...records.map(r=>r.sortOrder??r.createdAt??0))+1:Date.now(),appearance:pendingFormImages.appearance,implant:pendingFormImages.implant,createdAt:Date.now(),...values};await writeRecord(c);records.push(c);closeDialog($('characterDialog'));renderCharacters();showDetail(c.id)}}catch(e){toast('保存できませんでした。画像サイズを小さくするか、端末の空き容量・ブラウザ設定を確認してください')}finally{button.disabled=false}});
  async function copyField(key){const value=selected()?.[key];if(!value)return;try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(String(value))}else{const input=document.createElement('textarea');input.value=String(value);input.style.cssText='position:fixed;top:0;opacity:0';document.body.appendChild(input);input.focus();input.select();input.setSelectionRange(0,input.value.length);const ok=document.execCommand('copy');input.remove();if(!ok)throw Error('copy')}toast(`${labels[key]}をコピーしました`)}catch(e){toast('コピーできませんでした。編集画面で長押ししてコピーしてください')}}
  function upload(field,context='detail'){imageField=field;imageContext=context;$('characterImageInput').value='';$('characterImageInput').click()}
  function compressImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/'))return reject(Error('image'));const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{try{const scale=Math.min(1,1200/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.8))}catch(e){reject(e)}finally{URL.revokeObjectURL(url)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('decode'))};img.src=url})}
  $('characterImageInput').addEventListener('change',async e=>{const file=e.target.files[0],field=imageField;if(!file)return;toast('画像を読み込んでいます…');try{const src=await compressImage(file);if(imageContext==='form'){pendingFormImages[field]=src;refreshFormImage(field);toast('画像を追加しました');return}const c=selected();if(!c)return;const current=records.find(r=>r.id===c.id);if(current&&await persistChange({...current,[field]:src}))toast('画像を保存しました')}catch(e){toast('画像を読み込めませんでした。JPEG・PNGなどで再選択してください')}});
  $('characterFormFields').addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;if(button.dataset.formUpload)return upload(button.dataset.formUpload,'form');if(button.dataset.formRemove){pendingFormImages[button.dataset.formRemove]='';refreshFormImage(button.dataset.formRemove)}});
- $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];$('characterViewerImage').alt=field==='appearance'?'見た目画像':'インプラント画像';openDialog($('characterViewer'));return}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('画像の削除','この画像を削除しますか？'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('キャラの削除',`「${c.name}」を削除しますか？`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('キャラを削除しました')}catch(e){toast('削除できませんでした')}}});
+ $('openLevelSettings').addEventListener('click',openLevelSettings);
+ $('closeLevelSettings').addEventListener('click',()=>closeDialog($('levelSettingsDialog')));
+ $('levelRuleCancel').addEventListener('click',()=>{$('levelRuleForm').reset();$('levelRuleEditId').value='';$('levelRuleCancel').classList.add('hidden')});
+ $('levelRuleForm').addEventListener('submit',e=>{e.preventDefault();const id=$('levelRuleEditId').value,name=$('levelRuleName').value.trim(),points=Number($('levelRulePoints').value);if(!name||!Number.isInteger(points)||points<1||points>245)return toast('条件名と追加レベルを確認してください');
+  const next={id:id||'custom_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name,points};const old=levelRules.slice();levelRules=id?levelRules.map(r=>r.id===id?next:r):[...levelRules,next];try{saveLevelRules()}catch(err){levelRules=old;return toast('保存できませんでした')}
+  $('levelRuleForm').reset();$('levelRuleEditId').value='';$('levelRuleCancel').classList.add('hidden');renderLevelSettings();renderCharacters();if(selectedId)renderDetail();toast('解放条件を保存しました')});
+ $('levelSettingsList').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;const id=btn.dataset.levelEdit??btn.dataset.levelDelete;const rule=levelRules.find(r=>r.id===id);if(!rule)return;
+  if(btn.dataset.levelEdit!==undefined){$('levelRuleEditId').value=id;$('levelRuleName').value=rule.name;$('levelRulePoints').value=rule.points;$('levelRuleCancel').classList.remove('hidden');$('levelRuleName').focus();return}
+  if(!await openConfirm('解放条件を削除',`「${rule.name}」を削除しますか？ キャラの上限計算からも除外されます。`))return;
+  const old=levelRules;levelRules=levelRules.filter(r=>r.id!==id);try{saveLevelRules()}catch(err){levelRules=old;return toast('削除できませんでした')}renderLevelSettings();renderCharacters();if(selectedId)renderDetail()});
+ $('characterDetail').addEventListener('change',async e=>{const input=e.target.closest('[data-level-id]');if(!input)return;const c=selected();if(!c)return;const id=input.dataset.levelId;if(!levelRules.some(r=>r.id===id))return;const ids=new Set(checkedLevelIds(c));if(input.checked)ids.add(id);else ids.delete(id);const ok=await persistChange({...c,levelUnlocks:[...ids]});if(!ok)input.checked=!input.checked});
+ $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.hasAttribute('data-open-level-settings'))return openLevelSettings();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];$('characterViewerImage').alt=field==='appearance'?'見た目画像':'インプラント画像';openDialog($('characterViewer'));return}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('画像の削除','この画像を削除しますか？'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('キャラの削除',`「${c.name}」を削除しますか？`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('キャラを削除しました')}catch(e){toast('削除できませんでした')}}});
+ function installReorder(container,handleSelector,itemSelector,onOrder){
+ let active=null,pointer=null,startY=0,engaged=false,timer=null;
+ const stop=()=>{
+  clearTimeout(timer);if(!active)return;
+  const moved=active;active=null;pointer=null;moved.classList.remove('dragging');
+  if(engaged)onOrder([...container.querySelectorAll(itemSelector)]);engaged=false;
+ };
+ container.addEventListener('pointerdown',e=>{
+  const handle=e.target.closest(handleSelector);if(!handle)return;
+  active=handle.closest(itemSelector);if(!active)return;
+  pointer=e.pointerId;startY=e.clientY;engaged=false;
+  handle.setPointerCapture(e.pointerId);
+  timer=setTimeout(()=>{if(active){engaged=true;active.classList.add('dragging')}},180);
+ });
+ container.addEventListener('pointermove',e=>{
+  if(!active||pointer!==e.pointerId)return;
+  if(!engaged){if(Math.abs(e.clientY-startY)>12){clearTimeout(timer);active=null}return}
+  e.preventDefault();
+  const others=[...container.querySelectorAll(itemSelector)].filter(el=>el!==active);
+  const next=others.find(el=>e.clientY<el.getBoundingClientRect().top+el.getBoundingClientRect().height/2);
+  if(next)container.insertBefore(active,next);else container.appendChild(active);
+  if(e.clientY<65)window.scrollBy(0,-12);else if(e.clientY>window.innerHeight-65)window.scrollBy(0,12);
+ });
+ container.addEventListener('pointerup',stop);
+ container.addEventListener('pointercancel',stop);
+ }
+ installReorder($('characterList'),'[data-drag]','.character-list-item',async elements=>{
+  const previous=records.slice();
+  const next=elements.map((el,i)=>({...records.find(c=>c.id===el.dataset.id),sortOrder:i}));
+  if(next.some(c=>!c.id))return renderCharacters();
+  try{
+   if(db){await new Promise((resolve,reject)=>{const tx=db.transaction('characters','readwrite'),store=tx.objectStore('characters');next.forEach(c=>store.put(c));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}
+   else localStorage.setItem(CHARACTER_STORAGE_KEY,JSON.stringify(next));
+   records=next;renderCharacters();
+  }catch(e){records=previous;renderCharacters();toast('並び順を保存できませんでした')}
+ });
+ installReorder($('serverSettingsList'),'[data-server-drag]','.saved-server-row',elements=>{
+  const next=elements.map(el=>savedServers[Number(el.dataset.serverIndex)]);
+  if(next.length!==savedServers.length)return;
+  savedServers=next;editingServerIndex=-1;
+  try{saveServers();renderServerSettings()}catch(e){toast('サーバーの並び順を保存できませんでした')}
+ });
  $('characterList').addEventListener('click',e=>{const btn=e.target.closest('[data-character]');if(btn)showDetail(btn.dataset.character)});
  $('addCharacter').addEventListener('click',()=>showEditor());$('characterTab').addEventListener('click',()=>switchTab('characters'));$('timerTab').addEventListener('click',()=>switchTab('timers'));
  document.querySelector('.manager-tabs').setAttribute('role','tablist');document.querySelector('.manager-tabs').addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const target=e.key==='Home'?$('characterTab'):e.key==='End'?$('timerTab'):document.activeElement===$('characterTab')?$('timerTab'):$('characterTab');target.click();target.focus()}});
  $('closeCharacterDialog').addEventListener('click',()=>closeDialog($('characterDialog')));$('closeCharacterViewer').addEventListener('click',()=>closeDialog($('characterViewer')));
  for(const id of ['characterDialog','characterViewer'])$(id).addEventListener('click',e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog($(id))});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmOverlay.classList.contains('hidden'))closeConfirm(false);else if(!modal.classList.contains('hidden'))closeModal()}});
- renderCharacters();(async()=>{try{if(location.protocol==='file:'||!('indexedDB' in window)){records=loadLocalRecords()}else{db=await openDatabase();records=await readRecords()}}catch(e){db=null;records=loadLocalRecords()}records.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));ready=true;renderCharacters()})();
+ renderCharacters();(async()=>{try{if(location.protocol==='file:'||!('indexedDB' in window)){records=loadLocalRecords()}else{db=await openDatabase();records=await readRecords()}}catch(e){db=null;records=loadLocalRecords()}ready=true;renderCharacters()})();
 })();
