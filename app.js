@@ -345,11 +345,11 @@ init();
  function saveServers(){localStorage.setItem(SERVER_STORAGE_KEY,JSON.stringify(savedServers))}
  function mapOptions(){return CHARACTER_MAPS.filter(m=>m!=='アップロード中').map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}
  function serverChoiceOptions(map='',server=''){
-  const presets=savedServers.map((s,i)=>`<option value="preset:${i}" ${s.map===map&&s.serverNo===server?'selected':''}>${esc(s.map)} / ${esc(s.serverNo)}${s.memo?' — '+esc(s.memo):''}</option>`).join('');
+  const presets=savedServers.map((s,i)=>`<option value="preset:${i}" ${s.map===map&&s.serverNo===server?'selected':''}>${esc(s.map)}：${esc(s.serverNo)}${s.memo?' ('+esc(s.memo)+')':''}</option>`).join('');
   const maps=CHARACTER_MAPS.map(m=>`<option value="map:${esc(m)}" ${m===map&&!savedServers.some(s=>s.map===map&&s.serverNo===server)?'selected':''}>${esc(m)}</option>`).join('');
-  return '<option value="">選択してください</option><optgroup label="登録済みマップ・サーバー">'+presets+'</optgroup><optgroup label="マップのみ選択">'+maps+'</optgroup>';
+  return '<option value="">選択してください</option><optgroup label="登録済みマップ">'+presets+'</optgroup><optgroup label="マップのみ選択">'+maps+'</optgroup>';
  }
- function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row" data-server-index="${i}"><span class="server-drag-handle" data-server-drag="${i}">☰</span><span>${esc(s.map)} / ${esc(s.serverNo)}${s.memo?`<small class="server-memo">${esc(s.memo)}</small>`:''}</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みのマップはありません。</p>'}
+ function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row" data-server-index="${i}"><span class="server-drag-handle" data-server-drag="${i}">☰</span><span>${esc(s.map)}：${esc(s.serverNo)}${s.memo?`<small class="server-memo">(${esc(s.memo)})</small>`:''}</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みのマップはありません。</p>'}
  let editingServerIndex=-1;
 
  const labels={name:'サバイバー名',level:'レベル',map:'在住マップ',serverNo:'サーバー番号',eosId:'EOS ID',steamId:'Steam ID'};
@@ -414,11 +414,11 @@ init();
   const places=[...savedServers];
   if(c.map&&!places.some(s=>s.map===c.map&&s.serverNo===c.serverNo))places.unshift({map:c.map,serverNo:c.serverNo||'-'});
   const checked=c.tribeByMap||{};
-  return `<section class="level-panel"><h2>マップ別トライブ所属</h2><div class="level-check-list">${places.map(s=>{const key=tribeMapKey(s.map,s.serverNo);const yes=Object.prototype.hasOwnProperty.call(checked,key)?checked[key]:Boolean(c.tribeMember&&s.map===c.map&&s.serverNo===c.serverNo);return `<label class="level-check-item"><input type="checkbox" data-tribe-map="${esc(key)}" ${yes?'checked':''}><span>${esc(s.map)} / ${esc(s.serverNo)}</span></label>`}).join('')||'<p class="eos-help">マップ・サーバーを登録してください。</p>'}</div></section>`;
+  return `<section class="level-panel"><h2>マップ別トライブ所属</h2><div class="level-check-list">${places.map(s=>{const key=tribeMapKey(s.map,s.serverNo);const yes=Object.prototype.hasOwnProperty.call(checked,key)?checked[key]:Boolean(c.tribeMember&&s.map===c.map&&s.serverNo===c.serverNo);return `<label class="level-check-item"><input type="checkbox" data-tribe-map="${esc(key)}" ${yes?'checked':''}><span>${esc(s.map)}：${esc(s.serverNo)}</span></label>`}).join('')||'<p class="eos-help">マップ・サーバーを登録してください。</p>'}</div></section>`;
  }
  function newCharacterPanels(){
   const places=[...savedServers];
-  const mapOptionsForTribe=places.map(s=>{const key=tribeMapKey(s.map,s.serverNo);return `<label class="level-check-item"><input type="checkbox" data-new-tribe="${esc(key)}"><span>${esc(s.map)} / ${esc(s.serverNo)}</span></label>`}).join('');
+  const mapOptionsForTribe=places.map(s=>{const key=tribeMapKey(s.map,s.serverNo);return `<label class="level-check-item"><input type="checkbox" data-new-tribe="${esc(key)}"><span>${esc(s.map)}：${esc(s.serverNo)}</span></label>`}).join('');
   return `<section class="level-panel"><h2>マップ別トライブ所属</h2><div class="level-check-list" id="newCharacterTribes">${mapOptionsForTribe||'<p class="eos-help">登録済みのマップはありません。</p>'}</div></section><section class="level-panel"><h2>レベル上限解放</h2><div class="level-summary" id="newCharacterLevelSummary">現在の上限：Lv ${LEVEL_BASE}</div><div class="level-check-list">${levelRules.map(r=>`<label class="level-check-item"><input type="checkbox" data-new-level="${esc(r.id)}"><span>${esc(r.name)}</span><strong>+${Number(r.points)}</strong></label>`).join('')}</div></section>`;
  }
  function renderDetail(){
@@ -456,11 +456,11 @@ init();
    if(server&&number)number.value=server.serverNo;
   }else if(e.target.value.startsWith('map:')&&number){const uploading=e.target.value==='map:アップロード中';number.value=uploading?'-':'';number.readOnly=uploading;}
  });
- $('settingsMap').innerHTML='<option value="">選択してください</option>'+mapOptions();$('settingsMap').addEventListener('change',()=>{const u=$('settingsMap').value==='アップロード中';$('settingsServer').value=u?'-':'';$('settingsServer').readOnly=u});
+ $('settingsMap').innerHTML='<option value="">選択してください</option>'+mapOptions();$('settingsMap').addEventListener('change',()=>{ /* マップ変更時も入力済みサーバー番号を保持 */ });
  $('openServerSettings').addEventListener('click',()=>{editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();openDialog($('serverSettingsDialog'))});
  $('closeServerSettings').addEventListener('click',()=>closeDialog($('serverSettingsDialog')));
  $('serverSettingsForm').addEventListener('submit',e=>{e.preventDefault();const map=$('settingsMap').value,serverNo=map==='アップロード中'?'-':$('settingsServer').value.trim();if(!map||!serverNo)return;const entry={map,serverNo,memo:$('settingsMemo').value.trim()};if(savedServers.some((s,i)=>i!==editingServerIndex&&s.map===map&&s.serverNo===serverNo)){toast('同じ組み合わせが登録されています');return}if(editingServerIndex>=0)savedServers[editingServerIndex]=entry;else savedServers.push(entry);try{saveServers()}catch(e){toast('設定を保存できませんでした');return}editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();toast('保存しました')});
- $('serverSettingsList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.editServer!==undefined){editingServerIndex=Number(b.dataset.editServer);const s=savedServers[editingServerIndex];$('settingsMap').value=s.map;$('settingsServer').value=s.serverNo;$('settingsServer').readOnly=s.map==='アップロード中';$('settingsMemo').value=s.memo||'';$('settingsMap').focus()}else if(b.dataset.removeServer!==undefined){const i=Number(b.dataset.removeServer),s=savedServers[i];if(!s)return;if(!window.confirm(`「${s.map} / ${s.serverNo}」を削除しますか？`))return;savedServers.splice(i,1);saveServers();renderServerSettings()}});
+ $('serverSettingsList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.editServer!==undefined){editingServerIndex=Number(b.dataset.editServer);const s=savedServers[editingServerIndex];$('settingsMap').value=s.map;$('settingsServer').value=s.serverNo;$('settingsServer').readOnly=s.map==='アップロード中';$('settingsMemo').value=s.memo||'';$('settingsMap').focus()}else if(b.dataset.removeServer!==undefined){const i=Number(b.dataset.removeServer),s=savedServers[i];if(!s)return;if(!window.confirm(`「${s.map}：${s.serverNo}」を削除しますか？`))return;savedServers.splice(i,1);saveServers();renderServerSettings()}});
  $('characterForm').addEventListener('submit',async e=>{e.preventDefault();const values=Object.fromEntries(new FormData(e.target));
   if(!editingField){
    values.levelUnlocks=[...e.target.querySelectorAll('[data-new-level]:checked')].map(x=>x.dataset.newLevel);
