@@ -1079,6 +1079,19 @@ body.manager-dialog-open dialog[open]{pointer-events:auto}
 
 /* Prevent iOS WebKit compositing artifacts after returning from character details. */
 html,body,.app-shell{overflow-x:clip}
-#characterPage{min-width:0;isolation:isolate}
+
 #characterListPage{min-width:0}
-#characterPage.character-list-repaint{transform:translateZ(0);backface-visibility:hidden}
+
+
+/* Stable iOS WebKit tab painting after detail/list navigation */
+.manager-tabs{position:relative;z-index:1;isolation:auto;transform:none!important;backface-visibility:visible!important;background:#0c1a29}
+.manager-tabs button{appearance:none;-webkit-appearance:none;transform:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:#192a3c}
+.manager-tabs button.selected{background:#24445f}
+#characterPage{isolation:auto!important;transform:none!important;contain:none!important}
+.character-heading-actions{display:flex;align-items:center;gap:7px;min-width:0}
+.character-heading-actions .manager-small-btn{padding:8px 9px;font-size:11px;line-height:1.2}
+.character-heading-actions #characterCount{white-space:nowrap;margin-left:3px}
+.utc-converter{display:grid;gap:16px;padding:12px 0}
+.utc-converter label{display:grid;gap:8px;font-weight:700}
+.utc-result{padding:18px;border-radius:15px;background:rgba(103,187,255,.1);border:1px solid rgba(103,187,255,.25);font-size:20px;font-weight:800;text-align:center;overflow-wrap:anywhere}
+@media(max-width:390px){.character-heading-actions{gap:4px}.character-heading-actions .manager-small-btn{padding:7px 6px;font-size:10px}.section-heading h1{font-size:20px}}
