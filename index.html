@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>ARK Manager</title>
-  <link rel="apple-touch-icon" href="3A438E39-9D68-43D7-A208-45C20F63CE40.jpeg">
-  <link rel="icon" href="3A438E39-9D68-43D7-A208-45C20F63CE40.jpeg">
+  <link rel="apple-touch-icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
+  <link rel="icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
   <style>
 :root{
   --bg:#08111c;
@@ -1043,6 +1043,32 @@ body.manager-dialog-open .app-shell{pointer-events:none}
 body.manager-dialog-open dialog[open]{pointer-events:auto}
 #customMapInput{margin-top:8px}
 
+
+
+/* Timer editor: match the character editor dialog */
+#modal.modal{
+  left:50%;
+  top:50%;
+  bottom:auto;
+  transform:translate(-50%,-50%);
+  width:min(calc(100% - 28px),560px);
+  max-height:85dvh;
+  border-radius:22px;
+  padding:22px;
+  background:#101d2d;
+  color:var(--text);
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#modal .modal-header{
+  position:static;
+  padding:0 0 18px;
+  background:transparent;
+  backdrop-filter:none;
+  border-bottom:0;
+}
+#modal .form{gap:20px;padding:0}
+#overlay.overlay{background:rgba(0,0,0,.72);backdrop-filter:none}
 </style>
 </head>
 <body>
@@ -1105,7 +1131,6 @@ body.manager-dialog-open dialog[open]{pointer-events:auto}
     <section id="modal" class="modal hidden" aria-modal="true" role="dialog">
       <div class="modal-header">
         <div>
-          <p class="modal-sub">TIMER SETTING</p>
           <h2 id="modalTitle">タイマー追加</h2>
         </div>
         <button id="closeModal" class="icon-btn" type="button" aria-label="閉じる">×</button>
