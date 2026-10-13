@@ -1033,3 +1033,33 @@ body.manager-dialog-open{position:fixed;left:0;right:0;width:100%;overflow:hidde
 body.manager-dialog-open .app-shell{pointer-events:none}
 body.manager-dialog-open dialog[open]{pointer-events:auto}
 #customMapInput{margin-top:8px}
+
+
+/* Timer editor: match the character editor dialog */
+#modal.modal{
+  left:50%;
+  top:50%;
+  bottom:auto;
+  transform:translate(-50%,-50%);
+  width:min(calc(100% - 28px),560px);
+  max-height:85dvh;
+  border-radius:22px;
+  padding:22px;
+  background:#101d2d;
+  color:var(--text);
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#modal .modal-header{
+  position:static;
+  padding:0 0 18px;
+  background:transparent;
+  backdrop-filter:none;
+  border-bottom:0;
+}
+#modal .form{gap:20px;padding:0}
+#overlay.overlay{background:rgba(0,0,0,.72);backdrop-filter:none}
+
+.level-boss-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.level-boss-row>span{flex:1 1 160px;min-width:0}
+.level-boss-row select{width:auto;max-width:100%;min-width:132px;padding:9px 10px;border-radius:12px;font-size:14px}
