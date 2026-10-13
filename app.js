@@ -1,3 +1,1260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>ARK Manager</title>
+  <link rel="apple-touch-icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
+  <link rel="icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
+  <style>
+:root{
+  --bg:#08111c;
+  --bg2:#0d1827;
+  --line:rgba(255,255,255,.09);
+  --text:#eef6ff;
+  --muted:#91a5bb;
+  --blue:#67bbff;
+  --cyan:#73f0d1;
+  --yellow:#ffb24d;
+  --green:#70e0a5;
+  --danger0:#ffb4b4;
+  --danger1:#ff9b9b;
+  --danger2:#ff8585;
+  --danger3:#ff6f6f;
+  --danger4:#ff5858;
+  --danger5:#ff4545;
+  --shadow:0 16px 40px rgba(0,0,0,.28);
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  min-height:100%;
+  height:100%;
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(circle at top, rgba(103,187,255,.16), transparent 32%),
+    linear-gradient(180deg,var(--bg),var(--bg2));
+  background-repeat:no-repeat;
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+}
+
+body{
+  min-height:100dvh;
+}
+
+button,input,select,textarea{
+  font:inherit;
+}
+
+button{
+  border:none;
+  cursor:pointer;
+}
+
+input,select,textarea{
+  width:100%;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.045);
+  color:var(--text);
+  border-radius:14px;
+  padding:12px 14px;
+  outline:none;
+}
+
+textarea{
+  resize:vertical;
+  min-height:92px;
+}
+
+input:focus,select:focus,textarea:focus{
+  border-color:rgba(103,187,255,.75);
+  box-shadow:0 0 0 3px rgba(103,187,255,.12);
+}
+
+.app-shell{
+  width:min(100%,820px);
+  margin:0 auto;
+  min-height:100dvh;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom));
+  background:transparent;
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:calc(16px + env(safe-area-inset-top)) 16px 14px;
+  backdrop-filter:blur(14px);
+  background:rgba(7,13,21,.78);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.brand-title{
+  font-size:28px;
+  font-weight:900;
+  line-height:1.02;
+  letter-spacing:.10em;
+  color:#eef7ff;
+  text-shadow:
+    0 0 18px rgba(103,187,255,.18),
+    0 2px 10px rgba(0,0,0,.35);
+}
+
+.brand-icon{
+  width:52px;
+  height:52px;
+  object-fit:contain;
+  flex:0 0 auto;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));
+}
+
+.content{
+  padding:16px;
+  display:grid;
+  gap:12px;
+}
+
+.toolbar-card{
+  display:grid;
+  gap:12px;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:22px;
+  background:linear-gradient(180deg, rgba(16,30,45,.96), rgba(10,18,29,.96));
+  box-shadow:var(--shadow);
+}
+
+.toolbar-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.toolbar-title{
+  font-size:15px;
+  font-weight:900;
+}
+
+.toolbar-sub{
+  margin-top:4px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.45;
+}
+
+.counter-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:34px;
+  padding:0 12px;
+  border-radius:999px;
+  background:rgba(103,187,255,.12);
+  border:1px solid rgba(103,187,255,.2);
+  color:#dceeff;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.counter-chip strong{
+  font-size:15px;
+}
+
+.compact-field{
+  gap:6px;
+}
+
+.empty-state{
+  display:grid;
+  place-items:center;
+  text-align:center;
+  gap:6px;
+  padding:48px 18px;
+  border:1px dashed rgba(255,255,255,.12);
+  border-radius:26px;
+  background:rgba(255,255,255,.03);
+  color:var(--muted);
+}
+
+.empty-state.hidden{
+  display:none !important;
+}
+
+.empty-state h2{
+  margin:0;
+  color:var(--text);
+  font-size:22px;
+}
+
+.empty-state p{
+  margin:0;
+  font-size:14px;
+}
+
+.empty-icon{
+  font-size:42px;
+}
+
+.timer-list{
+  display:grid;
+  gap:10px;
+}
+
+.card{
+  display:grid;
+  grid-template-columns:96px minmax(0,1fr);
+  gap:10px;
+  padding:10px;
+  background:linear-gradient(180deg, rgba(17,33,50,.96), rgba(12,24,37,.96));
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+}
+
+.card.expired{
+  border-color:rgba(255,117,117,.4);
+}
+
+.img{
+  width:96px;
+  aspect-ratio:1/1;
+  border-radius:16px;
+  background:
+    linear-gradient(135deg, rgba(103,187,255,.18), rgba(115,240,209,.08)),
+    rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  position:relative;
+  overflow:hidden;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+}
+
+.overlay-badge{
+  position:absolute;
+  right:0;
+  bottom:0;
+  width:50%;
+  height:50%;
+  object-fit:contain;
+  border-top-left-radius:8px;
+  background:rgba(6,12,20,.4);
+  backdrop-filter:blur(2px);
+}
+
+.info{
+  min-width:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:
+    "name actions"
+    "tags actions"
+    "collapse actions"
+    "remain actions";
+  column-gap:10px;
+  row-gap:6px;
+  align-items:start;
+}
+
+.name-row{
+  grid-area:name;
+  min-width:0;
+}
+
+.tags-row{
+  grid-area:tags;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  min-width:0;
+}
+
+.timer-name{
+  font-size:16px;
+  font-weight:800;
+  line-height:1.2;
+  word-break:break-word;
+}
+
+.tag{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:0 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.map-tag{
+  background:rgba(103,187,255,.14);
+  color:#cae7ff;
+}
+
+.type-tag{
+  background:rgba(255,210,124,.14);
+  color:#ffdca2;
+}
+
+.coord-tag{
+  background:rgba(112,224,165,.14);
+  color:#c8f3d9;
+}
+
+.collapse-row{
+  grid-area:collapse;
+  display:grid;
+  gap:4px;
+}
+
+.small{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  min-width:0;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.25;
+}
+
+.small strong{
+  color:#dbe9f7;
+  font-size:12px;
+  font-weight:700;
+}
+
+.remain{
+  grid-area:remain;
+  display:flex;
+  gap:8px;
+  align-items:flex-end;
+  min-width:0;
+}
+
+.remain-label{
+  color:var(--muted);
+  font-size:11px;
+  white-space:nowrap;
+}
+
+.remain-value{
+  font-size:18px;
+  font-weight:800;
+  line-height:1.15;
+  letter-spacing:.02em;
+}
+
+.remain-value.green{color:var(--green);}
+.remain-value.orange{color:var(--yellow);}
+.remain-value.red0{color:var(--danger0);}
+.remain-value.red1{color:var(--danger1);}
+.remain-value.red2{color:var(--danger2);}
+.remain-value.red3{color:var(--danger3);}
+.remain-value.red4{color:var(--danger4);}
+.remain-value.red5{color:var(--danger5);}
+
+.actions{
+  grid-area:actions;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-self:stretch;
+}
+
+.action-btn{
+  min-width:72px;
+  min-height:32px;
+  padding:0 12px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+  color:var(--text);
+}
+
+.reset-btn{
+  background:rgba(103,187,255,.12);
+  border:1px solid rgba(103,187,255,.26);
+}
+
+.edit-btn{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.09);
+}
+
+.delete-btn{
+  background:rgba(255,90,90,.12);
+  border:1px solid rgba(255,90,90,.24);
+  color:#ffd0d0;
+}
+
+.move-actions{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:6px;
+}
+
+.move-btn{
+  min-width:0;
+  padding:0;
+  font-size:15px;
+  background:rgba(115,240,209,.1);
+  border:1px solid rgba(115,240,209,.18);
+}
+
+.move-btn:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+}
+
+.fab{
+  position:fixed;
+  right:18px;
+  bottom:calc(18px + env(safe-area-inset-bottom));
+  z-index:30;
+  width:62px;
+  height:62px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  color:#062238;
+  font-size:34px;
+  font-weight:900;
+  box-shadow:0 20px 40px rgba(0,0,0,.35);
+}
+
+.hidden{
+  display:none !important;
+}
+
+.hidden-input{
+  display:none !important;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:39;
+  background:rgba(0,0,0,.52);
+  backdrop-filter:blur(4px);
+}
+
+.modal{
+  position:fixed;
+  left:50%;
+  bottom:calc(12px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  z-index:40;
+  width:min(calc(100% - 20px),760px);
+  max-height:min(86vh,920px);
+  overflow:auto;
+  border-radius:28px;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(18,33,49,.98), rgba(9,16,26,.98));
+  box-shadow:0 30px 70px rgba(0,0,0,.45);
+}
+
+.modal-sub{
+  margin:0 0 4px;
+  font-size:11px;
+  letter-spacing:.18em;
+  color:var(--blue);
+}
+
+.modal-header{
+  position:sticky;
+  top:0;
+  z-index:2;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding:18px 16px 14px;
+  background:rgba(10,18,29,.9);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.modal-header h2{
+  margin:0;
+  line-height:1.1;
+}
+
+.icon-btn{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-size:24px;
+  flex:0 0 auto;
+}
+
+.form{
+  display:grid;
+  gap:16px;
+  padding:16px;
+}
+
+.field{
+  display:grid;
+  gap:8px;
+}
+
+.field > span{
+  font-size:14px;
+  font-weight:800;
+}
+
+.map-preview-button{
+  display:block;
+  width:100%;
+  padding:0;
+  background:none;
+  border:none;
+}
+
+.map-preview{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.08);
+  background:
+    linear-gradient(135deg, rgba(103,187,255,.18), rgba(115,240,209,.1)),
+    rgba(255,255,255,.04);
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  overflow:hidden;
+}
+
+.map-preview.is-empty{
+  background:
+    linear-gradient(135deg, rgba(103,187,255,.12), rgba(115,240,209,.06)),
+    rgba(255,255,255,.04);
+}
+
+.map-pin{
+  position:absolute;
+  left:0;
+  top:0;
+  width:20px;
+  height:20px;
+  border-radius:50% 50% 50% 0;
+  transform:translate(-50%,-100%) rotate(-45deg);
+  background:linear-gradient(135deg,#ff7b7b,#ff3f3f);
+  border:2px solid rgba(255,255,255,.9);
+  box-shadow:0 8px 18px rgba(0,0,0,.35);
+  z-index:3;
+}
+
+.map-pin::after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius:50%;
+  background:rgba(255,255,255,.94);
+}
+
+.check-row{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  width:fit-content;
+  font-size:14px;
+  font-weight:700;
+  color:#dcecff;
+}
+
+.check-row input{
+  width:18px;
+  height:18px;
+  padding:0;
+  margin:0;
+  accent-color:#67bbff;
+}
+
+.coord-grid,
+.time-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.time-grid{
+  grid-template-columns:repeat(3,1fr);
+}
+
+.chip-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.chip{
+  position:relative;
+}
+
+.chip input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+.chip span{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  padding:0 14px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.045);
+  font-size:13px;
+  font-weight:700;
+}
+
+.chip input:checked + span{
+  border-color:rgba(103,187,255,.58);
+  background:rgba(103,187,255,.14);
+  color:#d7eeff;
+}
+
+.material-days{
+  font-size:12px;
+  color:#cfe6ff;
+}
+
+.submit-btn{
+  min-height:52px;
+  border-radius:16px;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  color:#062238;
+  font-size:16px;
+  font-weight:900;
+}
+
+.confirm-overlay{
+  position:fixed;
+  inset:0;
+  z-index:80;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(4px);
+}
+
+.confirm-box{
+  width:min(92vw,360px);
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg, rgba(18,33,49,.98), rgba(9,16,26,.98));
+  box-shadow:0 30px 70px rgba(0,0,0,.45);
+  padding:18px;
+}
+
+.confirm-box h3{
+  margin:0 0 10px;
+  font-size:18px;
+}
+
+.confirm-box p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.confirm-actions{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+}
+
+.confirm-btn{
+  flex:1;
+  min-height:44px;
+  border-radius:14px;
+  font-weight:800;
+}
+
+.confirm-btn.ghost{
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+}
+
+.confirm-btn.solid{
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  color:#062238;
+}
+
+@media (max-width:560px){
+  .brand-title{
+    font-size:24px;
+  }
+
+  .brand-icon{
+    width:40px;
+    height:40px;
+  }
+
+  .toolbar-head{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .counter-chip{
+    width:fit-content;
+  }
+
+  .card{
+    grid-template-columns:78px minmax(0,1fr);
+    gap:8px;
+    padding:8px;
+  }
+
+  .img{
+    width:78px;
+    border-radius:14px;
+  }
+
+  .info{
+    grid-template-columns:minmax(0,1fr) 70px;
+    row-gap:5px;
+  }
+
+  .timer-name{
+    font-size:15px;
+  }
+
+  .remain-value{
+    font-size:16px;
+  }
+
+  .action-btn{
+    min-width:70px;
+    min-height:30px;
+    padding:0 8px;
+    font-size:11px;
+  }
+
+  .modal{
+    width:min(calc(100% - 12px),760px);
+    bottom:calc(6px + env(safe-area-inset-bottom));
+    max-height:min(88vh,920px);
+  }
+}
+
+
+.toolbar-card{
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:end;
+}
+
+.compact-field{
+  justify-self:end;
+  width:auto;
+  min-width:164px;
+}
+
+.compact-field > span{
+  font-size:11px;
+  line-height:1;
+  color:var(--muted);
+}
+
+#sortSelect{
+  min-width:164px;
+  width:auto;
+  height:36px;
+  padding:6px 34px 6px 12px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:800;
+  background:rgba(255,255,255,.06);
+}
+
+.overlay.hidden,
+.confirm-overlay.hidden{
+  pointer-events:none;
+}
+
+.fab{
+  z-index:90;
+}
+
+.card-pin{
+  width:16px;
+  height:16px;
+  border-width:1.5px;
+  box-shadow:0 6px 12px rgba(0,0,0,.28);
+}
+
+.card-pin::after{
+  inset:3px;
+}
+
+@media (max-width:560px){
+  .toolbar-card{
+    grid-template-columns:1fr auto;
+    gap:10px;
+  }
+
+  .toolbar-head{
+    min-width:0;
+  }
+
+  .toolbar-title{
+    font-size:14px;
+  }
+
+  .toolbar-sub{
+    font-size:11px;
+    line-height:1.35;
+  }
+
+  .compact-field{
+    min-width:132px;
+  }
+
+  #sortSelect{
+    min-width:132px;
+    max-width:150px;
+    height:32px;
+    padding:4px 28px 4px 10px;
+    font-size:11px;
+    border-radius:10px;
+  }
+
+  .toolbar-head{
+    flex-direction:row;
+    align-items:center;
+  }
+}
+
+
+.toolbar-card-compact{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding:10px 12px;
+}
+
+.toolbar-card-compact #sortSelect{
+  width:auto;
+  min-width:152px;
+  max-width:100%;
+  height:34px;
+  padding:4px 30px 4px 10px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.img{
+  cursor:pointer;
+}
+
+.img:focus-visible{
+  outline:2px solid rgba(103,187,255,.9);
+  outline-offset:2px;
+}
+
+.map-viewer{
+  position:fixed;
+  inset:0;
+  z-index:120;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+
+.map-viewer-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(4px);
+}
+
+.map-viewer-panel{
+  position:relative;
+  z-index:1;
+  width:min(92vw,720px);
+}
+
+.map-viewer-image{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.12);
+  background-color:#07101a;
+  background-size:contain;
+  background-position:center;
+  background-repeat:no-repeat;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+  overflow:hidden;
+}
+
+.map-viewer-close{
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:2;
+  width:38px;
+  height:38px;
+  border-radius:999px;
+  background:rgba(7,13,21,.72);
+  border:1px solid rgba(255,255,255,.12);
+  color:#eef6ff;
+  font-size:24px;
+  line-height:1;
+}
+
+.viewer-pin{
+  width:24px;
+  height:24px;
+}
+
+.viewer-pin::after{
+  inset:5px;
+}
+
+@media (max-width:560px){
+  .toolbar-card-compact{
+    padding:8px 10px;
+  }
+
+  .toolbar-card-compact #sortSelect{
+    min-width:138px;
+    height:32px;
+    font-size:11px;
+  }
+
+  .map-viewer{
+    padding:12px;
+  }
+
+  .map-viewer-panel{
+    width:min(100vw - 24px,720px);
+  }
+
+  .map-viewer-image{
+    border-radius:16px;
+  }
+
+  .map-viewer-close{
+    top:8px;
+    right:8px;
+    width:34px;
+    height:34px;
+    font-size:22px;
+  }
+}
+
+/* ARK Manager: characters */
+.brand-title{font-size:26px;letter-spacing:.025em}
+.manager-tabs{display:flex;gap:8px;padding:14px 16px 0}
+.manager-tabs button{flex:1;padding:13px;border-radius:14px;background:rgba(255,255,255,.05);color:var(--muted);font-weight:700;border:1px solid var(--line)}
+.manager-tabs .selected{background:rgba(103,187,255,.16);color:var(--blue);border-color:rgba(103,187,255,.4)}
+.section-heading{display:flex;align-items:center;justify-content:space-between;margin:8px 0 18px}.section-heading h1{font-size:22px;margin:0}.section-heading span{color:var(--muted)}
+.character-list{display:grid;gap:12px}.character-card{width:100%;display:flex;align-items:center;gap:14px;text-align:left;padding:16px;background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:20px;color:var(--text)}
+.character-avatar{width:72px;height:72px;border-radius:16px;object-fit:cover;background:rgba(103,187,255,.1);display:grid;place-items:center;color:var(--blue);font-size:28px;flex-shrink:0}.character-summary{min-width:0;flex:1}.character-name{font-size:18px;font-weight:700;overflow-wrap:anywhere}.character-meta-list{display:grid;gap:5px;margin-top:9px;color:var(--muted);font-size:12px}.character-meta-list span{display:grid;grid-template-columns:72px minmax(0,1fr);gap:7px;overflow-wrap:anywhere}.character-meta-list b{color:#bed0df;font-weight:600}
+.character-chevron{color:var(--blue);font-size:24px}
+.character-back{background:none;color:var(--blue);padding:8px 0 18px}.character-photo{width:100%;max-height:360px;object-fit:contain;border-radius:20px;background:rgba(255,255,255,.04)}.photo-placeholder{width:100%;height:190px;display:grid;place-items:center;border:1px dashed rgba(103,187,255,.3);border-radius:20px;background:rgba(103,187,255,.05);color:var(--muted)}
+.character-image-button{display:block;width:100%;padding:0;background:none;color:var(--text)}.photo-actions{display:flex;gap:8px;margin:10px 0 20px}.manager-small-btn{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.05);color:var(--blue);white-space:nowrap;font-size:13px}.manager-small-btn:disabled{opacity:.35;cursor:default}
+.character-fields{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:20px;padding:0 16px}.character-field{padding:17px 0;border-bottom:1px solid var(--line)}.character-field:last-child{border-bottom:0}.character-field-label{font-size:12px;color:var(--muted);margin-bottom:8px}.character-field-row{display:flex;gap:8px;align-items:center}.character-field-value{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.5}.character-field-buttons{display:flex;gap:6px;flex-shrink:0}.eos-help{color:var(--muted);font-size:12px;line-height:1.7;margin:10px 0 0}.implant-section{margin-top:24px}.implant-section h2{font-size:17px}.implant-section .photo-placeholder{height:130px}.character-delete{margin:14px 0;background:rgba(255,69,69,.1);border:1px solid rgba(255,69,69,.25);color:#ff9b9b;width:100%;padding:14px;border-radius:14px}
+.character-dialog{width:min(calc(100% - 28px),560px);max-height:85dvh;overflow:auto;border:1px solid var(--line);border-radius:22px;padding:22px;background:#101d2d;color:var(--text)}.character-dialog::backdrop,.character-viewer::backdrop{background:rgba(0,0,0,.72)}.character-dialog .modal-header{position:static;padding:0 0 18px;background:transparent;backdrop-filter:none;border-bottom:0}.character-dialog .form{gap:20px;padding:0}#characterFormFields{display:grid;gap:18px}.form-image-field{display:grid;gap:9px}.form-image-label{font-size:14px;font-weight:700}.form-image-picker{width:100%;min-height:118px;padding:0;overflow:hidden;border:1px dashed rgba(103,187,255,.36);border-radius:16px;background:rgba(103,187,255,.06);color:var(--blue)}.form-image-picker img{display:block;width:100%;height:150px;object-fit:contain;background:rgba(0,0,0,.15)}.form-image-picker>span:not(.form-image-placeholder){display:block;padding:9px}.form-image-placeholder{display:grid;place-items:center;min-height:118px}.form-image-remove{justify-self:start;padding:8px 11px;border:1px solid rgba(255,111,111,.3);border-radius:10px;background:rgba(255,111,111,.08);color:#ff9b9b}.character-viewer{width:min(calc(100% - 20px),850px);padding:14px;background:#08111c;color:var(--text);border:1px solid var(--line);border-radius:20px}.character-viewer img{display:block;max-width:100%;max-height:80dvh;margin:auto;object-fit:contain}.character-viewer .icon-btn{display:block;margin-left:auto;margin-bottom:8px}.manager-toast{position:fixed;bottom:calc(100px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:2000;max-width:90%;padding:12px 18px;background:#24435c;border:1px solid rgba(103,187,255,.3);color:white;border-radius:12px;box-shadow:var(--shadow);text-align:center}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-tabs [role=tab]{touch-action:manipulation}
+@media(max-width:380px){.character-fields{padding:0 12px}.character-field-buttons{gap:4px}.manager-small-btn{padding:9px 8px;font-size:12px}}
+
+
+/* Character list refinements */
+.character-card{align-items:stretch;padding:8px 12px 8px 7px;min-height:126px;gap:12px}
+.character-avatar{width:94px;height:auto;min-height:110px;align-self:stretch;object-fit:contain;object-position:center;background:transparent;border-radius:12px}
+.character-summary{align-self:center;padding:5px 0}
+.character-chevron{align-self:center}
+.character-meta-list{gap:4px}
+.server-settings-bar{display:flex;justify-content:flex-end;margin:-2px 0 4px}
+.server-settings-list{display:grid;gap:8px;padding:0 0 8px}
+.saved-server-row{display:flex;align-items:center;gap:7px;padding:10px;border:1px solid var(--line);border-radius:12px}
+.saved-server-row span{flex:1;overflow-wrap:anywhere;font-size:13px}
+#serverSettingsDialog .form{padding-bottom:18px}
+@media(max-width:380px){.character-avatar{width:76px}.character-card{gap:9px}.character-meta-list span{grid-template-columns:66px minmax(0,1fr)}}
+
+.server-memo{display:block;color:var(--muted);font-size:12px;margin-top:5px;white-space:pre-wrap;overflow-wrap:anywhere}
+.character-list-item{display:flex;gap:8px;min-width:0;align-items:stretch}
+.character-drag-handle{display:grid;place-items:center;min-width:40px;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:12px;color:#bcdcff;background:rgba(103,187,255,.09);font-size:23px;cursor:grab}
+.character-list-item.dragging{opacity:.65;outline:2px solid #67bbff;border-radius:18px}
+.reorder-hint{font-size:12px;color:var(--muted)}
+.tribe-check{display:flex;align-items:center;gap:12px}.tribe-check input{width:22px;height:22px;accent-color:#67bbff}.tribe-check span{font-size:14px}
+
+.character-list-item>.character-card{flex:1;min-width:0}
+.character-reorder-buttons{display:flex;flex-direction:column;gap:6px}
+.character-reorder-buttons button{flex:1;min-width:44px;border-radius:12px;background:rgba(103,187,255,.15);color:#eef6ff;border:1px solid rgba(103,187,255,.25);font-size:20px}
+.character-reorder-buttons button:disabled{opacity:.25}
+.server-drag-handle{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;font-size:21px;padding:10px;color:#a8d5ff}
+.saved-server-row.dragging{opacity:.6;outline:2px solid #67bbff}
+
+.level-panel{margin:18px 0;padding:16px;border:1px solid rgba(103,187,255,.28);border-radius:20px;background:rgba(103,187,255,.055)}
+.level-panel h2{margin:0 0 8px;font-size:19px}
+.level-summary{font-weight:850;font-size:21px;color:#a9e3ff;margin:8px 0}
+.level-progress{font-size:13px;color:#aabed2;margin-bottom:14px}
+.level-check-list{display:grid;gap:8px}
+.level-check-item{display:flex;gap:10px;align-items:center;padding:10px;border-radius:12px;background:rgba(255,255,255,.045);cursor:pointer}
+.level-check-item input{flex:none;width:21px;height:21px;accent-color:#67bbff}
+.level-check-item span{flex:1;line-height:1.45;font-size:13px}
+.level-check-item strong{flex:none;color:#b4e2ff;font-size:13px}
+.level-settings-list{display:grid;gap:8px}
+.level-setting-row{display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:9px}
+.level-setting-row>span{flex:1;font-size:13px;line-height:1.4}
+.level-setting-row button{flex:none}
+.level-rule-form{display:grid;gap:12px}
+.server-settings-bar{flex-wrap:wrap}
+ .manager-settings-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;width:100%}
+ .manager-settings-bottom .manager-small-btn{width:100%;min-width:0;min-height:56px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.35;padding:10px 8px;font-size:13px}
+ @media(max-width:360px){.manager-settings-bottom .manager-small-btn{font-size:12px}}
+
+/* Keep background inert and prevent iOS scroll chaining while a dialog is open. */
+body.manager-dialog-open{position:fixed;left:0;right:0;width:100%;overflow:hidden;overscroll-behavior:none}
+.character-dialog,.character-viewer{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.character-dialog::backdrop,.character-viewer::backdrop{touch-action:none}
+
+/* Prevent background interactions while retaining popup scrolling on iOS. */
+.character-dialog,.character-viewer{overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
+body.manager-dialog-open .app-shell{pointer-events:none}
+body.manager-dialog-open dialog[open]{pointer-events:auto}
+#customMapInput{margin-top:8px}
+
+
+/* Timer editor: match the character editor dialog */
+#modal.modal{
+  left:50%;
+  top:50%;
+  bottom:auto;
+  transform:translate(-50%,-50%);
+  width:min(calc(100% - 28px),560px);
+  max-height:85dvh;
+  border-radius:22px;
+  padding:22px;
+  background:#101d2d;
+  color:var(--text);
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#modal .modal-header{
+  position:static;
+  padding:0 0 18px;
+  background:transparent;
+  backdrop-filter:none;
+  border-bottom:0;
+}
+#modal .form{gap:20px;padding:0}
+#overlay.overlay{background:rgba(0,0,0,.72);backdrop-filter:none}
+
+.level-boss-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.level-boss-row>span{flex:1 1 160px;min-width:0}
+.level-boss-row select{width:auto;max-width:100%;min-width:132px;padding:9px 10px;border-radius:12px;font-size:14px}
+
+.level-boss-label{display:flex;align-items:center;gap:10px;flex:1 1 160px;min-width:0}
+.level-boss-label input{width:22px;height:22px;flex:0 0 22px;accent-color:#67bbff}
+.level-boss-controls{display:flex;align-items:center;gap:10px;margin-left:auto}
+.level-boss-controls select{min-width:64px;width:70px}
+.level-boss-controls strong{min-width:35px;text-align:right;color:#a9e3ff}
+
+/* Server settings: label-first layout, reorder handle on the right */
+.saved-server-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto 42px;gap:8px;align-items:center;padding:10px 12px}
+.saved-server-row .server-entry-label{min-width:0;flex:none;font-size:14px;line-height:1.45;overflow-wrap:normal;word-break:normal}
+.saved-server-row .manager-small-btn{padding:9px 10px;white-space:nowrap}
+.saved-server-row .server-drag-handle{grid-column:4;grid-row:1;display:grid;place-items:center;width:42px;min-height:44px;padding:0;border-radius:12px;background:rgba(103,187,255,.09);font-size:22px}
+@media(max-width:390px){.saved-server-row{grid-template-columns:minmax(0,1fr) auto auto 36px;gap:5px;padding:9px 7px}.saved-server-row .manager-small-btn{padding:8px 7px;font-size:12px}.saved-server-row .server-drag-handle{grid-column:4;width:36px}}
+
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-title">ARK Manager</div>
+      <img class="brand-icon" src="6A24B32B-C572-492B-AA91-5B2667D4133F.png" alt="icon">
+    </header>
+
+    <nav class="manager-tabs" aria-label="管理機能">
+      <button id="characterTab" class="selected" role="tab" aria-selected="true" aria-controls="characterPage">キャラ管理</button>
+      <button id="timerTab" role="tab" aria-selected="false" aria-controls="timerPage">タイマー</button>
+    </nav>
+    <main id="characterPage" class="content" role="tabpanel" aria-labelledby="characterTab">
+      <div id="characterListPage">
+        <div class="section-heading"><h1>キャラ一覧</h1><span id="characterCount">0人</span></div>
+        <section id="characterEmpty" class="empty-state"><div class="empty-icon">◉</div><h2>キャラがありません</h2><p>右下の＋ボタンから追加してください</p></section>
+        <div id="characterList" class="character-list"></div><div class="server-settings-bar manager-settings-bottom"><button id="openLevelSettings" type="button" class="manager-small-btn">⚙ レベル上限設定</button><button id="openServerSettings" type="button" class="manager-small-btn">⚙ マップ・サーバー設定</button></div>
+      </div>
+      <section id="characterDetail" class="hidden"></section>
+    </main>
+    <button id="addCharacter" class="fab" type="button" aria-label="キャラ追加">＋</button>
+    <dialog id="characterDialog" class="character-dialog" aria-labelledby="characterDialogTitle">
+      <div class="modal-header"><h2 id="characterDialogTitle">キャラ追加</h2><button id="closeCharacterDialog" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
+      <form id="characterForm" class="form"><div id="characterFormFields"></div><button id="characterSubmit" class="submit-btn" type="submit">保存</button></form>
+    </dialog>
+    <dialog id="serverSettingsDialog" class="character-dialog"><div class="modal-header"><h2>マップ・サーバー設定</h2><button type="button" id="closeServerSettings" class="icon-btn">×</button></div><form id="serverSettingsForm" class="form"><label class="field"><span>マップ</span><select id="settingsMap" required></select></label><label class="field"><span>サーバー番号</span><input id="settingsServer" type="text" inputmode="numeric" required placeholder="例：5999"></label><label class="field"><span>メモ（任意）</span><textarea id="settingsMemo" rows="2" placeholder="例：メイン拠点・資源用サーバー"></textarea></label><button class="submit-btn" type="submit">登録</button></form><div id="serverSettingsList" class="server-settings-list"></div></dialog>
+    <dialog id="levelSettingsDialog" class="character-dialog" aria-label="レベル上限解放項目の設定">
+      <div class="modal-header"><h2>レベル上限解放の設定</h2><button type="button" id="closeLevelSettings" class="icon-btn">×</button></div>
+      <div class="form">
+      <div id="levelSettingsList" class="level-settings-list"></div>
+      <form id="levelRuleForm" class="level-rule-form"><input id="levelRuleEditId" type="hidden"><label class="field"><span>解放条件名</span><input id="levelRuleName" required maxlength="120" placeholder="例：新DLCのボスを討伐"></label><label class="field"><span>項目の種類</span><select id="levelRuleType"><option value="normal">通常（チェック式）</option><option value="boss">ボス討伐（γ・β・α）</option></select></label><label class="field" id="levelRulePointsField"><span>追加レベル</span><input id="levelRulePoints" type="number" required min="1" max="245" step="1" value="15"></label><button type="submit" class="submit-btn">条件を保存</button><button type="button" id="levelRuleCancel" class="manager-small-btn hidden">編集をキャンセル</button></form>
+      </div></dialog>
+    <input id="characterImageInput" class="hidden-input" type="file" accept="image/*">
+    <dialog id="characterViewer" class="character-viewer" aria-label="画像を拡大"><button id="closeCharacterViewer" class="icon-btn" type="button" aria-label="閉じる">×</button><img id="characterViewerImage" alt=""></dialog>
+    <div id="managerToast" class="manager-toast hidden" role="status"></div>
+    <main id="timerPage" class="content hidden" role="tabpanel" aria-labelledby="timerTab">
+      <section class="toolbar-card toolbar-card-compact">
+        <select id="sortSelect" aria-label="並び順">
+          <option value="dueSoon">期限が近い順</option>
+          <option value="dueLate">期限が遠い順</option>
+          <option value="name">名前順</option>
+          <option value="map">マップ順</option>
+          <option value="manual">手動並び替え</option>
+        </select>
+      </section>
+
+      <section id="emptyState" class="empty-state">
+        <div class="empty-icon">⌛</div>
+        <h2>タイマーがありません</h2>
+        <p>右下の＋ボタンから追加してください</p>
+      </section>
+      <section id="list" class="timer-list"></section>
+    </main>
+
+    <button id="add" class="fab hidden" type="button" aria-label="タイマー追加">＋</button>
+
+    <div id="overlay" class="overlay hidden"></div>
+
+    <section id="modal" class="modal hidden" aria-modal="true" role="dialog">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalTitle">タイマー追加</h2>
+        </div>
+        <button id="closeModal" class="icon-btn" type="button" aria-label="閉じる">×</button>
+      </div>
+
+      <form id="timerForm" class="form">
+        <input type="hidden" id="editId" value="">
+        <input type="hidden" id="imageMode" value="default">
+
+        <label class="field">
+          <span>タイマー名</span>
+          <input id="timerNameInput" type="text" placeholder="未設定">
+        </label>
+
+        <label class="field">
+          <span>マップ</span>
+          <select id="mapSelect" required>
+            <option value="">選択してください</option>
+            <option value="アイランド">アイランド</option>
+            <option value="スコーチドアース">スコーチドアース</option>
+            <option value="センター">センター</option>
+            <option value="アベレーション">アベレーション</option>
+            <option value="エクスティンクション">エクスティンクション</option>
+            <option value="アストレオス">アストレオス</option>
+            <option value="ラグナロク">ラグナロク</option>
+            <option value="バルゲロ">バルゲロ</option>
+            <option value="ロストコロニー">ロストコロニー</option>
+            <option value="__custom__">自由入力</option>
+          </select>
+          <input id="customMapInput" class="hidden" type="text" maxlength="80" placeholder="マップ名を入力" aria-label="自由入力マップ名">
+        </label>
+
+        <div class="field">
+          <span>マップ画像</span>
+          <input id="imageInput" type="file" accept="image/*" class="hidden-input">
+          <button id="imagePreviewButton" class="map-preview-button" type="button" aria-label="マップ画像を変更">
+            <div id="imagePreview" class="map-preview is-empty">
+              <div id="imagePreviewPin" class="map-pin hidden" aria-hidden="true"></div>
+            </div>
+          </button>
+        </div>
+
+        <div class="field">
+          <span>座標（任意）</span>
+          <div class="coord-grid">
+            <input id="latInput" type="text" inputmode="decimal" placeholder="緯度">
+            <input id="lngInput" type="text" inputmode="decimal" placeholder="経度">
+          </div>
+          <label class="check-row">
+            <input id="showPinInput" type="checkbox" checked>
+            <span>座標にピンを表示</span>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>種類</span>
+          <select id="typeSelect" required>
+            <option value="building">建築タイマー</option>
+            <option value="tribe_tower">トライブタワー</option>
+            <option value="generator">ジェネレータ</option>
+            <option value="other">その他</option>
+          </select>
+        </label>
+
+        <div id="materialField" class="field">
+          <span>建材</span>
+          <div class="chip-grid">
+            <label class="chip"><input type="radio" name="material" value="わら"><span>わら</span></label>
+            <label class="chip"><input type="radio" name="material" value="木"><span>木</span></label>
+            <label class="chip"><input type="radio" name="material" value="石"><span>石</span></label>
+            <label class="chip"><input type="radio" name="material" value="金属"><span>金属</span></label>
+            <label class="chip"><input type="radio" name="material" value="TEK" checked><span>TEK</span></label>
+          </div>
+          <div id="materialDays" class="material-days">TEK 20日</div>
+        </div>
+
+        <div id="customTimerField" class="field hidden">
+          <span>タイマー</span>
+          <div class="time-grid">
+            <input id="daysInput" type="number" min="0" step="1" value="" placeholder="日">
+            <input id="hoursInput" type="number" min="0" max="23" step="1" value="" placeholder="時間">
+            <input id="minutesInput" type="number" min="0" max="59" step="1" value="" placeholder="分">
+          </div>
+        </div>
+
+        <label class="field">
+          <span>メモ</span>
+          <textarea id="memoInput" rows="3" placeholder="任意で入力"></textarea>
+        </label>
+
+        <button id="submitBtn" class="submit-btn" type="submit">追加して開始</button>
+      </form>
+    </section>
+
+    <div id="confirmOverlay" class="confirm-overlay hidden">
+      <div class="confirm-box">
+        <h3 id="confirmTitle">確認</h3>
+        <p id="confirmText">実行しますか？</p>
+        <div class="confirm-actions">
+          <button id="confirmCancel" class="confirm-btn ghost" type="button">キャンセル</button>
+          <button id="confirmOk" class="confirm-btn solid" type="button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+
 const STORAGE_KEY='arkTimer_store_v8';
 const MAPS=['アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー'];
 const DEFAULT_MAP_IMAGES={'アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
@@ -543,3 +1800,11 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmOverlay.classList.contains('hidden'))closeConfirm(false);else if(!modal.classList.contains('hidden'))closeModal()}});
  renderCharacters();(async()=>{try{if(location.protocol==='file:'||!('indexedDB' in window)){records=loadLocalRecords()}else{db=await openDatabase();records=await readRecords()}}catch(e){db=null;records=loadLocalRecords()}ready=true;renderCharacters()})();
 })();
+
+
+
+
+
+</script>
+</body>
+</html>
