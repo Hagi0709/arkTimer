@@ -4,7 +4,7 @@ const DEFAULT_MAP_IMAGES={'アイランド':'IMG_3555.jpeg','スコーチドア�
 const MAP_BOUNDS={'アイランド':{width:100,height:100},'スコーチドアース':{width:100,height:100},'センター':{width:100,height:100},'アベレーション':{width:100,height:100},'エクスティンクション':{width:100,height:100},'アストレオス':{width:100,height:100},'ラグナロク':{width:100,height:100},'バルゲロ':{width:100,height:100},'ロストコロニー':{width:100,height:100},'その他':{width:100,height:100}};
 const TRIBE_TOWER_ICON='7369529A-E04B-4212-8F0A-F320CC106E5E.png';
 const GENERATOR_ICON='026D0A6D-7E86-4E5E-823D-3DE7D2909B98.png';
-const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':35};
+const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':20};
 const SORT_KEY='arkTimer_sort_mode';
 const $=id=>document.getElementById(id);
 const list=$('list'),addBtn=$('add'),sortSelect=$('sortSelect'),activeCount=$('activeCount'),emptyState=$('emptyState'),overlay=$('overlay'),modal=$('modal'),closeModalBtn=$('closeModal'),modalTitle=$('modalTitle'),submitBtn=$('submitBtn'),timerForm=$('timerForm'),editIdInput=$('editId'),imageModeInput=$('imageMode'),mapSelect=$('mapSelect'),typeSelect=$('typeSelect'),materialField=$('materialField'),customTimerField=$('customTimerField'),memoInput=$('memoInput'),timerNameInput=$('timerNameInput'),latInput=$('latInput'),lngInput=$('lngInput'),daysInput=$('daysInput'),hoursInput=$('hoursInput'),minutesInput=$('minutesInput'),imageInput=$('imageInput'),imagePreview=$('imagePreview'),imagePreviewButton=$('imagePreviewButton'),imagePreviewPin=$('imagePreviewPin'),showPinInput=$('showPinInput'),confirmOverlay=$('confirmOverlay'),confirmTitle=$('confirmTitle'),confirmText=$('confirmText'),confirmCancel=$('confirmCancel'),confirmOk=$('confirmOk'),materialDays=$('materialDays');
@@ -304,7 +304,7 @@ init();
  function mapOptions(){return CHARACTER_MAPS.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}
  function serverChoiceOptions(map='',server=''){
   const presets=savedServers.map((s,i)=>`<option value="preset:${i}" ${s.map===map&&s.serverNo===server?'selected':''}>${esc(s.map)} / ${esc(s.serverNo)}${s.memo?' — '+esc(s.memo):''}</option>`).join('');
-  const maps=CHARACTER_MAPS.map(m=>`<option value="map:${esc(m)}" ${m===map&&!savedServers.some(s=>s.map===map&&s.serverNo===server)?'selected':''}>${esc(m)}</option>`).join('');
+  const maps=CHARACTER_MAPS.map(m=>`<option value="map:${esc(m)}" ${m===map&&!savedServers.some(s=>s.map===map&&s.serverNo===server)?'selected':''}>${esc(m)}（番号を手入力）</option>`).join('');
   return '<option value="">選択してください</option><optgroup label="登録済みマップ・サーバー">'+presets+'</optgroup><optgroup label="マップのみ選択">'+maps+'</optgroup>';
  }
  function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row"><span>${esc(s.map)} / ${esc(s.serverNo)}${s.memo?`<small class="server-memo">${esc(s.memo)}</small>`:''}</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みの組み合わせはありません。</p>'}
