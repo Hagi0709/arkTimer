@@ -998,6 +998,8 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
 .saved-server-row span{flex:1;overflow-wrap:anywhere;font-size:13px}
 #serverSettingsDialog .form{padding-bottom:18px}
 @media(max-width:380px){.character-avatar{width:76px}.character-card{gap:9px}.character-meta-list span{grid-template-columns:66px minmax(0,1fr)}}
+
+.server-memo{display:block;color:var(--muted);font-size:12px;margin-top:5px;white-space:pre-wrap;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -1007,47 +1009,47 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
       <img class="brand-icon" src="6A24B32B-C572-492B-AA91-5B2667D4133F.png" alt="icon">
     </header>
 
-    <nav class="manager-tabs" aria-label="管理機能">
-      <button id="characterTab" class="selected" role="tab" aria-selected="true" aria-controls="characterPage">キャラ管理</button>
-      <button id="timerTab" role="tab" aria-selected="false" aria-controls="timerPage">タイマー</button>
+    <nav class="manager-tabs" aria-label="ç®¡çæ©è½">
+      <button id="characterTab" class="selected" role="tab" aria-selected="true" aria-controls="characterPage">ã­ã£ã©ç®¡ç</button>
+      <button id="timerTab" role="tab" aria-selected="false" aria-controls="timerPage">ã¿ã¤ãã¼</button>
     </nav>
     <main id="characterPage" class="content" role="tabpanel" aria-labelledby="characterTab">
       <div id="characterListPage">
-        <div class="section-heading"><h1>キャラ一覧</h1><span id="characterCount">0人</span></div><div class="server-settings-bar"><button id="openServerSettings" type="button" class="manager-small-btn">⚙ マップ・サーバー設定</button></div>
-        <section id="characterEmpty" class="empty-state"><div class="empty-icon">◉</div><h2>キャラがありません</h2><p>右下の＋ボタンから追加してください</p></section>
+        <div class="section-heading"><h1>ã­ã£ã©ä¸è¦§</h1><span id="characterCount">0äºº</span></div><div class="server-settings-bar"><button id="openServerSettings" type="button" class="manager-small-btn">â ãããã»ãµã¼ãã¼è¨­å®</button></div>
+        <section id="characterEmpty" class="empty-state"><div class="empty-icon">â</div><h2>ã­ã£ã©ãããã¾ãã</h2><p>å³ä¸ã®ï¼ãã¿ã³ããè¿½å ãã¦ãã ãã</p></section>
         <div id="characterList" class="character-list"></div>
       </div>
       <section id="characterDetail" class="hidden"></section>
     </main>
-    <button id="addCharacter" class="fab" type="button" aria-label="キャラ追加">＋</button>
+    <button id="addCharacter" class="fab" type="button" aria-label="ã­ã£ã©è¿½å ">ï¼</button>
     <dialog id="characterDialog" class="character-dialog" aria-labelledby="characterDialogTitle">
-      <div class="modal-header"><h2 id="characterDialogTitle">キャラ追加</h2><button id="closeCharacterDialog" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
-      <form id="characterForm" class="form"><div id="characterFormFields"></div><button id="characterSubmit" class="submit-btn" type="submit">保存</button></form>
+      <div class="modal-header"><h2 id="characterDialogTitle">ã­ã£ã©è¿½å </h2><button id="closeCharacterDialog" class="icon-btn" type="button" aria-label="éãã">Ã</button></div>
+      <form id="characterForm" class="form"><div id="characterFormFields"></div><button id="characterSubmit" class="submit-btn" type="submit">ä¿å­</button></form>
     </dialog>
-    <dialog id="serverSettingsDialog" class="character-dialog"><div class="modal-header"><h2>マップ・サーバー設定</h2><button type="button" id="closeServerSettings" class="icon-btn">×</button></div><form id="serverSettingsForm" class="form"><label class="field"><span>マップ</span><select id="settingsMap" required></select></label><label class="field"><span>サーバー番号</span><input id="settingsServer" type="text" inputmode="numeric" required placeholder="例：5999"></label><button class="submit-btn" type="submit">組み合わせを登録</button></form><div id="serverSettingsList" class="server-settings-list"></div></dialog>
+    <dialog id="serverSettingsDialog" class="character-dialog"><div class="modal-header"><h2>ãããã»ãµã¼ãã¼è¨­å®</h2><button type="button" id="closeServerSettings" class="icon-btn">Ã</button></div><form id="serverSettingsForm" class="form"><label class="field"><span>ããã</span><select id="settingsMap" required></select></label><label class="field"><span>ãµã¼ãã¼çªå·</span><input id="settingsServer" type="text" inputmode="numeric" required placeholder="ä¾ï¼5999"></label><label class="field"><span>ã¡ã¢ï¼ä»»æï¼</span><textarea id="settingsMemo" rows="2" placeholder="ä¾ï¼ã¡ã¤ã³æ ç¹ã»è³æºç¨ãµã¼ãã¼"></textarea></label><button class="submit-btn" type="submit">çµã¿åãããç»é²</button></form><div id="serverSettingsList" class="server-settings-list"></div></dialog>
     <input id="characterImageInput" class="hidden-input" type="file" accept="image/*">
-    <dialog id="characterViewer" class="character-viewer" aria-label="画像を拡大"><button id="closeCharacterViewer" class="icon-btn" type="button" aria-label="閉じる">×</button><img id="characterViewerImage" alt=""></dialog>
+    <dialog id="characterViewer" class="character-viewer" aria-label="ç»åãæ¡å¤§"><button id="closeCharacterViewer" class="icon-btn" type="button" aria-label="éãã">Ã</button><img id="characterViewerImage" alt=""></dialog>
     <div id="managerToast" class="manager-toast hidden" role="status"></div>
     <main id="timerPage" class="content hidden" role="tabpanel" aria-labelledby="timerTab">
       <section class="toolbar-card toolbar-card-compact">
-        <select id="sortSelect" aria-label="並び順">
-          <option value="dueSoon">期限が近い順</option>
-          <option value="dueLate">期限が遠い順</option>
-          <option value="name">名前順</option>
-          <option value="map">マップ順</option>
-          <option value="manual">手動並び替え</option>
+        <select id="sortSelect" aria-label="ä¸¦ã³é ">
+          <option value="dueSoon">æéãè¿ãé </option>
+          <option value="dueLate">æéãé ãé </option>
+          <option value="name">ååé </option>
+          <option value="map">ãããé </option>
+          <option value="manual">æåä¸¦ã³æ¿ã</option>
         </select>
       </section>
 
       <section id="emptyState" class="empty-state">
-        <div class="empty-icon">⌛</div>
-        <h2>タイマーがありません</h2>
-        <p>右下の＋ボタンから追加してください</p>
+        <div class="empty-icon">â</div>
+        <h2>ã¿ã¤ãã¼ãããã¾ãã</h2>
+        <p>å³ä¸ã®ï¼ãã¿ã³ããè¿½å ãã¦ãã ãã</p>
       </section>
       <section id="list" class="timer-list"></section>
     </main>
 
-    <button id="add" class="fab hidden" type="button" aria-label="タイマー追加">＋</button>
+    <button id="add" class="fab hidden" type="button" aria-label="ã¿ã¤ãã¼è¿½å ">ï¼</button>
 
     <div id="overlay" class="overlay hidden"></div>
 
@@ -1055,9 +1057,9 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
       <div class="modal-header">
         <div>
           <p class="modal-sub">TIMER SETTING</p>
-          <h2 id="modalTitle">タイマー追加</h2>
+          <h2 id="modalTitle">ã¿ã¤ãã¼è¿½å </h2>
         </div>
-        <button id="closeModal" class="icon-btn" type="button" aria-label="閉じる">×</button>
+        <button id="closeModal" class="icon-btn" type="button" aria-label="éãã">Ã</button>
       </div>
 
       <form id="timerForm" class="form">
@@ -1065,31 +1067,31 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
         <input type="hidden" id="imageMode" value="default">
 
         <label class="field">
-          <span>タイマー名</span>
-          <input id="timerNameInput" type="text" placeholder="未設定">
+          <span>ã¿ã¤ãã¼å</span>
+          <input id="timerNameInput" type="text" placeholder="æªè¨­å®">
         </label>
 
         <label class="field">
-          <span>マップ</span>
+          <span>ããã</span>
           <select id="mapSelect" required>
-            <option value="">選択してください</option>
-            <option value="アイランド">アイランド</option>
-            <option value="スコーチドアース">スコーチドアース</option>
-            <option value="センター">センター</option>
-            <option value="アベレーション">アベレーション</option>
-            <option value="エクスティンクション">エクスティンクション</option>
-            <option value="アストレオス">アストレオス</option>
-            <option value="ラグナロク">ラグナロク</option>
-            <option value="バルゲロ">バルゲロ</option>
-            <option value="ロストコロニー">ロストコロニー</option>
-            <option value="その他">その他</option>
+            <option value="">é¸æãã¦ãã ãã</option>
+            <option value="ã¢ã¤ã©ã³ã">ã¢ã¤ã©ã³ã</option>
+            <option value="ã¹ã³ã¼ããã¢ã¼ã¹">ã¹ã³ã¼ããã¢ã¼ã¹</option>
+            <option value="ã»ã³ã¿ã¼">ã»ã³ã¿ã¼</option>
+            <option value="ã¢ãã¬ã¼ã·ã§ã³">ã¢ãã¬ã¼ã·ã§ã³</option>
+            <option value="ã¨ã¯ã¹ãã£ã³ã¯ã·ã§ã³">ã¨ã¯ã¹ãã£ã³ã¯ã·ã§ã³</option>
+            <option value="ã¢ã¹ãã¬ãªã¹">ã¢ã¹ãã¬ãªã¹</option>
+            <option value="ã©ã°ãã­ã¯">ã©ã°ãã­ã¯</option>
+            <option value="ãã«ã²ã­">ãã«ã²ã­</option>
+            <option value="ã­ã¹ãã³ã­ãã¼">ã­ã¹ãã³ã­ãã¼</option>
+            <option value="ãã®ä»">ãã®ä»</option>
           </select>
         </label>
 
         <div class="field">
-          <span>マップ画像</span>
+          <span>ãããç»å</span>
           <input id="imageInput" type="file" accept="image/*" class="hidden-input">
-          <button id="imagePreviewButton" class="map-preview-button" type="button" aria-label="マップ画像を変更">
+          <button id="imagePreviewButton" class="map-preview-button" type="button" aria-label="ãããç»åãå¤æ´">
             <div id="imagePreview" class="map-preview is-empty">
               <div id="imagePreviewPin" class="map-pin hidden" aria-hidden="true"></div>
             </div>
@@ -1097,63 +1099,63 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
         </div>
 
         <div class="field">
-          <span>座標（任意）</span>
+          <span>åº§æ¨ï¼ä»»æï¼</span>
           <div class="coord-grid">
-            <input id="latInput" type="text" inputmode="decimal" placeholder="緯度">
-            <input id="lngInput" type="text" inputmode="decimal" placeholder="経度">
+            <input id="latInput" type="text" inputmode="decimal" placeholder="ç·¯åº¦">
+            <input id="lngInput" type="text" inputmode="decimal" placeholder="çµåº¦">
           </div>
           <label class="check-row">
             <input id="showPinInput" type="checkbox" checked>
-            <span>座標にピンを表示</span>
+            <span>åº§æ¨ã«ãã³ãè¡¨ç¤º</span>
           </label>
         </div>
 
         <label class="field">
-          <span>種類</span>
+          <span>ç¨®é¡</span>
           <select id="typeSelect" required>
-            <option value="building">建築タイマー</option>
-            <option value="tribe_tower">トライブタワー</option>
-            <option value="generator">ジェネレータ</option>
-            <option value="other">その他</option>
+            <option value="building">å»ºç¯ã¿ã¤ãã¼</option>
+            <option value="tribe_tower">ãã©ã¤ãã¿ã¯ã¼</option>
+            <option value="generator">ã¸ã§ãã¬ã¼ã¿</option>
+            <option value="other">ãã®ä»</option>
           </select>
         </label>
 
         <div id="materialField" class="field">
-          <span>建材</span>
+          <span>å»ºæ</span>
           <div class="chip-grid">
-            <label class="chip"><input type="radio" name="material" value="わら"><span>わら</span></label>
-            <label class="chip"><input type="radio" name="material" value="木"><span>木</span></label>
-            <label class="chip"><input type="radio" name="material" value="石"><span>石</span></label>
-            <label class="chip"><input type="radio" name="material" value="金属"><span>金属</span></label>
+            <label class="chip"><input type="radio" name="material" value="ãã"><span>ãã</span></label>
+            <label class="chip"><input type="radio" name="material" value="æ¨"><span>æ¨</span></label>
+            <label class="chip"><input type="radio" name="material" value="ç³"><span>ç³</span></label>
+            <label class="chip"><input type="radio" name="material" value="éå±"><span>éå±</span></label>
             <label class="chip"><input type="radio" name="material" value="TEK" checked><span>TEK</span></label>
           </div>
-          <div id="materialDays" class="material-days">TEK 35日</div>
+          <div id="materialDays" class="material-days">TEK 35æ¥</div>
         </div>
 
         <div id="customTimerField" class="field hidden">
-          <span>タイマー</span>
+          <span>ã¿ã¤ãã¼</span>
           <div class="time-grid">
-            <input id="daysInput" type="number" min="0" step="1" value="" placeholder="日">
-            <input id="hoursInput" type="number" min="0" max="23" step="1" value="" placeholder="時間">
-            <input id="minutesInput" type="number" min="0" max="59" step="1" value="" placeholder="分">
+            <input id="daysInput" type="number" min="0" step="1" value="" placeholder="æ¥">
+            <input id="hoursInput" type="number" min="0" max="23" step="1" value="" placeholder="æé">
+            <input id="minutesInput" type="number" min="0" max="59" step="1" value="" placeholder="å">
           </div>
         </div>
 
         <label class="field">
-          <span>メモ</span>
-          <textarea id="memoInput" rows="3" placeholder="任意で入力"></textarea>
+          <span>ã¡ã¢</span>
+          <textarea id="memoInput" rows="3" placeholder="ä»»æã§å¥å"></textarea>
         </label>
 
-        <button id="submitBtn" class="submit-btn" type="submit">追加して開始</button>
+        <button id="submitBtn" class="submit-btn" type="submit">è¿½å ãã¦éå§</button>
       </form>
     </section>
 
     <div id="confirmOverlay" class="confirm-overlay hidden">
       <div class="confirm-box">
-        <h3 id="confirmTitle">確認</h3>
-        <p id="confirmText">実行しますか？</p>
+        <h3 id="confirmTitle">ç¢ºèª</h3>
+        <p id="confirmText">å®è¡ãã¾ããï¼</p>
         <div class="confirm-actions">
-          <button id="confirmCancel" class="confirm-btn ghost" type="button">キャンセル</button>
+          <button id="confirmCancel" class="confirm-btn ghost" type="button">ã­ã£ã³ã»ã«</button>
           <button id="confirmOk" class="confirm-btn solid" type="button">OK</button>
         </div>
       </div>
@@ -1161,12 +1163,12 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}.manager-t
   </div>
   <script>
 const STORAGE_KEY='arkTimer_store_v8';
-const MAPS=['アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー','その他'];
-const DEFAULT_MAP_IMAGES={'アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
-const MAP_BOUNDS={'アイランド':{width:100,height:100},'スコーチドアース':{width:100,height:100},'センター':{width:100,height:100},'アベレーション':{width:100,height:100},'エクスティンクション':{width:100,height:100},'アストレオス':{width:100,height:100},'ラグナロク':{width:100,height:100},'バルゲロ':{width:100,height:100},'ロストコロニー':{width:100,height:100},'その他':{width:100,height:100}};
+const MAPS=['ã¢ã¤ã©ã³ã','ã¹ã³ã¼ããã¢ã¼ã¹','ã»ã³ã¿ã¼','ã¢ãã¬ã¼ã·ã§ã³','ã¨ã¯ã¹ãã£ã³ã¯ã·ã§ã³','ã¢ã¹ãã¬ãªã¹','ã©ã°ãã­ã¯','ãã«ã²ã­','ã­ã¹ãã³ã­ãã¼','ãã®ä»'];
+const DEFAULT_MAP_IMAGES={'ã¢ã¤ã©ã³ã':'IMG_3555.jpeg','ã¹ã³ã¼ããã¢ã¼ã¹':'IMG_3556.jpeg','ã»ã³ã¿ã¼':'IMG_3557.webp','ã¢ãã¬ã¼ã·ã§ã³':'IMG_3558.jpeg','ã¨ã¯ã¹ãã£ã³ã¯ã·ã§ã³':'IMG_3559.jpeg','ã¢ã¹ãã¬ãªã¹':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ã©ã°ãã­ã¯':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','ãã«ã²ã­':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ã­ã¹ãã³ã­ãã¼':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','ãã®ä»':'IMG_3570.jpeg'};
+const MAP_BOUNDS={'ã¢ã¤ã©ã³ã':{width:100,height:100},'ã¹ã³ã¼ããã¢ã¼ã¹':{width:100,height:100},'ã»ã³ã¿ã¼':{width:100,height:100},'ã¢ãã¬ã¼ã·ã§ã³':{width:100,height:100},'ã¨ã¯ã¹ãã£ã³ã¯ã·ã§ã³':{width:100,height:100},'ã¢ã¹ãã¬ãªã¹':{width:100,height:100},'ã©ã°ãã­ã¯':{width:100,height:100},'ãã«ã²ã­':{width:100,height:100},'ã­ã¹ãã³ã­ãã¼':{width:100,height:100},'ãã®ä»':{width:100,height:100}};
 const TRIBE_TOWER_ICON='7369529A-E04B-4212-8F0A-F320CC106E5E.png';
 const GENERATOR_ICON='026D0A6D-7E86-4E5E-823D-3DE7D2909B98.png';
-const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':35};
+const BUILDING_DURATIONS={'ãã':4,'æ¨':8,'ç³':12,'éå±':16,'TEK':35};
 const SORT_KEY='arkTimer_sort_mode';
 const $=id=>document.getElementById(id);
 const list=$('list'),addBtn=$('add'),sortSelect=$('sortSelect'),activeCount=$('activeCount'),emptyState=$('emptyState'),overlay=$('overlay'),modal=$('modal'),closeModalBtn=$('closeModal'),modalTitle=$('modalTitle'),submitBtn=$('submitBtn'),timerForm=$('timerForm'),editIdInput=$('editId'),imageModeInput=$('imageMode'),mapSelect=$('mapSelect'),typeSelect=$('typeSelect'),materialField=$('materialField'),customTimerField=$('customTimerField'),memoInput=$('memoInput'),timerNameInput=$('timerNameInput'),latInput=$('latInput'),lngInput=$('lngInput'),daysInput=$('daysInput'),hoursInput=$('hoursInput'),minutesInput=$('minutesInput'),imageInput=$('imageInput'),imagePreview=$('imagePreview'),imagePreviewButton=$('imagePreviewButton'),imagePreviewPin=$('imagePreviewPin'),showPinInput=$('showPinInput'),confirmOverlay=$('confirmOverlay'),confirmTitle=$('confirmTitle'),confirmText=$('confirmText'),confirmCancel=$('confirmCancel'),confirmOk=$('confirmOk'),materialDays=$('materialDays');
@@ -1202,7 +1204,7 @@ function save(){
 
 function generateId(){return `timer_${Date.now()}_${Math.random().toString(36).slice(2,9)}`}
 function getSelectedMaterial(){const checked=document.querySelector('input[name="material"]:checked');return checked?checked.value:'TEK'}
-function updateMaterialDays(){const material=getSelectedMaterial();materialDays.textContent=`${material} ${BUILDING_DURATIONS[material]}日`}
+function updateMaterialDays(){const material=getSelectedMaterial();materialDays.textContent=`${material} ${BUILDING_DURATIONS[material]}æ¥`}
 function syncTypeUI(){const type=typeSelect.value;materialField.classList.toggle('hidden',type!=='building');customTimerField.classList.toggle('hidden',type==='building');if(type!=='building'){daysInput.value='';hoursInput.value='';minutesInput.value=''}updateMaterialDays()}
 function getDefaultImageForMap(mapName){return DEFAULT_MAP_IMAGES[mapName]||''}
 function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src}")`:'';imagePreview.classList.toggle('is-empty',!src)}
@@ -1242,22 +1244,22 @@ function openModal(editTarget=null){
     const tek=document.querySelector('input[name="material"][value="TEK"]');
     if(tek)tek.checked=true;
     daysInput.value='';hoursInput.value='';minutesInput.value='';memoInput.value='';timerNameInput.value='';latInput.value='';lngInput.value='';
-    modalTitle.textContent='タイマー追加';
-    submitBtn.textContent='追加して開始';
+    modalTitle.textContent='ã¿ã¤ãã¼è¿½å ';
+    submitBtn.textContent='è¿½å ãã¦éå§';
     syncTypeUI();
     refreshImagePreviewForCurrentForm();
     return;
   }
   editIdInput.value=editTarget.id;
-  mapSelect.value=MAPS.includes(editTarget.map)?editTarget.map:'その他';
+  mapSelect.value=MAPS.includes(editTarget.map)?editTarget.map:'ãã®ä»';
   typeSelect.value=editTarget.type;
   memoInput.value=editTarget.memo||'';
   timerNameInput.value=editTarget.timerName||'';
   latInput.value=editTarget.lat||'';
   lngInput.value=editTarget.lng||'';
   if(showPinInput)showPinInput.checked=editTarget.showPin!==false;
-  modalTitle.textContent='タイマー編集';
-  submitBtn.textContent='保存';
+  modalTitle.textContent='ã¿ã¤ãã¼ç·¨é';
+  submitBtn.textContent='ä¿å­';
   if(editTarget.type==='building'){
     const radio=document.querySelector(`input[name="material"][value="${editTarget.material}"]`);
     if(radio)radio.checked=true;
@@ -1284,18 +1286,18 @@ function openModal(editTarget=null){
   refreshPreviewPin();
 }
 function closeModal(){overlay.classList.add('hidden');modal.classList.add('hidden');document.body.style.overflow=''}
-function openConfirm(title,text){confirmTitle.textContent=title||'確認';confirmText.textContent=text||'実行しますか？';confirmOverlay.classList.remove('hidden');return new Promise(resolve=>{state.confirmResolver=resolve})}
+function openConfirm(title,text){confirmTitle.textContent=title||'ç¢ºèª';confirmText.textContent=text||'å®è¡ãã¾ããï¼';confirmOverlay.classList.remove('hidden');return new Promise(resolve=>{state.confirmResolver=resolve})}
 function closeConfirm(result){confirmOverlay.classList.add('hidden');if(state.confirmResolver){const resolver=state.confirmResolver;state.confirmResolver=null;resolver(!!result)}}
-function formatDateWithWeekday(timestamp){const date=new Date(timestamp);const w=['日','月','火','水','木','金','土'][date.getDay()];const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,'0');const d=String(date.getDate()).padStart(2,'0');const hh=String(date.getHours()).padStart(2,'0');const mm=String(date.getMinutes()).padStart(2,'0');return `${y}/${m}/${d}(${w}) ${hh}:${mm}`}
-function formatRemaining(ms){if(ms<=0)return '期限切れ';const totalMinutes=Math.floor(ms/60000);const days=Math.floor(totalMinutes/1440);const hours=Math.floor((totalMinutes%1440)/60);const minutes=totalMinutes%60;if(days>0)return `${days}日 ${hours}時間 ${minutes}分`;if(hours>0)return `${hours}時間 ${minutes}分`;return `${minutes}分`}
+function formatDateWithWeekday(timestamp){const date=new Date(timestamp);const w=['æ¥','æ','ç«','æ°´','æ¨','é','å'][date.getDay()];const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,'0');const d=String(date.getDate()).padStart(2,'0');const hh=String(date.getHours()).padStart(2,'0');const mm=String(date.getMinutes()).padStart(2,'0');return `${y}/${m}/${d}(${w}) ${hh}:${mm}`}
+function formatRemaining(ms){if(ms<=0)return 'æéåã';const totalMinutes=Math.floor(ms/60000);const days=Math.floor(totalMinutes/1440);const hours=Math.floor((totalMinutes%1440)/60);const minutes=totalMinutes%60;if(days>0)return `${days}æ¥ ${hours}æé ${minutes}å`;if(hours>0)return `${hours}æé ${minutes}å`;return `${minutes}å`}
 function getRemainingMs(timer){return timer.endsAt-Date.now()}
 function getRemainClass(ms){const dayMs=24*60*60*1000;if(ms>=14*dayMs)return 'green';if(ms>=7*dayMs)return 'orange';if(ms<=0)return 'red5';const daysLeft=ms/dayMs;if(daysLeft>6)return 'red0';if(daysLeft>5)return 'red1';if(daysLeft>3)return 'red2';if(daysLeft>2)return 'red3';if(daysLeft>1)return 'red4';return 'red5'}
-function buildTypeLabel(timer){if(timer.type==='building')return `建材:${timer.material}`;if(timer.type==='tribe_tower')return 'トライブタワー';if(timer.type==='generator')return 'ジェネレータ';return 'その他'}
+function buildTypeLabel(timer){if(timer.type==='building')return `å»ºæ:${timer.material}`;if(timer.type==='tribe_tower')return 'ãã©ã¤ãã¿ã¯ã¼';if(timer.type==='generator')return 'ã¸ã§ãã¬ã¼ã¿';return 'ãã®ä»'}
 function getDurationMsFromInput(type){if(type==='building'){return BUILDING_DURATIONS[getSelectedMaterial()]*24*60*60*1000}const days=Number(daysInput.value||0),hours=Number(hoursInput.value||0),minutes=Number(minutesInput.value||0);return ((((days*24)+hours)*60)+minutes)*60*1000}
 function getTimerImageSrc(timer){if(timer.imageMode==='custom'&&timer.imageSrc)return timer.imageSrc;return getDefaultImageForMap(timer.map)}
 function escapeHtml(value){return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
 function normalizeCoord(value){return String(value||'').trim()}
-function buildCoordTag(timer){const lat=normalizeCoord(timer.lat),lng=normalizeCoord(timer.lng);if(!lat||!lng)return '';return `座標:${lat}/${lng}`}
+function buildCoordTag(timer){const lat=normalizeCoord(timer.lat),lng=normalizeCoord(timer.lng);if(!lat||!lng)return '';return `åº§æ¨:${lat}/${lng}`}
 function getNextSortOrder(){return state.timers.reduce((max,timer)=>Math.max(max,Number(timer.sortOrder)||0),-1)+1}
 function getSortedTimers(){
   const timers=[...state.timers];
@@ -1318,7 +1320,7 @@ function openMapViewer(timer){
   if(!imageSrc)return;
   const viewer=document.createElement('div');
   viewer.className='map-viewer';
-  viewer.innerHTML='<div class="map-viewer-backdrop"></div><div class="map-viewer-panel"><button type="button" class="map-viewer-close" aria-label="閉じる">×</button><div class="map-viewer-image"></div></div>';
+  viewer.innerHTML='<div class="map-viewer-backdrop"></div><div class="map-viewer-panel"><button type="button" class="map-viewer-close" aria-label="éãã">Ã</button><div class="map-viewer-image"></div></div>';
   const imageEl=viewer.querySelector('.map-viewer-image');
   imageEl.style.backgroundImage=`url("${imageSrc}")`;
   const pin=document.createElement('div');
@@ -1329,14 +1331,14 @@ function openMapViewer(timer){
     const badge=document.createElement('img');
     badge.className='overlay-badge';
     badge.src=TRIBE_TOWER_ICON;
-    badge.alt='トライブタワー';
+    badge.alt='ãã©ã¤ãã¿ã¯ã¼';
     imageEl.appendChild(badge);
   }
   if(timer.type==='generator'){
     const badge=document.createElement('img');
     badge.className='overlay-badge';
     badge.src=GENERATOR_ICON;
-    badge.alt='ジェネレータ';
+    badge.alt='ã¸ã§ãã¬ã¼ã¿';
     imageEl.appendChild(badge);
   }
   const close=()=>viewer.remove();
@@ -1354,10 +1356,10 @@ function render(){
     const timer=sorted[i];
     const remainMs=getRemainingMs(timer);
     if(remainMs>0)active+=1;
-    const remainClass=getRemainClass(remainMs),imageSrc=getTimerImageSrc(timer),timerName=(timer.timerName||'').trim()||'未設定',coordTag=buildCoordTag(timer);
+    const remainClass=getRemainClass(remainMs),imageSrc=getTimerImageSrc(timer),timerName=(timer.timerName||'').trim()||'æªè¨­å®',coordTag=buildCoordTag(timer);
     const card=document.createElement('article');
     card.className=`card${remainMs<=0?' expired':''}`;
-    card.innerHTML=`<div class="img" role="button" tabindex="0" aria-label="マップを拡大"></div><div class="info"><div class="name-row"><div class="timer-name">${escapeHtml(timerName)}</div></div><div class="tags-row"><span class="tag map-tag">${escapeHtml(timer.map)}</span><span class="tag type-tag">${escapeHtml(buildTypeLabel(timer))}</span>${coordTag?`<span class="tag coord-tag">${escapeHtml(coordTag)}</span>`:''}</div><div class="collapse-row"><div class="small"><span>崩壊</span><strong>${formatDateWithWeekday(timer.endsAt)}</strong></div></div><div class="remain"><span class="remain-label">残り</span><span class="remain-value ${remainClass}">${formatRemaining(remainMs)}</span></div><div class="actions">${manualMode?`<div class="move-actions"><button class="action-btn move-btn" type="button" data-action="move-up" data-id="${timer.id}" ${i===0?'disabled':''}>↑</button><button class="action-btn move-btn" type="button" data-action="move-down" data-id="${timer.id}" ${i===sorted.length-1?'disabled':''}>↓</button></div>`:''}<button class="action-btn reset-btn" type="button" data-action="reset" data-id="${timer.id}">リセット</button><button class="action-btn edit-btn" type="button" data-action="edit" data-id="${timer.id}">編集</button><button class="action-btn delete-btn" type="button" data-action="delete" data-id="${timer.id}">削除</button></div></div>`;
+    card.innerHTML=`<div class="img" role="button" tabindex="0" aria-label="ããããæ¡å¤§"></div><div class="info"><div class="name-row"><div class="timer-name">${escapeHtml(timerName)}</div></div><div class="tags-row"><span class="tag map-tag">${escapeHtml(timer.map)}</span><span class="tag type-tag">${escapeHtml(buildTypeLabel(timer))}</span>${coordTag?`<span class="tag coord-tag">${escapeHtml(coordTag)}</span>`:''}</div><div class="collapse-row"><div class="small"><span>å´©å£</span><strong>${formatDateWithWeekday(timer.endsAt)}</strong></div></div><div class="remain"><span class="remain-label">æ®ã</span><span class="remain-value ${remainClass}">${formatRemaining(remainMs)}</span></div><div class="actions">${manualMode?`<div class="move-actions"><button class="action-btn move-btn" type="button" data-action="move-up" data-id="${timer.id}" ${i===0?'disabled':''}>â</button><button class="action-btn move-btn" type="button" data-action="move-down" data-id="${timer.id}" ${i===sorted.length-1?'disabled':''}>â</button></div>`:''}<button class="action-btn reset-btn" type="button" data-action="reset" data-id="${timer.id}">ãªã»ãã</button><button class="action-btn edit-btn" type="button" data-action="edit" data-id="${timer.id}">ç·¨é</button><button class="action-btn delete-btn" type="button" data-action="delete" data-id="${timer.id}">åé¤</button></div></div>`;
     const imgEl=card.querySelector('.img');
     if(imageSrc)imgEl.style.backgroundImage=`url("${imageSrc}")`;
     imgEl.addEventListener('click',()=>openMapViewer(timer));
@@ -1366,18 +1368,18 @@ function render(){
     pin.className='map-pin card-pin hidden';
     imgEl.appendChild(pin);
     setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false);
-    if(timer.type==='tribe_tower'){const badge=document.createElement('img');badge.className='overlay-badge';badge.src=TRIBE_TOWER_ICON;badge.alt='トライブタワー';imgEl.appendChild(badge)}
-    if(timer.type==='generator'){const badge=document.createElement('img');badge.className='overlay-badge';badge.src=GENERATOR_ICON;badge.alt='ジェネレータ';imgEl.appendChild(badge)}
-    if(timer.memo&&timer.memo.trim()){const memo=document.createElement('div');memo.className='small';memo.style.gridColumn='1 / -1';memo.innerHTML=`<span>メモ</span><strong>${escapeHtml(timer.memo)}</strong>`;card.querySelector('.info').appendChild(memo)}
+    if(timer.type==='tribe_tower'){const badge=document.createElement('img');badge.className='overlay-badge';badge.src=TRIBE_TOWER_ICON;badge.alt='ãã©ã¤ãã¿ã¯ã¼';imgEl.appendChild(badge)}
+    if(timer.type==='generator'){const badge=document.createElement('img');badge.className='overlay-badge';badge.src=GENERATOR_ICON;badge.alt='ã¸ã§ãã¬ã¼ã¿';imgEl.appendChild(badge)}
+    if(timer.memo&&timer.memo.trim()){const memo=document.createElement('div');memo.className='small';memo.style.gridColumn='1 / -1';memo.innerHTML=`<span>ã¡ã¢</span><strong>${escapeHtml(timer.memo)}</strong>`;card.querySelector('.info').appendChild(memo)}
     list.appendChild(card)
   }
   if(activeCount)activeCount.textContent=String(active);
   emptyState.classList.toggle('hidden',sorted.length>0)
 }
 function buildTimerPayload(now,keepId=null,existingSortOrder=null){
-  const map=mapSelect.value,type=typeSelect.value,memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'未設定',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
-  if(!map){alert('マップを選択してください');return null}
-  if(durationMs<=0){alert('タイマーは1分以上で入力してください');return null}
+  const map=mapSelect.value,type=typeSelect.value,memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'æªè¨­å®',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
+  if(!map){alert('ããããé¸æãã¦ãã ãã');return null}
+  if(durationMs<=0){alert('ã¿ã¤ãã¼ã¯1åä»¥ä¸ã§å¥åãã¦ãã ãã');return null}
   return {id:keepId||generateId(),timerName,map,lat,lng,showPin:showPinInput?showPinInput.checked:true,type,material:type==='building'?getSelectedMaterial():null,memo,startedAt:now,endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
 }
 function addTimerFromForm(event){
@@ -1385,7 +1387,7 @@ function addTimerFromForm(event){
   const now=Date.now(),editingId=editIdInput.value;
   if(editingId){
     const index=state.timers.findIndex(timer=>timer.id===editingId);
-    if(index===-1){alert('編集対象が見つかりません');return}
+    if(index===-1){alert('ç·¨éå¯¾è±¡ãè¦ã¤ããã¾ãã');return}
     const payload=buildTimerPayload(now,editingId,state.timers[index].sortOrder);
     if(!payload)return;
     state.timers[index]=payload;
@@ -1396,9 +1398,9 @@ function addTimerFromForm(event){
   }
   save();render();closeModal()
 }
-async function resetTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;const ok=await openConfirm('リセット確認','このタイマーを現在時刻から再スタートしますか？');if(!ok)return;const durationMs=target.type==='building'?BUILDING_DURATIONS[target.material]*24*60*60*1000:Math.max(60000,target.endsAt-target.startedAt);const now=Date.now();target.startedAt=now;target.endsAt=now+durationMs;save();render()}
+async function resetTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;const ok=await openConfirm('ãªã»ããç¢ºèª','ãã®ã¿ã¤ãã¼ãç¾å¨æå»ããåã¹ã¿ã¼ããã¾ããï¼');if(!ok)return;const durationMs=target.type==='building'?BUILDING_DURATIONS[target.material]*24*60*60*1000:Math.max(60000,target.endsAt-target.startedAt);const now=Date.now();target.startedAt=now;target.endsAt=now+durationMs;save();render()}
 function editTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;openModal(target)}
-async function deleteTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;const name=(target.timerName||'').trim()||'未設定';const ok=await openConfirm('削除確認',`「${name}」を削除しますか？`);if(!ok)return;state.timers=state.timers.filter(timer=>timer.id!==id);save();render()}
+async function deleteTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;const name=(target.timerName||'').trim()||'æªè¨­å®';const ok=await openConfirm('åé¤ç¢ºèª',`ã${name}ããåé¤ãã¾ããï¼`);if(!ok)return;state.timers=state.timers.filter(timer=>timer.id!==id);save();render()}
 function swapSortOrder(id,direction){
   const manual=state.timers.slice().sort((a,b)=>a.sortOrder-b.sortOrder);
   const index=manual.findIndex(timer=>timer.id===id);
@@ -1457,19 +1459,23 @@ init();
 
 // Character records and images live separately from the original timer storage.
 (()=>{
- const CHARACTER_MAPS=['アイランド','センター','スコーチドアース','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ジェネシス1','ドラゴントピア','クリスタルアイルズ','ロストアイランド','フィヨルド','ジェネシス2','アトランティス'];
+ const CHARACTER_MAPS=['ã¢ã¤ã©ã³ã','ã»ã³ã¿ã¼','ã¹ã³ã¼ããã¢ã¼ã¹','ã¢ãã¬ã¼ã·ã§ã³','ã¨ã¯ã¹ãã£ã³ã¯ã·ã§ã³','ã¢ã¹ãã¬ãªã¹','ã©ã°ãã­ã¯','ãã«ã²ã­','ã¸ã§ãã·ã¹1','ãã©ã´ã³ããã¢','ã¯ãªã¹ã¿ã«ã¢ã¤ã«ãº','ã­ã¹ãã¢ã¤ã©ã³ã','ãã£ã¨ã«ã','ã¸ã§ãã·ã¹2','ã¢ãã©ã³ãã£ã¹'];
  const CHARACTER_STORAGE_KEY='arkManager_characters_local_v1';
  const SERVER_STORAGE_KEY='arkManager_saved_servers_v1';
  let savedServers=[];
  try{const value=JSON.parse(localStorage.getItem(SERVER_STORAGE_KEY)||'[]');savedServers=Array.isArray(value)?value.filter(x=>x&&x.map&&x.serverNo):[]}catch(e){}
  function saveServers(){localStorage.setItem(SERVER_STORAGE_KEY,JSON.stringify(savedServers))}
  function mapOptions(){return CHARACTER_MAPS.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}
- function serverChoiceOptions(map='',server=''){return `<option value="">マップのみ選択・番号を手入力</option>`+savedServers.map((s,i)=>`<option value="${i}" ${s.map===map&&s.serverNo===server?'selected':''}>${esc(s.map)} / ${esc(s.serverNo)}</option>`).join('')}
- function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row"><span>${esc(s.map)} / ${esc(s.serverNo)}</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みの組み合わせはありません。</p>'}
+ function serverChoiceOptions(map='',server=''){
+  const presets=savedServers.map((s,i)=>`<option value="preset:${i}" ${s.map===map&&s.serverNo===server?'selected':''}>${esc(s.map)} / ${esc(s.serverNo)}${s.memo?' â '+esc(s.memo):''}</option>`).join('');
+  const maps=CHARACTER_MAPS.map(m=>`<option value="map:${esc(m)}" ${m===map&&!savedServers.some(s=>s.map===map&&s.serverNo===server)?'selected':''}>${esc(m)}ï¼çªå·ãæå¥åï¼</option>`).join('');
+  return '<option value="">é¸æãã¦ãã ãã</option><optgroup label="ç»é²æ¸ã¿ãããã»ãµã¼ãã¼">'+presets+'</optgroup><optgroup label="ãããã®ã¿é¸æ">'+maps+'</optgroup>';
+ }
+ function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row"><span>${esc(s.map)} / ${esc(s.serverNo)}${s.memo?`<small class="server-memo">${esc(s.memo)}</small>`:''}</span><button type="button" class="manager-small-btn" data-edit-server="${i}">ç·¨é</button><button type="button" class="manager-small-btn" data-remove-server="${i}">åé¤</button></div>`).join(''):'<p class="eos-help">ç»é²æ¸ã¿ã®çµã¿åããã¯ããã¾ããã</p>'}
  let editingServerIndex=-1;
 
- const labels={name:'サバイバー名',level:'レベル',map:'在住マップ',serverNo:'サーバー番号',eosId:'EOS ID',steamId:'Steam ID'};
- const help='シングルプレイ（ローカル）を開始し、コンソール（コマンド入力画面）を開いて whoami';
+ const labels={name:'ãµãã¤ãã¼å',level:'ã¬ãã«',map:'å¨ä½ããã',serverNo:'ãµã¼ãã¼çªå·',eosId:'EOS ID',steamId:'Steam ID'};
+ const help='ã·ã³ã°ã«ãã¬ã¤ï¼ã­ã¼ã«ã«ï¼ãéå§ããã³ã³ã½ã¼ã«ï¼ã³ãã³ãå¥åç»é¢ï¼ãéãã¦ whoami';
  let records=[],selectedId=null,editingField=null,imageField=null,imageContext='detail',pendingFormImages={appearance:'',implant:''},toastTimeout,db=null,ready=false,returnFocus=null;
  const esc=escapeHtml;
  function toast(text){$('managerToast').textContent=text;$('managerToast').classList.remove('hidden');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>$('managerToast').classList.add('hidden'),3000)}
@@ -1484,51 +1490,49 @@ init();
  function closeDialog(dialog){if(!dialog)return;if(typeof dialog.close==='function'){if(dialog.open)dialog.close()}else dialog.removeAttribute('open')}
  function selected(){return records.find(c=>c.id===selectedId)}
  function renderCharacters(){
-  $('characterCount').textContent=`${records.length}人`;$('characterEmpty').classList.toggle('hidden',records.length>0);
-  $('characterList').innerHTML=records.map(c=>`<button class="character-card" data-character="${esc(c.id)}" type="button">${c.appearance?`<img class="character-avatar" src="${esc(c.appearance)}" alt="">`:'<span class="character-avatar" aria-hidden="true">◉</span>'}<span class="character-summary"><span class="character-name">${esc(c.name||'名前未設定')}</span><span class="character-meta-list"><span><b>レベル</b>${esc(c.level||'未設定')}</span><span><b>マップ</b>${esc(c.map||'未設定')}</span><span><b>サーバー</b>${esc(c.serverNo||'未設定')}</span></span></span><span class="character-chevron" aria-hidden="true">›</span></button>`).join('');
+  $('characterCount').textContent=`${records.length}äºº`;$('characterEmpty').classList.toggle('hidden',records.length>0);
+  $('characterList').innerHTML=records.map(c=>`<button class="character-card" data-character="${esc(c.id)}" type="button">${c.appearance?`<img class="character-avatar" src="${esc(c.appearance)}" alt="">`:'<span class="character-avatar" aria-hidden="true">â</span>'}<span class="character-summary"><span class="character-name">${esc(c.name||'ååæªè¨­å®')}</span><span class="character-meta-list"><span><b>ã¬ãã«</b>${esc(c.level||'æªè¨­å®')}</span><span><b>ããã</b>${esc(c.map||'æªè¨­å®')}</span><span><b>ãµã¼ãã¼</b>${esc(c.serverNo||'æªè¨­å®')}</span></span></span><span class="character-chevron" aria-hidden="true">âº</span></button>`).join('');
  }
- function imageBlock(c,field,label){return `<button type="button" class="character-image-button" data-photo="${field}" aria-label="${label}${c[field]?'を拡大':'を登録'}">${c[field]?`<img class="character-photo" src="${esc(c[field])}" alt="${label}">`:`<span class="photo-placeholder">＋ ${label}を登録</span>`}</button>${c[field]?`<div class="photo-actions"><button class="manager-small-btn" data-upload="${field}" type="button">画像を変更</button><button class="manager-small-btn" data-remove-photo="${field}" type="button">画像を削除</button></div>`:''}`}
+ function imageBlock(c,field,label){return `<button type="button" class="character-image-button" data-photo="${field}" aria-label="${label}${c[field]?'ãæ¡å¤§':'ãç»é²'}">${c[field]?`<img class="character-photo" src="${esc(c[field])}" alt="${label}">`:`<span class="photo-placeholder">ï¼ ${label}ãç»é²</span>`}</button>${c[field]?`<div class="photo-actions"><button class="manager-small-btn" data-upload="${field}" type="button">ç»åãå¤æ´</button><button class="manager-small-btn" data-remove-photo="${field}" type="button">ç»åãåé¤</button></div>`:''}`}
  function renderDetail(){
   const c=selected();if(!c)return showList();
-  $('characterDetail').innerHTML=`<button class="character-back" data-back type="button">‹ キャラ一覧</button>${imageBlock(c,'appearance','見た目画像')}<div class="section-heading"><h1>${esc(c.name)}</h1></div><div class="character-fields">${Object.entries(labels).map(([key,label])=>`<div class="character-field"><div class="character-field-label">${label}</div><div class="character-field-row"><span class="character-field-value">${esc(c[key]||'未設定')}</span><div class="character-field-buttons">${key!=='map'?`<button type="button" class="manager-small-btn" data-copy="${key}" aria-label="${label}をコピー" ${c[key]?'':'disabled'}>コピー</button>`:''}<button type="button" class="manager-small-btn" data-edit="${key}" aria-label="${label}を編集">編集</button></div></div>${key==='eosId'?`<p class="eos-help">${help}</p>`:''}</div>`).join('')}</div><div class="implant-section"><h2>インプラント画像</h2>${imageBlock(c,'implant','インプラント画像')}</div><button class="character-delete" type="button" data-delete-character>キャラを削除</button>`;
+  $('characterDetail').innerHTML=`<button class="character-back" data-back type="button">â¹ ã­ã£ã©ä¸è¦§</button>${imageBlock(c,'appearance','è¦ãç®ç»å')}<div class="section-heading"><h1>${esc(c.name)}</h1></div><div class="character-fields">${Object.entries(labels).map(([key,label])=>`<div class="character-field"><div class="character-field-label">${label}</div><div class="character-field-row"><span class="character-field-value">${esc(c[key]||'æªè¨­å®')}</span><div class="character-field-buttons">${key!=='map'?`<button type="button" class="manager-small-btn" data-copy="${key}" aria-label="${label}ãã³ãã¼" ${c[key]?'':'disabled'}>ã³ãã¼</button>`:''}<button type="button" class="manager-small-btn" data-edit="${key}" aria-label="${label}ãç·¨é">ç·¨é</button></div></div>${key==='eosId'?`<p class="eos-help">${help}</p>`:''}</div>`).join('')}</div><div class="implant-section"><h2>ã¤ã³ãã©ã³ãç»å</h2>${imageBlock(c,'implant','ã¤ã³ãã©ã³ãç»å')}</div><button class="character-delete" type="button" data-delete-character>ã­ã£ã©ãåé¤</button>`;
  }
  function showList(){selectedId=null;$('characterListPage').classList.remove('hidden');$('characterDetail').classList.add('hidden');$('addCharacter').classList.remove('hidden');renderCharacters()}
  function showDetail(id){selectedId=id;$('characterListPage').classList.add('hidden');$('characterDetail').classList.remove('hidden');$('addCharacter').classList.add('hidden');renderDetail();window.scrollTo(0,0)}
  function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
  function formField(key,value=''){
   const label=labels[key];
-  if(key==='map')return `<label class="field"><span>登録済みマップ・サーバー</span><select name="serverPreset" id="characterServerPreset">${serverChoiceOptions(value,selected()?.serverNo||'')}</select></label><label class="field"><span>${label}</span><select name="map" id="characterMapSelect"><option value="">選択してください</option>${CHARACTER_MAPS.map(m=>`<option value="${esc(m)}" ${value===m?'selected':''}>${esc(m)}</option>`).join('')}</select></label>`;
-  return `<label class="field"><span>${label}${key==='name'?'（必須）':''}</span><input name="${key}" type="${key==='level'?'number':'text'}" ${key==='level'?'min="1" step="1" inputmode="numeric"':''} ${key==='name'?'required maxlength="100"':''} value="${esc(value)}" autocomplete="off">${key==='eosId'?`<small class="eos-help">${help}</small>`:''}</label>`;
+  if(key==='map')return `<label class="field"><span>å¨ä½ããã</span><select name="mapChoice" id="characterMapChoice">${serverChoiceOptions(value,selected()?.serverNo||'')}</select></label>`;
+  return `<label class="field"><span>${label}${key==='name'?'ï¼å¿é ï¼':''}</span><input name="${key}" type="${key==='level'?'number':'text'}" ${key==='level'?'min="1" step="1" inputmode="numeric"':''} ${key==='name'?'required maxlength="100"':''} value="${esc(value)}" autocomplete="off">${key==='eosId'?`<small class="eos-help">${help}</small>`:''}</label>`;
  }
 
- function formImageInner(field,label){const src=pendingFormImages[field];return `<span class="form-image-label">${label}</span><button class="form-image-picker" data-form-upload="${field}" type="button">${src?`<img src="${esc(src)}" alt="${label}"><span>画像を変更</span>`:`<span class="form-image-placeholder">＋ 画像を選択</span>`}</button>${src?`<button class="form-image-remove" data-form-remove="${field}" type="button">画像を削除</button>`:''}`}
+ function formImageInner(field,label){const src=pendingFormImages[field];return `<span class="form-image-label">${label}</span><button class="form-image-picker" data-form-upload="${field}" type="button">${src?`<img src="${esc(src)}" alt="${label}"><span>ç»åãå¤æ´</span>`:`<span class="form-image-placeholder">ï¼ ç»åãé¸æ</span>`}</button>${src?`<button class="form-image-remove" data-form-remove="${field}" type="button">ç»åãåé¤</button>`:''}`}
  function formImagePicker(field,label){return `<div class="form-image-field" data-form-image="${field}">${formImageInner(field,label)}</div>`}
- function refreshFormImage(field){const box=document.querySelector(`[data-form-image="${field}"]`);if(box)box.innerHTML=formImageInner(field,field==='appearance'?'キャラの見た目画像':'インプラント画像')}
- function showEditor(key=null){if(!ready){toast('キャラ保存機能を読み込み中です');return}editingField=key;const c=selected();$('characterDialogTitle').textContent=key?`${labels[key]}を編集`:'キャラ追加';if(key){$('characterFormFields').innerHTML=formField(key,c[key])+(key==='map'?formField('serverNo',c.serverNo||''):'')}else{pendingFormImages={appearance:'',implant:''};$('characterFormFields').innerHTML=formImagePicker('appearance','キャラの見た目画像')+Object.keys(labels).map(k=>formField(k)).join('')+formImagePicker('implant','インプラント画像')}returnFocus=document.activeElement;openDialog($('characterDialog'));$('characterFormFields').querySelector('input,select,button').focus()}
+ function refreshFormImage(field){const box=document.querySelector(`[data-form-image="${field}"]`);if(box)box.innerHTML=formImageInner(field,field==='appearance'?'ã­ã£ã©ã®è¦ãç®ç»å':'ã¤ã³ãã©ã³ãç»å')}
+ function showEditor(key=null){if(!ready){toast('ã­ã£ã©ä¿å­æ©è½ãèª­ã¿è¾¼ã¿ä¸­ã§ã');return}editingField=key;const c=selected();$('characterDialogTitle').textContent=key?`${labels[key]}ãç·¨é`:'ã­ã£ã©è¿½å ';if(key){$('characterFormFields').innerHTML=formField(key,c[key])+(key==='map'?formField('serverNo',c.serverNo||''):'')}else{pendingFormImages={appearance:'',implant:''};$('characterFormFields').innerHTML=formImagePicker('appearance','ã­ã£ã©ã®è¦ãç®ç»å')+Object.keys(labels).map(k=>formField(k)).join('')+formImagePicker('implant','ã¤ã³ãã©ã³ãç»å')}returnFocus=document.activeElement;openDialog($('characterDialog'));$('characterFormFields').querySelector('input,select,button').focus()}
  $('characterDialog').addEventListener('close',()=>returnFocus?.isConnected&&returnFocus.focus());
- async function persistChange(next){try{await writeRecord(next);records=records.map(c=>c.id===next.id?next:c);renderCharacters();renderDetail();return true}catch(e){toast('保存できませんでした。端末の空き容量・ブラウザ設定を確認してください');return false}}
+ async function persistChange(next){try{await writeRecord(next);records=records.map(c=>c.id===next.id?next:c);renderCharacters();renderDetail();return true}catch(e){toast('ä¿å­ã§ãã¾ããã§ãããç«¯æ«ã®ç©ºãå®¹éã»ãã©ã¦ã¶è¨­å®ãç¢ºèªãã¦ãã ãã');return false}}
  $('characterFormFields').addEventListener('change',e=>{
-  if(e.target.id==='characterServerPreset'&&e.target.value!==''){
-   const server=savedServers[Number(e.target.value)];if(!server)return;
-   const map=$('characterMapSelect'),number=$('characterFormFields').querySelector('[name="serverNo"]');
-   if(map)map.value=server.map;if(number)number.value=server.serverNo;
-  }
-  if(e.target.id==='characterMapSelect'){
-   const preset=$('characterServerPreset');if(preset)preset.value='';
-  }
+  if(e.target.id!=='characterMapChoice')return;
+  const number=$('characterFormFields').querySelector('[name="serverNo"]');
+  if(e.target.value.startsWith('preset:')){
+   const server=savedServers[Number(e.target.value.slice(7))];
+   if(server&&number)number.value=server.serverNo;
+  }else if(e.target.value.startsWith('map:')&&number){number.value='';}
  });
- $('settingsMap').innerHTML='<option value="">選択してください</option>'+mapOptions();
+ $('settingsMap').innerHTML='<option value="">é¸æãã¦ãã ãã</option>'+mapOptions();
  $('openServerSettings').addEventListener('click',()=>{editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();openDialog($('serverSettingsDialog'))});
  $('closeServerSettings').addEventListener('click',()=>closeDialog($('serverSettingsDialog')));
- $('serverSettingsForm').addEventListener('submit',e=>{e.preventDefault();const map=$('settingsMap').value,serverNo=$('settingsServer').value.trim();if(!map||!serverNo)return;const entry={map,serverNo};if(savedServers.some((s,i)=>i!==editingServerIndex&&s.map===map&&s.serverNo===serverNo)){toast('同じ組み合わせが登録されています');return}if(editingServerIndex>=0)savedServers[editingServerIndex]=entry;else savedServers.push(entry);try{saveServers()}catch(e){toast('設定を保存できませんでした');return}editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();toast('保存しました')});
- $('serverSettingsList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.editServer!==undefined){editingServerIndex=Number(b.dataset.editServer);const s=savedServers[editingServerIndex];$('settingsMap').value=s.map;$('settingsServer').value=s.serverNo;$('settingsMap').focus()}else if(b.dataset.removeServer!==undefined){savedServers.splice(Number(b.dataset.removeServer),1);saveServers();renderServerSettings()}});
- $('characterForm').addEventListener('submit',async e=>{e.preventDefault();const values=Object.fromEntries(new FormData(e.target));for(const k of Object.keys(values))values[k]=String(values[k]).trim();delete values.serverPreset;if('name'in values&&!values.name){toast('サバイバー名を入力してください');return}if(values.level&&!/^[1-9]\d*$/.test(values.level)){toast('レベルは1以上の整数を入力してください');return}const button=$('characterSubmit');button.disabled=true;try{if(editingField){if(await persistChange({...selected(),...values}))closeDialog($('characterDialog'))}else{const c={id:generateId(),appearance:pendingFormImages.appearance,implant:pendingFormImages.implant,createdAt:Date.now(),...values};await writeRecord(c);records.push(c);closeDialog($('characterDialog'));renderCharacters();showDetail(c.id)}}catch(e){toast('保存できませんでした。画像サイズを小さくするか、端末の空き容量・ブラウザ設定を確認してください')}finally{button.disabled=false}});
- async function copyField(key){const value=selected()?.[key];if(!value)return;try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(String(value))}else{const input=document.createElement('textarea');input.value=String(value);input.style.cssText='position:fixed;top:0;opacity:0';document.body.appendChild(input);input.focus();input.select();input.setSelectionRange(0,input.value.length);const ok=document.execCommand('copy');input.remove();if(!ok)throw Error('copy')}toast(`${labels[key]}をコピーしました`)}catch(e){toast('コピーできませんでした。編集画面で長押ししてコピーしてください')}}
+ $('serverSettingsForm').addEventListener('submit',e=>{e.preventDefault();const map=$('settingsMap').value,serverNo=$('settingsServer').value.trim();if(!map||!serverNo)return;const entry={map,serverNo,memo:$('settingsMemo').value.trim()};if(savedServers.some((s,i)=>i!==editingServerIndex&&s.map===map&&s.serverNo===serverNo)){toast('åãçµã¿åãããç»é²ããã¦ãã¾ã');return}if(editingServerIndex>=0)savedServers[editingServerIndex]=entry;else savedServers.push(entry);try{saveServers()}catch(e){toast('è¨­å®ãä¿å­ã§ãã¾ããã§ãã');return}editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();toast('ä¿å­ãã¾ãã')});
+ $('serverSettingsList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.editServer!==undefined){editingServerIndex=Number(b.dataset.editServer);const s=savedServers[editingServerIndex];$('settingsMap').value=s.map;$('settingsServer').value=s.serverNo;$('settingsMemo').value=s.memo||'';$('settingsMap').focus()}else if(b.dataset.removeServer!==undefined){savedServers.splice(Number(b.dataset.removeServer),1);saveServers();renderServerSettings()}});
+ $('characterForm').addEventListener('submit',async e=>{e.preventDefault();const values=Object.fromEntries(new FormData(e.target));for(const k of Object.keys(values))values[k]=String(values[k]).trim();if('mapChoice' in values){const choice=values.mapChoice;if(choice.startsWith('preset:')){const s=savedServers[Number(choice.slice(7))];if(!s){toast('ç»é²æ¸ã¿ããããåé¸æãã¦ãã ãã');return}values.map=s.map;values.serverNo=s.serverNo}else if(choice.startsWith('map:')){values.map=choice.slice(4)}else{toast('å¨ä½ããããé¸æãã¦ãã ãã');return}delete values.mapChoice}if('name'in values&&!values.name){toast('ãµãã¤ãã¼åãå¥åãã¦ãã ãã');return}if(values.level&&!/^[1-9]\d*$/.test(values.level)){toast('ã¬ãã«ã¯1ä»¥ä¸ã®æ´æ°ãå¥åãã¦ãã ãã');return}const button=$('characterSubmit');button.disabled=true;try{if(editingField){if(await persistChange({...selected(),...values}))closeDialog($('characterDialog'))}else{const c={id:generateId(),appearance:pendingFormImages.appearance,implant:pendingFormImages.implant,createdAt:Date.now(),...values};await writeRecord(c);records.push(c);closeDialog($('characterDialog'));renderCharacters();showDetail(c.id)}}catch(e){toast('ä¿å­ã§ãã¾ããã§ãããç»åãµã¤ãºãå°ããããããç«¯æ«ã®ç©ºãå®¹éã»ãã©ã¦ã¶è¨­å®ãç¢ºèªãã¦ãã ãã')}finally{button.disabled=false}});
+ async function copyField(key){const value=selected()?.[key];if(!value)return;try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(String(value))}else{const input=document.createElement('textarea');input.value=String(value);input.style.cssText='position:fixed;top:0;opacity:0';document.body.appendChild(input);input.focus();input.select();input.setSelectionRange(0,input.value.length);const ok=document.execCommand('copy');input.remove();if(!ok)throw Error('copy')}toast(`${labels[key]}ãã³ãã¼ãã¾ãã`)}catch(e){toast('ã³ãã¼ã§ãã¾ããã§ãããç·¨éç»é¢ã§é·æ¼ããã¦ã³ãã¼ãã¦ãã ãã')}}
  function upload(field,context='detail'){imageField=field;imageContext=context;$('characterImageInput').value='';$('characterImageInput').click()}
  function compressImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/'))return reject(Error('image'));const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{try{const scale=Math.min(1,1200/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.8))}catch(e){reject(e)}finally{URL.revokeObjectURL(url)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('decode'))};img.src=url})}
- $('characterImageInput').addEventListener('change',async e=>{const file=e.target.files[0],field=imageField;if(!file)return;toast('画像を読み込んでいます…');try{const src=await compressImage(file);if(imageContext==='form'){pendingFormImages[field]=src;refreshFormImage(field);toast('画像を追加しました');return}const c=selected();if(!c)return;const current=records.find(r=>r.id===c.id);if(current&&await persistChange({...current,[field]:src}))toast('画像を保存しました')}catch(e){toast('画像を読み込めませんでした。JPEG・PNGなどで再選択してください')}});
+ $('characterImageInput').addEventListener('change',async e=>{const file=e.target.files[0],field=imageField;if(!file)return;toast('ç»åãèª­ã¿è¾¼ãã§ãã¾ãâ¦');try{const src=await compressImage(file);if(imageContext==='form'){pendingFormImages[field]=src;refreshFormImage(field);toast('ç»åãè¿½å ãã¾ãã');return}const c=selected();if(!c)return;const current=records.find(r=>r.id===c.id);if(current&&await persistChange({...current,[field]:src}))toast('ç»åãä¿å­ãã¾ãã')}catch(e){toast('ç»åãèª­ã¿è¾¼ãã¾ããã§ãããJPEGã»PNGãªã©ã§åé¸æãã¦ãã ãã')}});
  $('characterFormFields').addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;if(button.dataset.formUpload)return upload(button.dataset.formUpload,'form');if(button.dataset.formRemove){pendingFormImages[button.dataset.formRemove]='';refreshFormImage(button.dataset.formRemove)}});
- $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];$('characterViewerImage').alt=field==='appearance'?'見た目画像':'インプラント画像';openDialog($('characterViewer'));return}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('画像の削除','この画像を削除しますか？'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('キャラの削除',`「${c.name}」を削除しますか？`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('キャラを削除しました')}catch(e){toast('削除できませんでした')}}});
+ $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];$('characterViewerImage').alt=field==='appearance'?'è¦ãç®ç»å':'ã¤ã³ãã©ã³ãç»å';openDialog($('characterViewer'));return}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('ç»åã®åé¤','ãã®ç»åãåé¤ãã¾ããï¼'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('ã­ã£ã©ã®åé¤',`ã${c.name}ããåé¤ãã¾ããï¼`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('ã­ã£ã©ãåé¤ãã¾ãã')}catch(e){toast('åé¤ã§ãã¾ããã§ãã')}}});
  $('characterList').addEventListener('click',e=>{const btn=e.target.closest('[data-character]');if(btn)showDetail(btn.dataset.character)});
  $('addCharacter').addEventListener('click',()=>showEditor());$('characterTab').addEventListener('click',()=>switchTab('characters'));$('timerTab').addEventListener('click',()=>switchTab('timers'));
  document.querySelector('.manager-tabs').setAttribute('role','tablist');document.querySelector('.manager-tabs').addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const target=e.key==='Home'?$('characterTab'):e.key==='End'?$('timerTab'):document.activeElement===$('characterTab')?$('timerTab'):$('characterTab');target.click();target.focus()}});
