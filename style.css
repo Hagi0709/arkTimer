@@ -1076,3 +1076,9 @@ body.manager-dialog-open dialog[open]{pointer-events:auto}
 .saved-server-row .manager-small-btn{padding:9px 10px;white-space:nowrap}
 .saved-server-row .server-drag-handle{grid-column:4;grid-row:1;display:grid;place-items:center;width:42px;min-height:44px;padding:0;border-radius:12px;background:rgba(103,187,255,.09);font-size:22px}
 @media(max-width:390px){.saved-server-row{grid-template-columns:minmax(0,1fr) auto auto 36px;gap:5px;padding:9px 7px}.saved-server-row .manager-small-btn{padding:8px 7px;font-size:12px}.saved-server-row .server-drag-handle{grid-column:4;width:36px}}
+
+/* Prevent iOS WebKit compositing artifacts after returning from character details. */
+html,body,.app-shell{overflow-x:clip}
+#characterPage{min-width:0;isolation:isolate}
+#characterListPage{min-width:0}
+#characterPage.character-list-repaint{transform:translateZ(0);backface-visibility:hidden}
