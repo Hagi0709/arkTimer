@@ -1044,7 +1044,6 @@ body.manager-dialog-open dialog[open]{pointer-events:auto}
 #customMapInput{margin-top:8px}
 
 
-
 /* Timer editor: match the character editor dialog */
 #modal.modal{
   left:50%;
@@ -1074,12 +1073,19 @@ body.manager-dialog-open dialog[open]{pointer-events:auto}
 .level-boss-row>span{flex:1 1 160px;min-width:0}
 .level-boss-row select{width:auto;max-width:100%;min-width:132px;padding:9px 10px;border-radius:12px;font-size:14px}
 
-
 .level-boss-label{display:flex;align-items:center;gap:10px;flex:1 1 160px;min-width:0}
 .level-boss-label input{width:22px;height:22px;flex:0 0 22px;accent-color:#67bbff}
 .level-boss-controls{display:flex;align-items:center;gap:10px;margin-left:auto}
 .level-boss-controls select{min-width:64px;width:70px}
 .level-boss-controls strong{min-width:35px;text-align:right;color:#a9e3ff}
+
+/* Server settings: label-first layout, reorder handle on the right */
+.saved-server-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto 42px;gap:8px;align-items:center;padding:10px 12px}
+.saved-server-row .server-entry-label{min-width:0;flex:none;font-size:14px;line-height:1.45;overflow-wrap:normal;word-break:normal}
+.saved-server-row .manager-small-btn{padding:9px 10px;white-space:nowrap}
+.saved-server-row .server-drag-handle{grid-column:4;grid-row:1;display:grid;place-items:center;width:42px;min-height:44px;padding:0;border-radius:12px;background:rgba(103,187,255,.09);font-size:22px}
+@media(max-width:390px){.saved-server-row{grid-template-columns:minmax(0,1fr) auto auto 36px;gap:5px;padding:9px 7px}.saved-server-row .manager-small-btn{padding:8px 7px;font-size:12px}.saved-server-row .server-drag-handle{grid-column:4;width:36px}}
+
 </style>
 </head>
 <body>
@@ -1606,7 +1612,7 @@ init();
   const maps=CHARACTER_MAPS.map(m=>`<option value="map:${esc(m)}" ${m===map&&!savedServers.some(s=>s.map===map&&s.serverNo===server)?'selected':''}>${esc(m)}</option>`).join('');
   return '<option value="">選択してください</option><optgroup label="登録済みマップ">'+presets+'</optgroup><optgroup label="マップのみ選択">'+maps+'</optgroup>';
  }
- function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row" data-server-index="${i}"><span class="server-drag-handle" data-server-drag="${i}">☰</span><span>${esc(s.map)}：${esc(s.serverNo)}${s.memo?`<small class="server-memo">(${esc(s.memo)})</small>`:''}</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みのマップはありません。</p>'}
+ function renderServerSettings(){$('serverSettingsList').innerHTML=savedServers.length?savedServers.map((s,i)=>`<div class="saved-server-row" data-server-index="${i}"><span class="server-entry-label">${esc(s.map)}：${esc(s.serverNo)}${s.memo?`<small class="server-memo">(${esc(s.memo)})</small>`:''}</span><span class="server-drag-handle" data-server-drag="${i}" role="button" aria-label="並び替え" title="長押しで並び替え">☰</span><button type="button" class="manager-small-btn" data-edit-server="${i}">編集</button><button type="button" class="manager-small-btn" data-remove-server="${i}">削除</button></div>`).join(''):'<p class="eos-help">登録済みのマップはありません。</p>'}
  let editingServerIndex=-1;
 
  const labels={name:'サバイバー名',level:'レベル',map:'在住マップ',serverNo:'サーバー番号',eosId:'EOS ID',steamId:'Steam ID'};
@@ -1794,6 +1800,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmOverlay.classList.contains('hidden'))closeConfirm(false);else if(!modal.classList.contains('hidden'))closeModal()}});
  renderCharacters();(async()=>{try{if(location.protocol==='file:'||!('indexedDB' in window)){records=loadLocalRecords()}else{db=await openDatabase();records=await readRecords()}}catch(e){db=null;records=loadLocalRecords()}ready=true;renderCharacters()})();
 })();
+
 
 
 
