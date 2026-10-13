@@ -1,5 +1,5 @@
 const STORAGE_KEY='arkTimer_store_v8';
-const MAPS=['アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー','その他'];
+const MAPS=['アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー'];
 const DEFAULT_MAP_IMAGES={'アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
 const MAP_BOUNDS={'アイランド':{width:100,height:100},'スコーチドアース':{width:100,height:100},'センター':{width:100,height:100},'アベレーション':{width:100,height:100},'エクスティンクション':{width:100,height:100},'アストレオス':{width:100,height:100},'ラグナロク':{width:100,height:100},'バルゲロ':{width:100,height:100},'ロストコロニー':{width:100,height:100},'その他':{width:100,height:100}};
 const TRIBE_TOWER_ICON='7369529A-E04B-4212-8F0A-F320CC106E5E.png';
@@ -42,7 +42,7 @@ function generateId(){return `timer_${Date.now()}_${Math.random().toString(36).s
 function getSelectedMaterial(){const checked=document.querySelector('input[name="material"]:checked');return checked?checked.value:'TEK'}
 function updateMaterialDays(){const material=getSelectedMaterial();materialDays.textContent=`${material} ${BUILDING_DURATIONS[material]}日`}
 function syncTypeUI(){const type=typeSelect.value;materialField.classList.toggle('hidden',type!=='building');customTimerField.classList.toggle('hidden',type==='building');if(type!=='building'){daysInput.value='';hoursInput.value='';minutesInput.value=''}updateMaterialDays()}
-function getDefaultImageForMap(mapName){return DEFAULT_MAP_IMAGES[mapName]||''}
+function getDefaultImageForMap(mapName){return DEFAULT_MAP_IMAGES[mapName]||DEFAULT_MAP_IMAGES['その他']}
 function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src}")`:'';imagePreview.classList.toggle('is-empty',!src)}
 function getMapBounds(mapName){return MAP_BOUNDS[mapName]||{width:100,height:100}}
 function clamp(num,min,max){return Math.min(max,Math.max(min,num))}
@@ -63,8 +63,10 @@ function setPinElement(pinEl,mapName,lat,lng,showPin=true){
   pinEl.style.left=`${pos.left}%`;
   pinEl.style.top=`${pos.top}%`;
 }
-function refreshPreviewPin(){setPinElement(imagePreviewPin,mapSelect.value,latInput.value,lngInput.value,showPinInput.checked)}
-function refreshImagePreviewForCurrentForm(){const defaultImage=getDefaultImageForMap(mapSelect.value);imageModeInput.value='default';state.pendingCustomImage='';imageInput.value='';setPreviewImage(defaultImage||'');refreshPreviewPin()}
+function timerMapValue(){return mapSelect.value==='__custom__'?$('customMapInput').value.trim():mapSelect.value}
+function syncCustomMapUI(){const custom=mapSelect.value==='__custom__';$('customMapInput').classList.toggle('hidden',!custom);$('customMapInput').required=custom;refreshImagePreviewForCurrentForm()}
+function refreshPreviewPin(){setPinElement(imagePreviewPin,timerMapValue(),latInput.value,lngInput.value,showPinInput.checked)}
+function refreshImagePreviewForCurrentForm(){const defaultImage=getDefaultImageForMap(timerMapValue());imageModeInput.value='default';state.pendingCustomImage='';imageInput.value='';setPreviewImage(defaultImage||'');refreshPreviewPin()}
 
 function openModal(editTarget=null){
   overlay.classList.remove('hidden');
@@ -72,6 +74,7 @@ function openModal(editTarget=null){
   document.body.style.overflow='hidden';
   if(!editTarget){
     timerForm.reset();
+    $('customMapInput').value='';$('customMapInput').classList.add('hidden');$('customMapInput').required=false;
     editIdInput.value='';
     imageModeInput.value='default';
     state.pendingCustomImage='';
@@ -87,7 +90,10 @@ function openModal(editTarget=null){
     return;
   }
   editIdInput.value=editTarget.id;
-  mapSelect.value=MAPS.includes(editTarget.map)?editTarget.map:'その他';
+  mapSelect.value=MAPS.includes(editTarget.map)?editTarget.map:'__custom__';
+  $('customMapInput').value=MAPS.includes(editTarget.map)?'':(editTarget.map||'');
+  $('customMapInput').classList.toggle('hidden',mapSelect.value!=='__custom__');
+  $('customMapInput').required=mapSelect.value==='__custom__';
   typeSelect.value=editTarget.type;
   memoInput.value=editTarget.memo||'';
   timerNameInput.value=editTarget.timerName||'';
@@ -112,7 +118,7 @@ function openModal(editTarget=null){
     state.pendingCustomImage=editTarget.imageSrc;
     setPreviewImage(editTarget.imageSrc);
   }else{
-    const defaultImage=getDefaultImageForMap(mapSelect.value);
+    const defaultImage=getDefaultImageForMap(timerMapValue());
     imageModeInput.value='default';
     state.pendingCustomImage='';
     setPreviewImage(defaultImage||'');
@@ -213,7 +219,7 @@ function render(){
   emptyState.classList.toggle('hidden',sorted.length>0)
 }
 function buildTimerPayload(now,keepId=null,existingSortOrder=null){
-  const map=mapSelect.value,type=typeSelect.value,memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'未設定',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
+  const map=timerMapValue(),type=typeSelect.value,memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'未設定',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
   if(!map){alert('マップを選択してください');return null}
   if(durationMs<=0){alert('タイマーは1分以上で入力してください');return null}
   return {id:keepId||generateId(),timerName,map,lat,lng,showPin:showPinInput?showPinInput.checked:true,type,material:type==='building'?getSelectedMaterial():null,memo,startedAt:now,endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
@@ -270,7 +276,8 @@ function bindEvents(){
   typeSelect.addEventListener('change',syncTypeUI);
   timerForm.addEventListener('submit',addTimerFromForm);
   list.addEventListener('click',bindListActions);
-  mapSelect.addEventListener('change',refreshImagePreviewForCurrentForm);
+  mapSelect.addEventListener('change',syncCustomMapUI);
+  $('customMapInput').addEventListener('input',()=>{if(mapSelect.value==='__custom__')refreshPreviewPin()});
   latInput.addEventListener('input',refreshPreviewPin);
   lngInput.addEventListener('input',refreshPreviewPin);
   if(showPinInput)showPinInput.addEventListener('change',refreshPreviewPin);
@@ -357,8 +364,44 @@ init();
   if(!db){return new Promise((resolve,reject)=>{try{const next=remove?records.filter(c=>c.id!==record.id):records.some(c=>c.id===record.id)?records.map(c=>c.id===record.id?record:c):[...records,record];localStorage.setItem(CHARACTER_STORAGE_KEY,JSON.stringify(next));resolve()}catch(e){reject(e)}})}
   return new Promise((resolve,reject)=>{const tx=db.transaction('characters','readwrite');const store=tx.objectStore('characters');remove?store.delete(record.id):store.put(record);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})
  }
- function openDialog(dialog){if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','')}
- function closeDialog(dialog){if(!dialog)return;if(typeof dialog.close==='function'){if(dialog.open)dialog.close()}else dialog.removeAttribute('open')}
+ // Lock the page behind native dialogs, including iOS Safari overscroll.
+ let dialogScrollY=0;
+ const managerDialogs=['characterDialog','serverSettingsDialog','levelSettingsDialog','characterViewer'];
+ function syncDialogScrollLock(){
+  const hasOpen=managerDialogs.some(id=>{const d=$(id);return d&&(d.open||d.hasAttribute('open'))});
+  if(hasOpen){
+   if(document.body.classList.contains('manager-dialog-open'))return;
+   dialogScrollY=window.scrollY;
+   document.body.style.top=`-${dialogScrollY}px`;
+   document.body.classList.add('manager-dialog-open');
+  }else if(document.body.classList.contains('manager-dialog-open')){
+   document.body.classList.remove('manager-dialog-open');
+   document.body.style.top='';
+   window.scrollTo(0,dialogScrollY);
+  }
+ }
+ function openDialog(dialog){
+  if(!dialog||dialog.open)return;
+  if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
+  syncDialogScrollLock();
+ }
+ function closeDialog(dialog){
+  if(!dialog)return;
+  if(typeof dialog.close==='function'){if(dialog.open)dialog.close()}else dialog.removeAttribute('open');
+  syncDialogScrollLock();
+ }
+ managerDialogs.forEach(id=>$(id)?.addEventListener('close',syncDialogScrollLock));
+ // iOS: never let a gesture starting behind the active popup steal its scroll.
+ document.addEventListener('touchmove',event=>{
+  if(!document.body.classList.contains('manager-dialog-open'))return;
+  const inside=managerDialogs.some(id=>{const d=$(id);return d&&(d.open||d.hasAttribute('open'))&&d.contains(event.target)});
+  if(!inside)event.preventDefault();
+ },{passive:false,capture:true});
+ document.addEventListener('wheel',event=>{
+  if(!document.body.classList.contains('manager-dialog-open'))return;
+  const inside=managerDialogs.some(id=>{const d=$(id);return d&&(d.open||d.hasAttribute('open'))&&d.contains(event.target)});
+  if(!inside)event.preventDefault();
+ },{passive:false,capture:true});
  function selected(){return records.find(c=>c.id===selectedId)}
  function renderCharacters(){
   records.sort((a,b)=>(a.sortOrder??a.createdAt??0)-(b.sortOrder??b.createdAt??0));
@@ -417,7 +460,7 @@ init();
  $('openServerSettings').addEventListener('click',()=>{editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();openDialog($('serverSettingsDialog'))});
  $('closeServerSettings').addEventListener('click',()=>closeDialog($('serverSettingsDialog')));
  $('serverSettingsForm').addEventListener('submit',e=>{e.preventDefault();const map=$('settingsMap').value,serverNo=map==='アップロード中'?'-':$('settingsServer').value.trim();if(!map||!serverNo)return;const entry={map,serverNo,memo:$('settingsMemo').value.trim()};if(savedServers.some((s,i)=>i!==editingServerIndex&&s.map===map&&s.serverNo===serverNo)){toast('同じ組み合わせが登録されています');return}if(editingServerIndex>=0)savedServers[editingServerIndex]=entry;else savedServers.push(entry);try{saveServers()}catch(e){toast('設定を保存できませんでした');return}editingServerIndex=-1;$('serverSettingsForm').reset();renderServerSettings();toast('保存しました')});
- $('serverSettingsList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.editServer!==undefined){editingServerIndex=Number(b.dataset.editServer);const s=savedServers[editingServerIndex];$('settingsMap').value=s.map;$('settingsServer').value=s.serverNo;$('settingsServer').readOnly=s.map==='アップロード中';$('settingsMemo').value=s.memo||'';$('settingsMap').focus()}else if(b.dataset.removeServer!==undefined){savedServers.splice(Number(b.dataset.removeServer),1);saveServers();renderServerSettings()}});
+ $('serverSettingsList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.editServer!==undefined){editingServerIndex=Number(b.dataset.editServer);const s=savedServers[editingServerIndex];$('settingsMap').value=s.map;$('settingsServer').value=s.serverNo;$('settingsServer').readOnly=s.map==='アップロード中';$('settingsMemo').value=s.memo||'';$('settingsMap').focus()}else if(b.dataset.removeServer!==undefined){const i=Number(b.dataset.removeServer),s=savedServers[i];if(!s)return;if(!window.confirm(`「${s.map} / ${s.serverNo}」を削除しますか？`))return;savedServers.splice(i,1);saveServers();renderServerSettings()}});
  $('characterForm').addEventListener('submit',async e=>{e.preventDefault();const values=Object.fromEntries(new FormData(e.target));
   if(!editingField){
    values.levelUnlocks=[...e.target.querySelectorAll('[data-new-level]:checked')].map(x=>x.dataset.newLevel);
