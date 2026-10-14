@@ -572,5 +572,20 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  });
  $id('closeUtcConverter').addEventListener('click',()=>dlg.close());
  input.addEventListener('input',convert);
- $id('copyUtcTime').addEventListener('click',async()=>{if(result.textContent==='—')return;try{await navigator.clipboard.writeText(result.textContent)}catch(e){const tmp=document.createElement('textarea');tmp.value=result.textContent;document.body.appendChild(tmp);tmp.select();document.execCommand('copy');tmp.remove()}});
+ const copyBtn=$id('copyUtcTime'),copyStatus=$id('utcCopyStatus');
+ async function copyUtc(){
+  const value=result.textContent;
+  if(!value||value==='—'||value==='入力を確認してください')return;
+  let copied=false;
+  try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);copied=true}}catch(e){}
+  if(!copied){
+   const tmp=document.createElement('textarea');tmp.value=value;tmp.setAttribute('readonly','');tmp.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;z-index:-1';
+   document.body.appendChild(tmp);tmp.focus();tmp.select();tmp.setSelectionRange(0,tmp.value.length);
+   try{copied=document.execCommand('copy')}catch(e){}tmp.remove();
+  }
+  if(copied){copyBtn.textContent='✓ コピーしました';copyStatus.textContent='UTC時間をクリップボードにコピーしました';}
+  else{copyBtn.textContent='コピーできませんでした';copyStatus.textContent='下のUTC時間を長押ししてコピーしてください';result.style.userSelect='text';result.style.webkitUserSelect='text';}
+ }
+ copyBtn.addEventListener('click',copyUtc);
+ input.addEventListener('input',()=>{copyBtn.textContent='UTC時間をコピー';copyStatus.textContent=''});
 })();
