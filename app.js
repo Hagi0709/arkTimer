@@ -1,3 +1,12 @@
+/* Shared copy action for all copy buttons */
+window.ARKCopyText=async function(value){
+ const text=String(value);
+ try{if(navigator.clipboard?.writeText && window.isSecureContext){await navigator.clipboard.writeText(text);return true}}catch(e){}
+ const tmp=document.createElement('textarea');tmp.value=text;tmp.readOnly=true;
+ tmp.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;z-index:-1';
+ document.body.appendChild(tmp);tmp.focus();tmp.select();tmp.setSelectionRange(0,tmp.value.length);
+ let copied=false;try{copied=document.execCommand('copy')}catch(e){}tmp.remove();return copied;
+};
 const STORAGE_KEY='arkTimer_store_v8';
 const MAPS=['アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー'];
 const DEFAULT_MAP_IMAGES={'アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
@@ -437,8 +446,11 @@ init();
   $('characterListPage').classList.remove('hidden');
   $('addCharacter').classList.remove('hidden');
   renderCharacters();
-  // Avoid GPU compositing invalidation on iOS by using ordinary document flow.
-  document.querySelector('.manager-tabs').style.removeProperty('transform');
+  // Restore viewport after a potentially wider detail view and repaint list surfaces.
+  window.scrollTo({left:0,top:0,behavior:'instant'});
+  document.documentElement.scrollLeft=0;document.body.scrollLeft=0;
+  const page=$('characterListPage');
+  page.style.display='none';void page.offsetHeight;page.style.removeProperty('display');
  }
  function showDetail(id){selectedId=id;$('characterListPage').classList.add('hidden');$('characterDetail').classList.remove('hidden');$('addCharacter').classList.add('hidden');renderDetail();window.scrollTo(0,0)}
  function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
@@ -483,7 +495,12 @@ init();
    values.tribeByMap=Object.fromEntries([...e.target.querySelectorAll('[data-new-tribe]')].map(x=>[x.dataset.newTribe,x.checked]));
   }
 for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=values[k].trim();if('mapChoice' in values&&values.mapChoice){const choice=values.mapChoice;if(choice.startsWith('preset:')){const s=savedServers[Number(choice.slice(7))];if(!s){toast('登録済みマップを再選択してください');return}values.map=s.map;values.serverNo=s.serverNo}else if(choice.startsWith('map:')){values.map=choice.slice(4);if(values.map==='アップロード中')values.serverNo='-'}else{toast('在住マップを選択してください');return}delete values.mapChoice}delete values.mapChoice;if(values.map==='アップロード中')values.serverNo='-';if('name'in values&&!values.name){toast('サバイバー名を入力してください');return}if(values.level&&!/^[1-9]\d*$/.test(values.level)){toast('レベルは1以上の整数を入力してください');return}const button=$('characterSubmit');button.disabled=true;try{if(editingField){if(await persistChange({...selected(),...values}))closeDialog($('characterDialog'))}else{const c={id:generateId(),sortOrder:records.length?Math.max(...records.map(r=>r.sortOrder??r.createdAt??0))+1:Date.now(),appearance:pendingFormImages.appearance,implant:pendingFormImages.implant,createdAt:Date.now(),...values};await writeRecord(c);records.push(c);closeDialog($('characterDialog'));renderCharacters();showDetail(c.id)}}catch(e){toast('保存できませんでした。画像サイズを小さくするか、端末の空き容量・ブラウザ設定を確認してください')}finally{button.disabled=false}});
- async function copyField(key){const value=selected()?.[key];if(!value)return;try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(String(value))}else{const input=document.createElement('textarea');input.value=String(value);input.style.cssText='position:fixed;top:0;opacity:0';document.body.appendChild(input);input.focus();input.select();input.setSelectionRange(0,input.value.length);const ok=document.execCommand('copy');input.remove();if(!ok)throw Error('copy')}toast(`${labels[key]}をコピーしました`)}catch(e){toast('コピーできませんでした。編集画面で長押ししてコピーしてください')}}
+ async function copyField(key,button){
+  const value=selected()?.[key];if(!value)return;
+  const copied=await window.ARKCopyText(value);
+  if(copied){if(button){button.textContent='✓ コピーしました';setTimeout(()=>{if(button.isConnected)button.textContent='コピー'},1800)}toast(`${labels[key]}をコピーしました`)}
+  else toast('コピーできませんでした。編集画面で長押ししてコピーしてください');
+ }
  function upload(field,context='detail'){imageField=field;imageContext=context;$('characterImageInput').value='';$('characterImageInput').click()}
  function compressImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/'))return reject(Error('image'));const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{try{const scale=Math.min(1,1200/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.8))}catch(e){reject(e)}finally{URL.revokeObjectURL(url)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('decode'))};img.src=url})}
  $('characterImageInput').addEventListener('change',async e=>{const file=e.target.files[0],field=imageField;if(!file)return;toast('画像を読み込んでいます…');try{const src=await compressImage(file);if(imageContext==='form'){pendingFormImages[field]=src;refreshFormImage(field);toast('画像を追加しました');return}const c=selected();if(!c)return;const current=records.find(r=>r.id===c.id);if(current&&await persistChange({...current,[field]:src}))toast('画像を保存しました')}catch(e){toast('画像を読み込めませんでした。JPEG・PNGなどで再選択してください')}});
@@ -500,7 +517,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
   if(!window.confirm(`「${rule.name}」を削除しますか？\nキャラの上限計算からも除外されます。`))return;
   const old=levelRules;levelRules=levelRules.filter(r=>r.id!==id);try{saveLevelRules()}catch(err){levelRules=old;return toast('削除できませんでした')}renderLevelSettings();renderCharacters();if(selectedId)renderDetail()});
  $('characterDetail').addEventListener('change',async e=>{const boss=e.target.closest('[data-level-boss]');if(boss){const c=selected();if(!c)return;const id=boss.dataset.levelBoss,tier=boss.value;const next={...c,levelBossTiers:{...(c.levelBossTiers||{}),[id]:tier}};await persistChange(next);return}const tribe=e.target.closest('[data-tribe-map]');if(tribe){const c=selected();if(!c)return;if(!tribe.checked){const label=tribe.closest('label')?.querySelector('span')?.textContent||'このマップ';if(!window.confirm(`「${label}」のトライブ所属を解除しますか？`)){tribe.checked=true;return}}const next={...c,tribeByMap:{...(c.tribeByMap||{}),[tribe.dataset.tribeMap]:tribe.checked}};if(!await persistChange(next))tribe.checked=!tribe.checked;return}const input=e.target.closest('[data-level-id]');if(!input)return;const c=selected();if(!c)return;const id=input.dataset.levelId;if(!levelRules.some(r=>r.id===id))return;const ids=new Set(checkedLevelIds(c));if(input.checked)ids.add(id);else{const label=input.closest('label')?.querySelector('span')?.textContent||'この項目';if(!window.confirm(`「${label}」のレベル上限解放チェックを解除しますか？`)){input.checked=true;return}ids.delete(id);if(id.startsWith('bobs_'))ids.delete('bobs_tall_tales');}const tiers={...(c.levelBossTiers||{})};if(bossRule(levelRules.find(r=>r.id===id))){if(input.checked&&!tiers[id])tiers[id]='alpha'}const ok=await persistChange({...c,levelUnlocks:[...ids],levelBossTiers:tiers});if(!ok)input.checked=!input.checked});
- $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.hasAttribute('data-open-level-settings'))return openLevelSettings();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];$('characterViewerImage').alt=field==='appearance'?'見た目画像':'インプラント画像';openDialog($('characterViewer'));return}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('画像の削除','この画像を削除しますか？'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('キャラの削除',`「${c.name}」を削除しますか？`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('キャラを削除しました')}catch(e){toast('削除できませんでした')}}});
+ $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.hasAttribute('data-open-level-settings'))return openLevelSettings();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy,btn);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];$('characterViewerImage').alt=field==='appearance'?'見た目画像':'インプラント画像';openDialog($('characterViewer'));return}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('画像の削除','この画像を削除しますか？'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('キャラの削除',`「${c.name}」を削除しますか？`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('キャラを削除しました')}catch(e){toast('削除できませんでした')}}});
  function installReorder(container,handleSelector,itemSelector,onOrder){
  let active=null,pointer=null,startY=0,engaged=false,timer=null;
  const stop=()=>{
@@ -576,13 +593,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  async function copyUtc(){
   const value=result.textContent;
   if(!value||value==='—'||value==='入力を確認してください')return;
-  let copied=false;
-  try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);copied=true}}catch(e){}
-  if(!copied){
-   const tmp=document.createElement('textarea');tmp.value=value;tmp.setAttribute('readonly','');tmp.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;z-index:-1';
-   document.body.appendChild(tmp);tmp.focus();tmp.select();tmp.setSelectionRange(0,tmp.value.length);
-   try{copied=document.execCommand('copy')}catch(e){}tmp.remove();
-  }
+  const copied=await window.ARKCopyText(value);
   if(copied){copyBtn.textContent='✓ コピーしました';copyStatus.textContent='UTC時間をクリップボードにコピーしました';}
   else{copyBtn.textContent='コピーできませんでした';copyStatus.textContent='下のUTC時間を長押ししてコピーしてください';result.style.userSelect='text';result.style.webkitUserSelect='text';}
  }
