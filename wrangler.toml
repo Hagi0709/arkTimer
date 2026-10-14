@@ -14,3 +14,7 @@ database_id = "b02afda0-745f-4e81-ae52-90d8d08b731c"
 
 [triggers]
 crons = ["* * * * *"]
+
+[[previews.d1_databases]]
+binding = "DB"
+database_id = "95e72856-10b1-4a96-83e5-85c92b77eabd"
