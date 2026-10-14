@@ -1140,6 +1140,43 @@ html,body,.app-shell{overflow-x:clip}
 .character-list-item>.character-card{min-width:0;max-width:100%}
 .character-list-item>.character-drag-handle{flex-shrink:0}
 
+
+/* 2026-10-14: character list viewport and heading alignment */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+.app-shell{width:100%;max-width:820px;overflow-x:hidden}
+#characterPage,#characterListPage,#characterList{min-width:0;max-width:100%;width:100%}
+#characterListPage{overflow:visible}
+#characterListPage>.section-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;min-width:0;width:100%}
+#characterListPage .character-heading-actions{min-width:0;max-width:100%;display:flex;gap:7px;align-items:center;justify-content:flex-end}
+#characterListPage .character-heading-actions #characterCount{margin:0;white-space:nowrap}
+#characterListPage .character-list-item{display:flex;width:100%;min-width:0;max-width:100%;gap:8px}
+#characterListPage .character-card{flex:1 1 0;min-width:0;max-width:100%;width:auto}
+#characterListPage .character-drag-handle{flex:0 0 40px;min-width:40px}
+/* Use the card's right edge (not the reorder handle's) as the UTC button alignment target. */
+#characterListPage>.section-heading{padding-right:48px}
+#characterListPage .character-heading-actions{position:relative}
+#characterListPage #characterCount{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%)}
+@media(max-width:390px){#characterListPage>.section-heading{gap:5px}#characterListPage .character-heading-actions{gap:4px}#characterListPage .character-heading-actions .manager-small-btn{padding:7px 5px;font-size:10px}}
+/* iOS WebKit: eliminate fixed-background layer seams on page transitions. */
+html,body{background-attachment:scroll;background-size:100% 100%;background-repeat:no-repeat}
+body{background-image:none;background-color:#0b1725}
+.app-shell{background:transparent}
+.manager-tabs{isolation:isolate}
+/* UTC headings: equal typography, no overlap with controls. */
+#utcConverterDialog .utc-converter{gap:20px}
+#utcConverterDialog .utc-converter>label{display:grid;gap:10px}
+#utcConverterDialog .utc-converter>div{display:grid;gap:10px}
+#utcConverterDialog .utc-converter>label,#utcConverterDialog .utc-converter>div>small{font-family:inherit;font-size:14px;font-weight:700;line-height:1.35;color:var(--text);letter-spacing:0}
+#utcConverterDialog .utc-converter>div>small{display:block;margin:0}
+#utcConverterDialog #jstDateTime,#utcConverterDialog #utcResult,#utcConverterDialog #copyUtcTime{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+
+
+/* 2026-10-14: Unified page background across header, tabs and list. */
+html,body{background:#0b1725!important;background-image:none!important}
+.app-shell,#characterPage,#characterListPage{background:transparent!important;background-image:none!important}
+.manager-tabs{background:transparent!important;background-image:none!important;isolation:auto}
+.topbar{background:#0b1725!important;background-image:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
 </style>
 </head>
 <body>
@@ -1166,7 +1203,7 @@ html,body,.app-shell{overflow-x:clip}
       <div class="modal-header"><h2 id="characterDialogTitle">キャラ追加</h2><button id="closeCharacterDialog" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
       <form id="characterForm" class="form"><div id="characterFormFields"></div><button id="characterSubmit" class="submit-btn" type="submit">保存</button></form>
     </dialog>
-    <dialog id="utcConverterDialog" class="character-dialog"><div class="modal-header"><h2>日本時間 → UTC時間</h2><button id="closeUtcConverter" class="icon-btn" type="button" aria-label="閉じる">×</button></div><div class="utc-converter"><label>日本時間（JST / UTC+9）<input id="jstDateTime" type="datetime-local" step="60"></label><div><small>UTC時間（日本時間 − 9時間）</small><div id="utcResult" class="utc-result" aria-live="polite">—</div></div><button id="copyUtcTime" class="manager-small-btn" type="button">UTC時間をコピー</button><p id="utcCopyStatus" class="utc-copy-status" role="status" aria-live="polite"></p></div></dialog>
+    <dialog id="utcConverterDialog" class="character-dialog"><div class="modal-header"><h2>日本時間 → UTC時間</h2><button id="closeUtcConverter" class="icon-btn" type="button" aria-label="閉じる">×</button></div><div class="utc-converter"><label>日本時間<input id="jstDateTime" type="datetime-local" step="60"></label><div><small>UTC時間</small><div id="utcResult" class="utc-result" aria-live="polite">—</div></div><button id="copyUtcTime" class="manager-small-btn" type="button">UTC時間をコピー</button><p id="utcCopyStatus" class="utc-copy-status" role="status" aria-live="polite"></p></div></dialog>
     <dialog id="serverSettingsDialog" class="character-dialog"><div class="modal-header"><h2>マップ・サーバー設定</h2><button type="button" id="closeServerSettings" class="icon-btn">×</button></div><form id="serverSettingsForm" class="form"><label class="field"><span>マップ</span><select id="settingsMap" required></select></label><label class="field"><span>サーバー番号</span><input id="settingsServer" type="text" inputmode="numeric" required placeholder="例：5999"></label><label class="field"><span>メモ（任意）</span><textarea id="settingsMemo" rows="2" placeholder="例：メイン拠点・資源用サーバー"></textarea></label><button class="submit-btn" type="submit">登録</button></form><div id="serverSettingsList" class="server-settings-list"></div></dialog>
     <dialog id="levelSettingsDialog" class="character-dialog" aria-label="レベル上限解放項目の設定">
       <div class="modal-header"><h2>レベル上限解放の設定</h2><button type="button" id="closeLevelSettings" class="icon-btn">×</button></div>
