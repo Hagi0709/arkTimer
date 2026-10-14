@@ -9,3 +9,4 @@ for(const file of await readdir(root)){
 for(const file of ['sw.js','manifest.webmanifest'])await copyFile(join(root,file),join(dest,file));
 console.log('public assets prepared');
 
+
