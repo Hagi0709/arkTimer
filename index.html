@@ -1107,6 +1107,18 @@ html,body,.app-shell{overflow-x:clip}
 .utc-result{padding:18px;border-radius:15px;background:rgba(103,187,255,.1);border:1px solid rgba(103,187,255,.25);font-size:20px;font-weight:800;text-align:center;overflow-wrap:anywhere}
 @media(max-width:390px){.character-heading-actions{gap:4px}.character-heading-actions .manager-small-btn{padding:7px 6px;font-size:10px}.section-heading h1{font-size:20px}}
 
+
+
+/* UTC converter: prevent iOS datetime input from expanding dialog */
+#utcConverterDialog{width:min(calc(100vw - 28px),560px);max-width:calc(100vw - 28px);min-width:0;box-sizing:border-box;overflow-x:hidden}
+#utcConverterDialog .modal-header{min-width:0;align-items:center}
+#utcConverterDialog .modal-header h2{min-width:0;font-size:clamp(19px,5.2vw,26px);overflow-wrap:anywhere}
+#utcConverterDialog .utc-converter{min-width:0;width:100%;grid-template-columns:minmax(0,1fr)}
+#utcConverterDialog .utc-converter label,#utcConverterDialog .utc-converter>div{min-width:0;max-width:100%}
+#utcConverterDialog #jstDateTime{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:16px;padding:12px 10px;color-scheme:dark}
+#utcConverterDialog .utc-result{width:100%;min-width:0;font-size:clamp(16px,4.8vw,20px);padding:16px 8px}
+#utcConverterDialog #copyUtcTime{width:100%;min-height:46px}
+#utcConverterDialog .utc-copy-status{min-height:20px;margin:0;text-align:center;font-size:13px;color:var(--cyan)}
 </style>
 </head>
 <body>
@@ -1133,7 +1145,7 @@ html,body,.app-shell{overflow-x:clip}
       <div class="modal-header"><h2 id="characterDialogTitle">キャラ追加</h2><button id="closeCharacterDialog" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
       <form id="characterForm" class="form"><div id="characterFormFields"></div><button id="characterSubmit" class="submit-btn" type="submit">保存</button></form>
     </dialog>
-    <dialog id="utcConverterDialog" class="character-dialog"><div class="modal-header"><h2>日本時間 → UTC時間</h2><button id="closeUtcConverter" class="icon-btn" type="button" aria-label="閉じる">×</button></div><div class="utc-converter"><label>日本時間（JST / UTC+9）<input id="jstDateTime" type="datetime-local" step="60"></label><div><small>UTC時間（日本時間 − 9時間）</small><div id="utcResult" class="utc-result" aria-live="polite">—</div></div><button id="copyUtcTime" class="manager-small-btn" type="button">UTC時間をコピー</button></div></dialog>
+    <dialog id="utcConverterDialog" class="character-dialog"><div class="modal-header"><h2>日本時間 → UTC時間</h2><button id="closeUtcConverter" class="icon-btn" type="button" aria-label="閉じる">×</button></div><div class="utc-converter"><label>日本時間（JST / UTC+9）<input id="jstDateTime" type="datetime-local" step="60"></label><div><small>UTC時間（日本時間 − 9時間）</small><div id="utcResult" class="utc-result" aria-live="polite">—</div></div><button id="copyUtcTime" class="manager-small-btn" type="button">UTC時間をコピー</button><p id="utcCopyStatus" class="utc-copy-status" role="status" aria-live="polite"></p></div></dialog>
     <dialog id="serverSettingsDialog" class="character-dialog"><div class="modal-header"><h2>マップ・サーバー設定</h2><button type="button" id="closeServerSettings" class="icon-btn">×</button></div><form id="serverSettingsForm" class="form"><label class="field"><span>マップ</span><select id="settingsMap" required></select></label><label class="field"><span>サーバー番号</span><input id="settingsServer" type="text" inputmode="numeric" required placeholder="例：5999"></label><label class="field"><span>メモ（任意）</span><textarea id="settingsMemo" rows="2" placeholder="例：メイン拠点・資源用サーバー"></textarea></label><button class="submit-btn" type="submit">登録</button></form><div id="serverSettingsList" class="server-settings-list"></div></dialog>
     <dialog id="levelSettingsDialog" class="character-dialog" aria-label="レベル上限解放項目の設定">
       <div class="modal-header"><h2>レベル上限解放の設定</h2><button type="button" id="closeLevelSettings" class="icon-btn">×</button></div>
@@ -1857,7 +1869,22 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  });
  $id('closeUtcConverter').addEventListener('click',()=>dlg.close());
  input.addEventListener('input',convert);
- $id('copyUtcTime').addEventListener('click',async()=>{if(result.textContent==='—')return;try{await navigator.clipboard.writeText(result.textContent)}catch(e){const tmp=document.createElement('textarea');tmp.value=result.textContent;document.body.appendChild(tmp);tmp.select();document.execCommand('copy');tmp.remove()}});
+ const copyBtn=$id('copyUtcTime'),copyStatus=$id('utcCopyStatus');
+ async function copyUtc(){
+  const value=result.textContent;
+  if(!value||value==='—'||value==='入力を確認してください')return;
+  let copied=false;
+  try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);copied=true}}catch(e){}
+  if(!copied){
+   const tmp=document.createElement('textarea');tmp.value=value;tmp.setAttribute('readonly','');tmp.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;z-index:-1';
+   document.body.appendChild(tmp);tmp.focus();tmp.select();tmp.setSelectionRange(0,tmp.value.length);
+   try{copied=document.execCommand('copy')}catch(e){}tmp.remove();
+  }
+  if(copied){copyBtn.textContent='✓ コピーしました';copyStatus.textContent='UTC時間をクリップボードにコピーしました';}
+  else{copyBtn.textContent='コピーできませんでした';copyStatus.textContent='下のUTC時間を長押ししてコピーしてください';result.style.userSelect='text';result.style.webkitUserSelect='text';}
+ }
+ copyBtn.addEventListener('click',copyUtc);
+ input.addEventListener('input',()=>{copyBtn.textContent='UTC時間をコピー';copyStatus.textContent=''});
 })();
 </script>
 </body>
