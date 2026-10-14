@@ -1,0 +1,16 @@
+name = "ark-manager"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ark-manager-push"
+database_id = "b02afda0-745f-4e81-ae52-90d8d08b731c"
+
+[triggers]
+crons = ["* * * * *"]
