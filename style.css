@@ -1095,3 +1095,14 @@ html,body,.app-shell{overflow-x:clip}
 .utc-converter label{display:grid;gap:8px;font-weight:700}
 .utc-result{padding:18px;border-radius:15px;background:rgba(103,187,255,.1);border:1px solid rgba(103,187,255,.25);font-size:20px;font-weight:800;text-align:center;overflow-wrap:anywhere}
 @media(max-width:390px){.character-heading-actions{gap:4px}.character-heading-actions .manager-small-btn{padding:7px 6px;font-size:10px}.section-heading h1{font-size:20px}}
+
+/* UTC converter: prevent iOS datetime input from expanding dialog */
+#utcConverterDialog{width:min(calc(100vw - 28px),560px);max-width:calc(100vw - 28px);min-width:0;box-sizing:border-box;overflow-x:hidden}
+#utcConverterDialog .modal-header{min-width:0;align-items:center}
+#utcConverterDialog .modal-header h2{min-width:0;font-size:clamp(19px,5.2vw,26px);overflow-wrap:anywhere}
+#utcConverterDialog .utc-converter{min-width:0;width:100%;grid-template-columns:minmax(0,1fr)}
+#utcConverterDialog .utc-converter label,#utcConverterDialog .utc-converter>div{min-width:0;max-width:100%}
+#utcConverterDialog #jstDateTime{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:16px;padding:12px 10px;color-scheme:dark}
+#utcConverterDialog .utc-result{width:100%;min-width:0;font-size:clamp(16px,4.8vw,20px);padding:16px 8px}
+#utcConverterDialog #copyUtcTime{width:100%;min-height:46px}
+#utcConverterDialog .utc-copy-status{min-height:20px;margin:0;text-align:center;font-size:13px;color:var(--cyan)}
