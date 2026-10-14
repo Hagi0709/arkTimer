@@ -1106,3 +1106,27 @@ html,body,.app-shell{overflow-x:clip}
 #utcConverterDialog .utc-result{width:100%;min-width:0;font-size:clamp(16px,4.8vw,20px);padding:16px 8px}
 #utcConverterDialog #copyUtcTime{width:100%;min-height:46px}
 #utcConverterDialog .utc-copy-status{min-height:20px;margin:0;text-align:center;font-size:13px;color:var(--cyan)}
+
+/* Match JST input and UTC output to the copy button content width. */
+#utcConverterDialog .utc-converter{padding-left:0;padding-right:0;min-width:0}
+#utcConverterDialog .utc-converter > label,
+#utcConverterDialog .utc-converter > div,
+#utcConverterDialog #copyUtcTime{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+#utcConverterDialog #jstDateTime,
+#utcConverterDialog #utcResult{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;margin:0}
+#utcConverterDialog #jstDateTime{-webkit-appearance:none;appearance:none;overflow:hidden}
+#utcConverterDialog #jstDateTime::-webkit-date-and-time-value{min-width:0;text-align:center}
+#utcConverterDialog #jstDateTime::-webkit-datetime-edit{min-width:0;max-width:100%;padding:0}
+
+/* 2026-10-14: Match native date input to the copy button's inner width. */
+#utcConverterDialog .utc-converter{width:100%;min-width:0;box-sizing:border-box;padding:12px 0;display:grid;grid-template-columns:minmax(0,1fr)}
+#utcConverterDialog .utc-converter>label,#utcConverterDialog .utc-converter>div,#utcConverterDialog #copyUtcTime{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+#utcConverterDialog #jstDateTime{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;margin:0!important;display:block;-webkit-appearance:none;appearance:none}
+#utcConverterDialog #jstDateTime::-webkit-date-and-time-value{min-width:0;max-width:100%;text-align:center}
+#utcConverterDialog #jstDateTime::-webkit-datetime-edit{min-width:0;max-width:100%}
+#utcConverterDialog #utcResult{width:100%;max-width:100%;box-sizing:border-box}
+/* Contain the list page without clipping the fixed navigation or modal layers. */
+#characterPage,#characterListPage,#characterList,.character-list-item{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+#characterListPage{overflow-x:clip}
+.character-list-item>.character-card{min-width:0;max-width:100%}
+.character-list-item>.character-drag-handle{flex-shrink:0}
