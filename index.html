@@ -1943,7 +1943,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
   else toast('コピーできませんでした。編集画面で長押ししてコピーしてください');
  }
  function upload(field,context='detail'){imageField=field;imageContext=context;$('characterImageInput').value='';$('characterImageInput').click()}
- // Remove only near-black regions connected to the outer image border.
+ // Remove only pure black (#000000) pixels connected to the outer image border.
  const appearanceTransparencyCache=new Map();
  function clearOuterDarkBackground(source){
   return new Promise((resolve,reject)=>{
@@ -1956,22 +1956,13 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
      const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);
      const frame=ctx.getImageData(0,0,w,h),data=frame.data,seen=new Uint8Array(w*h),queue=new Int32Array(w*h);
      let head=0,tail=0;
-     const isDark=i=>{const k=i*4,r=data[k],g=data[k+1],b=data[k+2];return data[k+3]<12||(Math.max(r,g,b)<100&&Math.max(r,g,b)-Math.min(r,g,b)<34)};
+     const isDark=i=>{const k=i*4;return data[k+3]===0||(data[k]===0&&data[k+1]===0&&data[k+2]===0)};
      const add=i=>{if(!seen[i]&&isDark(i)){seen[i]=1;queue[tail++]=i}};
      for(let x=0;x<w;x++){add(x);add((h-1)*w+x)}
      for(let y=0;y<h;y++){add(y*w);add(y*w+w-1)}
      while(head<tail){const i=queue[head++],x=i%w,y=(i/w)|0;if(x>0)add(i-1);if(x<w-1)add(i+1);if(y>0)add(i-w);if(y<h-1)add(i+w)}
      // Keep non-connected dark regions (hair, clothes and shadows) intact.
      for(let i=0;i<w*h;i++)if(seen[i])data[i*4+3]=0;
-     // Feather the immediate edge of the retained subject to soften JPEG halos.
-     for(let i=0;i<w*h;i++){
-      if(seen[i])continue;
-      const x=i%w,y=(i/w)|0;
-      if((x>0&&seen[i-1])||(x<w-1&&seen[i+1])||(y>0&&seen[i-w])||(y<h-1&&seen[i+w])){
-       const k=i*4;const peak=Math.max(data[k],data[k+1],data[k+2]);
-       if(peak<155)data[k+3]=Math.round(data[k+3]*Math.max(.15,(peak-75)/80));
-      }
-     }
      ctx.putImageData(frame,0,0);resolve(canvas.toDataURL('image/png'));
     }catch(error){reject(error)}
    };
