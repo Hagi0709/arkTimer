@@ -1269,12 +1269,11 @@ html,body{background:#0b1725!important;background-image:none!important}
       <div class="modal-header"><h2>タイマー通知設定</h2><button id="closeTimerNotificationSettings" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
       <div class="timer-notify-settings">
         <label class="timer-notify-choice"><input type="checkbox" id="timerNotifyEnabled">通知を有効にする</label>
-        <div><strong>期限の何日前・何時間前に通知するか</strong><p>複数選択できます。各タイマー共通の設定です。</p></div>
+        <div><strong>通知タイミング</strong></div>
         <div class="timer-notify-grid" id="timerNotifyDays"></div>
         <button id="timerNotifyPermission" class="submit-btn" type="button">iPhoneの通知を許可する</button>
         <div id="timerNotifyStatus" class="timer-notify-status" role="status"></div>
         <button id="timerNotifySave" class="submit-btn" type="button">設定を保存</button>
-        <p>通知許可はiPhoneのホーム画面に追加したWebアプリから操作してください。現在はアプリを開いている間の通知に対応しています。アプリを閉じた状態での通知には、別途サーバー側のWeb Push配信設定が必要です。</p>
       </div>
     </dialog>
     <button id="add" class="fab hidden" type="button" aria-label="タイマー追加">＋</button>
@@ -1315,7 +1314,7 @@ html,body{background:#0b1725!important;background-image:none!important}
           </select>
           <input id="customMapInput" class="hidden" type="text" maxlength="80" placeholder="マップ名を入力" aria-label="自由入力マップ名">
         </label>
-        <label class="field"><span>サーバー番号</span><input id="timerServerNo" type="text" maxlength="40" inputmode="numeric" placeholder="例：1234（任意）"></label>
+        <label class="field"><span>サーバー番号</span><input id="timerServerNo" type="text" maxlength="40" inputmode="numeric"></label>
 
         <div class="field">
           <span>マップ画像</span>
@@ -1328,7 +1327,7 @@ html,body{background:#0b1725!important;background-image:none!important}
         </div>
 
         <div class="field">
-          <span>座標（任意）</span>
+          <span>座標</span>
           <div class="coord-grid">
             <input id="latInput" type="text" inputmode="decimal" placeholder="緯度">
             <input id="lngInput" type="text" inputmode="decimal" placeholder="経度">
@@ -1475,7 +1474,25 @@ function setPinElement(pinEl,mapName,lat,lng,showPin=true){
   pinEl.style.left=`${pos.left}%`;
   pinEl.style.top=`${pos.top}%`;
 }
-function timerMapValue(){return mapSelect.value==='__custom__'?$('customMapInput').value.trim():mapSelect.value}
+function timerSavedServers(){
+  try{const v=JSON.parse(localStorage.getItem('arkManager_saved_servers_v1')||'[]');return Array.isArray(v)?v.filter(s=>s&&s.map&&s.serverNo&&s.map!=='アップロード中'):[]}catch(e){return []}
+}
+function refreshTimerMapChoices(map='',server=''){
+  const presets=timerSavedServers();
+  const existing=mapSelect.querySelector('optgroup[data-timer-presets]');if(existing)existing.remove();
+  if(presets.length){const group=document.createElement('optgroup');group.label='登録済みマップ';group.dataset.timerPresets='1';
+    presets.forEach((s,i)=>{const option=document.createElement('option');option.value='__preset__'+i;option.textContent=s.map+'：'+s.serverNo+(s.memo?' ('+s.memo+')':'');group.appendChild(option)});
+    mapSelect.insertBefore(group,mapSelect.options[1]||null);
+  }
+  const matching=presets.findIndex(s=>s.map===map&&String(s.serverNo)===String(server)&&String(server)!=='');
+  if(matching>=0){mapSelect.value='__preset__'+matching;return}
+  if(map&&Array.from(mapSelect.options).some(o=>o.value===map)){mapSelect.value=map;return}
+  if(map){mapSelect.value='__custom__';$('customMapInput').value=map;return}
+  mapSelect.value='';
+}
+function timerMapValue(){const v=mapSelect.value;if(v.startsWith('__preset__')){const s=timerSavedServers()[Number(v.slice(10))];return s?s.map:''}return v==='__custom__'?$('customMapInput').value.trim():v}
+function syncTimerServerChoice(){const v=mapSelect.value;if(v.startsWith('__preset__')){const s=timerSavedServers()[Number(v.slice(10))];if(s)$('timerServerNo').value=String(s.serverNo)}else{$('timerServerNo').value=''}syncCustomMapUI()}
+
 function syncCustomMapUI(){const custom=mapSelect.value==='__custom__';$('customMapInput').classList.toggle('hidden',!custom);$('customMapInput').required=custom;refreshImagePreviewForCurrentForm()}
 function refreshPreviewPin(){setPinElement(imagePreviewPin,timerMapValue(),latInput.value,lngInput.value,showPinInput.checked)}
 function refreshImagePreviewForCurrentForm(){const defaultImage=getDefaultImageForMap(timerMapValue());imageModeInput.value='default';state.pendingCustomImage='';imageInput.value='';setPreviewImage(defaultImage||'');refreshPreviewPin()}
@@ -1486,6 +1503,7 @@ function openModal(editTarget=null){
   document.body.style.overflow='hidden';
   if(!editTarget){
     timerForm.reset();
+    refreshTimerMapChoices();
     $('customMapInput').value='';$('customMapInput').classList.add('hidden');$('customMapInput').required=false;
     editIdInput.value='';
     imageModeInput.value='default';
@@ -1502,11 +1520,12 @@ function openModal(editTarget=null){
     return;
   }
   editIdInput.value=editTarget.id;
-  mapSelect.value=MAPS.includes(editTarget.map)?editTarget.map:'__custom__';
-  $('customMapInput').value=MAPS.includes(editTarget.map)?'':(editTarget.map||'');
+  refreshTimerMapChoices(editTarget.map||'',editTarget.serverNo||'');
+  $('customMapInput').value=mapSelect.value==='__custom__'?(editTarget.map||''):'';
   $('customMapInput').classList.toggle('hidden',mapSelect.value!=='__custom__');
   $('customMapInput').required=mapSelect.value==='__custom__';
   typeSelect.value=editTarget.type;
+  $('timerServerNo').value=editTarget.serverNo||'';
   memoInput.value=editTarget.memo||'';
   timerNameInput.value=editTarget.timerName||'';
   latInput.value=editTarget.lat||'';
@@ -1613,7 +1632,7 @@ function render(){
     const remainClass=getRemainClass(remainMs),imageSrc=getTimerImageSrc(timer),timerName=(timer.timerName||'').trim()||'未設定',coordTag=buildCoordTag(timer);
     const card=document.createElement('article');
     card.className=`card${remainMs<=0?' expired':''}`;
-    card.innerHTML=`<div class="img" role="button" tabindex="0" aria-label="マップを拡大"></div><div class="info"><div class="name-row"><div class="timer-name">${escapeHtml(timerName)}</div></div><div class="tags-row"><span class="tag map-tag">${escapeHtml(timer.map)}</span><span class="tag type-tag">${escapeHtml(buildTypeLabel(timer))}</span>${coordTag?`<span class="tag coord-tag">${escapeHtml(coordTag)}</span>`:''}</div><div class="collapse-row"><div class="small"><span>崩壊</span><strong>${formatDateWithWeekday(timer.endsAt)}</strong></div></div><div class="remain"><span class="remain-label">残り</span><span class="remain-value ${remainClass}">${formatRemaining(remainMs)}</span></div><div class="actions">${manualMode?`<div class="move-actions"><button class="action-btn move-btn" type="button" data-action="move-up" data-id="${timer.id}" ${i===0?'disabled':''}>↑</button><button class="action-btn move-btn" type="button" data-action="move-down" data-id="${timer.id}" ${i===sorted.length-1?'disabled':''}>↓</button></div>`:''}<button class="action-btn reset-btn" type="button" data-action="reset" data-id="${timer.id}">リセット</button><button class="action-btn edit-btn" type="button" data-action="edit" data-id="${timer.id}">編集</button><button class="action-btn delete-btn" type="button" data-action="delete" data-id="${timer.id}">削除</button></div></div>`;
+    card.innerHTML=`<div class="img" role="button" tabindex="0" aria-label="マップを拡大"></div><div class="info"><div class="name-row"><div class="timer-name">${escapeHtml(timerName)}</div></div><div class="tags-row"><span class="tag map-tag">${escapeHtml(timer.map)}${timer.serverNo?`：${escapeHtml(timer.serverNo)}`:''}</span><span class="tag type-tag">${escapeHtml(buildTypeLabel(timer))}</span>${coordTag?`<span class="tag coord-tag">${escapeHtml(coordTag)}</span>`:''}</div><div class="collapse-row"><div class="small"><span>崩壊</span><strong>${formatDateWithWeekday(timer.endsAt)}</strong></div></div><div class="remain"><span class="remain-label">残り</span><span class="remain-value ${remainClass}">${formatRemaining(remainMs)}</span></div><div class="actions">${manualMode?`<div class="move-actions"><button class="action-btn move-btn" type="button" data-action="move-up" data-id="${timer.id}" ${i===0?'disabled':''}>↑</button><button class="action-btn move-btn" type="button" data-action="move-down" data-id="${timer.id}" ${i===sorted.length-1?'disabled':''}>↓</button></div>`:''}<button class="action-btn reset-btn" type="button" data-action="reset" data-id="${timer.id}">リセット</button><button class="action-btn edit-btn" type="button" data-action="edit" data-id="${timer.id}">編集</button><button class="action-btn delete-btn" type="button" data-action="delete" data-id="${timer.id}">削除</button></div></div>`;
     const imgEl=card.querySelector('.img');
     if(imageSrc)imgEl.style.backgroundImage=`url("${imageSrc}")`;
     imgEl.addEventListener('click',()=>openMapViewer(timer));
@@ -1634,7 +1653,7 @@ function buildTimerPayload(now,keepId=null,existingSortOrder=null){
   const map=timerMapValue(),type=typeSelect.value,memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'未設定',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
   if(!map){alert('マップを選択してください');return null}
   if(durationMs<=0){alert('タイマーは1分以上で入力してください');return null}
-  return {id:keepId||generateId(),timerName,map,lat,lng,showPin:showPinInput?showPinInput.checked:true,type,material:type==='building'?getSelectedMaterial():null,memo,startedAt:now,endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
+  return {id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,showPin:showPinInput?showPinInput.checked:true,type,material:type==='building'?getSelectedMaterial():null,memo,startedAt:now,endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
 }
 function addTimerFromForm(event){
   event.preventDefault();
@@ -1688,7 +1707,7 @@ function bindEvents(){
   typeSelect.addEventListener('change',syncTypeUI);
   timerForm.addEventListener('submit',addTimerFromForm);
   list.addEventListener('click',bindListActions);
-  mapSelect.addEventListener('change',syncCustomMapUI);
+  mapSelect.addEventListener('change',syncTimerServerChoice);
   $('customMapInput').addEventListener('input',()=>{if(mapSelect.value==='__custom__')refreshPreviewPin()});
   latInput.addEventListener('input',refreshPreviewPin);
   lngInput.addEventListener('input',refreshPreviewPin);
@@ -1924,8 +1943,56 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
   else toast('コピーできませんでした。編集画面で長押ししてコピーしてください');
  }
  function upload(field,context='detail'){imageField=field;imageContext=context;$('characterImageInput').value='';$('characterImageInput').click()}
+ // Remove only near-black regions connected to the outer image border.
+ const appearanceTransparencyCache=new Map();
+ function clearOuterDarkBackground(source){
+  return new Promise((resolve,reject)=>{
+   const img=new Image();
+   img.onload=()=>{
+    try{
+     const maxSide=900,scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
+     const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
+     const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+     const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);
+     const frame=ctx.getImageData(0,0,w,h),data=frame.data,seen=new Uint8Array(w*h),queue=new Int32Array(w*h);
+     let head=0,tail=0;
+     const isDark=i=>{const k=i*4,r=data[k],g=data[k+1],b=data[k+2];return data[k+3]<12||(Math.max(r,g,b)<100&&Math.max(r,g,b)-Math.min(r,g,b)<34)};
+     const add=i=>{if(!seen[i]&&isDark(i)){seen[i]=1;queue[tail++]=i}};
+     for(let x=0;x<w;x++){add(x);add((h-1)*w+x)}
+     for(let y=0;y<h;y++){add(y*w);add(y*w+w-1)}
+     while(head<tail){const i=queue[head++],x=i%w,y=(i/w)|0;if(x>0)add(i-1);if(x<w-1)add(i+1);if(y>0)add(i-w);if(y<h-1)add(i+w)}
+     // Keep non-connected dark regions (hair, clothes and shadows) intact.
+     for(let i=0;i<w*h;i++)if(seen[i])data[i*4+3]=0;
+     // Feather the immediate edge of the retained subject to soften JPEG halos.
+     for(let i=0;i<w*h;i++){
+      if(seen[i])continue;
+      const x=i%w,y=(i/w)|0;
+      if((x>0&&seen[i-1])||(x<w-1&&seen[i+1])||(y>0&&seen[i-w])||(y<h-1&&seen[i+w])){
+       const k=i*4;const peak=Math.max(data[k],data[k+1],data[k+2]);
+       if(peak<155)data[k+3]=Math.round(data[k+3]*Math.max(.15,(peak-75)/80));
+      }
+     }
+     ctx.putImageData(frame,0,0);resolve(canvas.toDataURL('image/png'));
+    }catch(error){reject(error)}
+   };
+   img.onerror=()=>reject(Error('image decode'));
+   img.src=source;
+  });
+ }
+ function applyAppearanceTransparency(root=document){
+  root.querySelectorAll('img.character-avatar,img.character-photo').forEach(el=>{
+   if(el.classList.contains('character-photo')&&el.alt!=='見た目画像')return;
+   const original=el.getAttribute('src');if(!original||el.dataset.transparencySource===original||el.dataset.transparencyResult===original)return;
+   el.dataset.transparencySource=original;
+   if(!appearanceTransparencyCache.has(original))appearanceTransparencyCache.set(original,clearOuterDarkBackground(original).catch(()=>original));
+   appearanceTransparencyCache.get(original).then(result=>{if(el.isConnected&&el.dataset.transparencySource===original)el.dataset.transparencyResult=result;el.src=result});
+  });
+ }
+ const appearanceObserver=new MutationObserver(()=>applyAppearanceTransparency());
+ appearanceObserver.observe($('characterList'),{childList:true,subtree:true});
+ appearanceObserver.observe($('characterDetail'),{childList:true,subtree:true});
  function compressImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/'))return reject(Error('image'));const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{try{const scale=Math.min(1,1200/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.8))}catch(e){reject(e)}finally{URL.revokeObjectURL(url)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('decode'))};img.src=url})}
- $('characterImageInput').addEventListener('change',async e=>{const file=e.target.files[0],field=imageField;if(!file)return;toast('画像を読み込んでいます…');try{const src=await compressImage(file);if(imageContext==='form'){pendingFormImages[field]=src;refreshFormImage(field);toast('画像を追加しました');return}const c=selected();if(!c)return;const current=records.find(r=>r.id===c.id);if(current&&await persistChange({...current,[field]:src}))toast('画像を保存しました')}catch(e){toast('画像を読み込めませんでした。JPEG・PNGなどで再選択してください')}});
+ $('characterImageInput').addEventListener('change',async e=>{const file=e.target.files[0],field=imageField;if(!file)return;toast('画像を読み込んでいます…');try{const src=field==='appearance'?await clearOuterDarkBackground(await compressImage(file)):await compressImage(file);if(imageContext==='form'){pendingFormImages[field]=src;refreshFormImage(field);toast('画像を追加しました');return}const c=selected();if(!c)return;const current=records.find(r=>r.id===c.id);if(current&&await persistChange({...current,[field]:src}))toast('画像を保存しました')}catch(e){toast('画像を読み込めませんでした。JPEG・PNGなどで再選択してください')}});
  $('characterFormFields').addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;if(button.dataset.formUpload)return upload(button.dataset.formUpload,'form');if(button.dataset.formRemove){pendingFormImages[button.dataset.formRemove]='';refreshFormImage(button.dataset.formRemove)}});
  $('openLevelSettings').addEventListener('click',openLevelSettings);
  $('closeLevelSettings').addEventListener('click',()=>closeDialog($('levelSettingsDialog')));
@@ -1939,7 +2006,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
   if(!window.confirm(`「${rule.name}」を削除しますか？\nキャラの上限計算からも除外されます。`))return;
   const old=levelRules;levelRules=levelRules.filter(r=>r.id!==id);try{saveLevelRules()}catch(err){levelRules=old;return toast('削除できませんでした')}renderLevelSettings();renderCharacters();if(selectedId)renderDetail()});
  $('characterDetail').addEventListener('change',async e=>{const note=e.target.closest('[data-ext-note]');if(note){const c=selected();if(!c)return;const opened=[...$('characterDetail').querySelectorAll('.ext-note-group[open]')].map(x=>x.dataset.noteGroup);const ids=new Set(Array.isArray(c.extNotes)?c.extNotes:[]);if(note.checked)ids.add(note.dataset.extNote);else{const label=note.closest('label')?.querySelector('.ext-note-name')?.firstChild?.textContent||'このノート';if(!window.confirm(`「${label}」の取得チェックを解除しますか？`)){note.checked=true;return}ids.delete(note.dataset.extNote);}const ok=await persistChange({...c,extNotes:[...ids]});if(ok)opened.forEach(i=>{const d=$('characterDetail').querySelector(`.ext-note-group[data-note-group="${i}"]`);if(d)d.open=true});else note.checked=!note.checked;return}const boss=e.target.closest('[data-level-boss]');if(boss){const c=selected();if(!c)return;const id=boss.dataset.levelBoss,tier=boss.value;const next={...c,levelBossTiers:{...(c.levelBossTiers||{}),[id]:tier}};await persistChange(next);return}const tribe=e.target.closest('[data-tribe-map]');if(tribe){const c=selected();if(!c)return;if(!tribe.checked){const label=tribe.closest('label')?.querySelector('span')?.textContent||'このマップ';if(!window.confirm(`「${label}」のトライブ所属を解除しますか？`)){tribe.checked=true;return}}const next={...c,tribeByMap:{...(c.tribeByMap||{}),[tribe.dataset.tribeMap]:tribe.checked}};if(!await persistChange(next))tribe.checked=!tribe.checked;return}const input=e.target.closest('[data-level-id]');if(!input)return;const c=selected();if(!c)return;const id=input.dataset.levelId;if(!levelRules.some(r=>r.id===id))return;const ids=new Set(checkedLevelIds(c));if(input.checked)ids.add(id);else{const label=input.closest('label')?.querySelector('span')?.textContent||'この項目';if(!window.confirm(`「${label}」のレベル上限解放チェックを解除しますか？`)){input.checked=true;return}ids.delete(id);if(id.startsWith('bobs_'))ids.delete('bobs_tall_tales');}const tiers={...(c.levelBossTiers||{})};if(bossRule(levelRules.find(r=>r.id===id))){if(input.checked&&!tiers[id])tiers[id]='alpha'}const ok=await persistChange({...c,levelUnlocks:[...ids],levelBossTiers:tiers});if(!ok)input.checked=!input.checked});
- $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.hasAttribute('data-open-level-settings'))return openLevelSettings();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy,btn);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];$('characterViewerImage').alt=field==='appearance'?'見た目画像':'インプラント画像';openDialog($('characterViewer'));return}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('画像の削除','この画像を削除しますか？'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('キャラの削除',`「${c.name}」を削除しますか？`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('キャラを削除しました')}catch(e){toast('削除できませんでした')}}});
+ $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.hasAttribute('data-open-level-settings'))return openLevelSettings();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy,btn);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];if(field==='appearance')clearOuterDarkBackground(c[field]).then(src=>{if($('characterViewerImage').isConnected)$('characterViewerImage').src=src}).catch(()=>{});$('characterViewerImage').alt=field==='appearance'?'見た目画像':'インプラント画像';openDialog($('characterViewer'));return}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('画像の削除','この画像を削除しますか？'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('キャラの削除',`「${c.name}」を削除しますか？`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('キャラを削除しました')}catch(e){toast('削除できませんでした')}}});
  function installReorder(container,handleSelector,itemSelector,onOrder){
  let active=null,pointer=null,startY=0,engaged=false,timer=null;
  const stop=()=>{
