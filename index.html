@@ -1856,13 +1856,13 @@ init();
  function imageBlock(c,field,label){return `<button type="button" class="character-image-button" data-photo="${field}" aria-label="${label}${c[field]?'を拡大':'を登録'}">${c[field]?`<img class="character-photo" src="${esc(c[field])}" alt="${label}">`:`<span class="photo-placeholder">＋ ${label}を登録</span>`}</button>${c[field]?`<div class="photo-actions"><button class="manager-small-btn" data-upload="${field}" type="button">画像を変更</button><button class="manager-small-btn" data-remove-photo="${field}" type="button">画像を削除</button></div>`:''}`}
  function tribeMapKey(map,server){return JSON.stringify([map||'',server||''])}
  function tribeMembershipPanel(c){
-  const places=[...savedServers];
-  if(c.map&&!places.some(s=>s.map===c.map&&s.serverNo===c.serverNo))places.unshift({map:c.map,serverNo:c.serverNo||'-'});
+  const places=savedServers.filter(s=>s.map!=='アップロード中');
+  if(c.map&&c.map!=='アップロード中'&&!places.some(s=>s.map===c.map&&s.serverNo===c.serverNo))places.unshift({map:c.map,serverNo:c.serverNo||'-'});
   const checked=c.tribeByMap||{};
   return `<section class="level-panel"><h2>マップ別トライブ所属</h2><div class="level-check-list">${places.map(s=>{const key=tribeMapKey(s.map,s.serverNo);const yes=Object.prototype.hasOwnProperty.call(checked,key)?checked[key]:Boolean(c.tribeMember&&s.map===c.map&&s.serverNo===c.serverNo);return `<label class="level-check-item"><input type="checkbox" data-tribe-map="${esc(key)}" ${yes?'checked':''}><span>${esc(s.map)}：${esc(s.serverNo)}${s.memo?`（${esc(s.memo)}）`:''}</span></label>`}).join('')||'<p class="eos-help">マップ・サーバーを登録してください。</p>'}</div></section>`;
  }
  function newCharacterPanels(){
-  const places=[...savedServers];
+  const places=savedServers.filter(s=>s.map!=='アップロード中');
   const mapOptionsForTribe=places.map(s=>{const key=tribeMapKey(s.map,s.serverNo);return `<label class="level-check-item"><input type="checkbox" data-new-tribe="${esc(key)}"><span>${esc(s.map)}：${esc(s.serverNo)}${s.memo?`（${esc(s.memo)}）`:''}</span></label>`}).join('');
   return `<section class="level-panel"><h2>マップ別トライブ所属</h2><div class="level-check-list" id="newCharacterTribes">${mapOptionsForTribe||'<p class="eos-help">登録済みのマップはありません。</p>'}</div></section><section class="level-panel"><h2>レベル上限解放</h2><div class="level-summary" id="newCharacterLevelSummary">現在の上限：Lv ${LEVEL_BASE}</div><div class="level-check-list">${levelRules.map(r=>levelRuleMarkup(r,{levelUnlocks:[],levelBossTiers:{}},true)).join('')}</div></section>`;
  }
@@ -1961,22 +1961,23 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
      const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
      const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);
-     const frame=ctx.getImageData(0,0,w,h),data=frame.data,seen=new Uint8Array(w*h),queue=new Int32Array(w*h);
-     let head=0,tail=0;
-     const isDark=i=>{const k=i*4;return data[k+3]===0||(data[k]===0&&data[k+1]===0&&data[k+2]===0)};
-     const add=i=>{if(!seen[i]&&isDark(i)){seen[i]=1;queue[tail++]=i}};
-     for(let x=0;x<w;x++){add(x);add((h-1)*w+x)}
-     for(let y=0;y<h;y++){add(y*w);add(y*w+w-1)}
-     while(head<tail){const i=queue[head++],x=i%w,y=(i/w)|0;if(x>0)add(i-1);if(x<w-1)add(i+1);if(y>0)add(i-w);if(y<h-1)add(i+w)}
-     // Keep non-connected dark regions (hair, clothes and shadows) intact.
-     for(let i=0;i<w*h;i++)if(seen[i])data[i*4+3]=0;
-     ctx.putImageData(frame,0,0);
-     // Letterbox to a square without cropping or stretching the survivor.
+     // First place the entire image on a black square without cropping.
      const side=Math.max(w,h);
      const square=document.createElement('canvas');square.width=side;square.height=side;
-     const squareCtx=square.getContext('2d');
+     const squareCtx=square.getContext('2d',{willReadFrequently:true});
      squareCtx.fillStyle='#000000';squareCtx.fillRect(0,0,side,side);
      squareCtx.drawImage(canvas,Math.floor((side-w)/2),Math.floor((side-h)/2));
+     // Then remove only pure black connected to the square's outer edge.
+     const frame=squareCtx.getImageData(0,0,side,side),data=frame.data;
+     const seen=new Uint8Array(side*side),queue=new Int32Array(side*side);
+     let head=0,tail=0;
+     const isBlack=i=>{const k=i*4;return data[k+3]===0||(data[k]===0&&data[k+1]===0&&data[k+2]===0)};
+     const add=i=>{if(!seen[i]&&isBlack(i)){seen[i]=1;queue[tail++]=i}};
+     for(let x=0;x<side;x++){add(x);add((side-1)*side+x)}
+     for(let y=0;y<side;y++){add(y*side);add(y*side+side-1)}
+     while(head<tail){const i=queue[head++],x=i%side,y=(i/side)|0;if(x>0)add(i-1);if(x<side-1)add(i+1);if(y>0)add(i-side);if(y<side-1)add(i+side)}
+     for(let i=0;i<side*side;i++)if(seen[i])data[i*4+3]=0;
+     squareCtx.putImageData(frame,0,0);
      resolve(square.toDataURL('image/png'));
     }catch(error){reject(error)}
    };
