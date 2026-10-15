@@ -1215,6 +1215,16 @@ html,body{background:#0b1725!important;background-image:none!important}
 #characterList .character-avatar{display:block;width:112px;height:112px;min-height:112px;max-height:112px;flex:0 0 112px;align-self:center;object-fit:contain;object-position:center;background:#000;border-radius:10px}
 #characterList .character-summary{min-width:0;align-self:center}
 @media(max-width:380px){#characterList .character-avatar{width:94px;height:94px;min-height:94px;max-height:94px;flex-basis:94px}}
+/* Character list: keep level and map values on one line. */
+#characterList .character-avatar{width:92px;height:92px;min-height:92px;max-height:92px;flex-basis:92px}
+#characterList .character-card{gap:9px;padding-right:9px}
+#characterList .character-summary{min-width:0;flex:1 1 0}
+#characterList .character-meta-list{font-size:11px;min-width:0}
+#characterList .character-meta-list span{grid-template-columns:56px minmax(0,1fr);gap:4px;white-space:nowrap;overflow-wrap:normal;min-width:0}
+#characterList .character-meta-list b{white-space:nowrap}
+#characterList .character-meta-list span{overflow:hidden;text-overflow:ellipsis}
+#characterList .character-chevron{flex:0 0 auto}
+@media(max-width:380px){#characterList .character-avatar{width:78px;height:78px;min-height:78px;max-height:78px;flex-basis:78px}#characterList .character-meta-list{font-size:10px}#characterList .character-meta-list span{grid-template-columns:50px minmax(0,1fr);gap:3px}}
 </style>
 </head>
 <body>
