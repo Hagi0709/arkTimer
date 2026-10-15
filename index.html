@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>ARK Manager</title>
-  <link rel="manifest" href="/manifest.webmanifest">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="ARK Manager">
   <link rel="apple-touch-icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
   <link rel="icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
   <style>
@@ -1272,12 +1269,12 @@ html,body{background:#0b1725!important;background-image:none!important}
       <div class="modal-header"><h2>タイマー通知設定</h2><button id="closeTimerNotificationSettings" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
       <div class="timer-notify-settings">
         <label class="timer-notify-choice"><input type="checkbox" id="timerNotifyEnabled">通知を有効にする</label>
-        <div><strong>期限の何日前に通知するか</strong><p>複数選択できます。各タイマー共通の設定です。</p></div>
+        <div><strong>期限の何日前・何時間前に通知するか</strong><p>複数選択できます。各タイマー共通の設定です。</p></div>
         <div class="timer-notify-grid" id="timerNotifyDays"></div>
         <button id="timerNotifyPermission" class="submit-btn" type="button">iPhoneの通知を許可する</button>
         <div id="timerNotifyStatus" class="timer-notify-status" role="status"></div>
         <button id="timerNotifySave" class="submit-btn" type="button">設定を保存</button>
-        <p>通知許可はiPhoneのホーム画面に追加したWebアプリから操作してください。Cloudflareへの通知登録後は、アプリを閉じた状態でも通知を受信できます。配信は最大約1分遅れる場合があります。</p>
+        <p>通知許可はiPhoneのホーム画面に追加したWebアプリから操作してください。現在はアプリを開いている間の通知に対応しています。アプリを閉じた状態での通知には、別途サーバー側のWeb Push配信設定が必要です。</p>
       </div>
     </dialog>
     <button id="add" class="fab hidden" type="button" aria-label="タイマー追加">＋</button>
@@ -1404,62 +1401,14 @@ window.ARKCopyText=async function(value){
 };
 const TIMER_NOTIFY_KEY='arkTimer_notification_settings_v1';
 const TIMER_NOTIFY_SENT_KEY='arkTimer_notification_sent_v1';
-let timerNotifySettings={enabled:false,days:[1]};
+let timerNotifySettings={enabled:false,days:[1],hours:[]};
 let timerNotifySent={};
-try{const saved=JSON.parse(localStorage.getItem(TIMER_NOTIFY_KEY)||'null');if(saved&&typeof saved==='object')timerNotifySettings={enabled:!!saved.enabled,days:Array.isArray(saved.days)?saved.days.filter(n=>Number.isInteger(n)&&n>=0&&n<=7):[1]};const sent=JSON.parse(localStorage.getItem(TIMER_NOTIFY_SENT_KEY)||'{}');if(sent&&typeof sent==='object')timerNotifySent=sent}catch(e){}
-let pushSubscription=null;
-const PUSH_DEVICE_TOKEN_KEY='arkManager_push_device_token_v1';
-function pushDeviceToken(){let t=localStorage.getItem(PUSH_DEVICE_TOKEN_KEY);if(!t){const b=crypto.getRandomValues(new Uint8Array(32));t=Array.from(b,v=>v.toString(16).padStart(2,'0')).join('');localStorage.setItem(PUSH_DEVICE_TOKEN_KEY,t)}return t}
-let pushSyncTimer=null;
-function pushStatus(message){const el=document.getElementById('timerNotifyStatus');if(el)el.textContent=message}
-function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
-function timerNotificationStatus(){
- if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){pushStatus('このブラウザはWeb Pushに対応していません。');return}
- if(!isStandalone()&&/iPhone|iPad|iPod/.test(navigator.userAgent)){pushStatus('iPhoneではSafariの共有から「ホーム画面に追加」し、そのアイコンから開いてください。');return}
- if(Notification.permission==='denied'){pushStatus('通知が拒否されています。iPhoneの設定でARK Managerの通知を許可してください。');return}
- pushStatus(Notification.permission==='granted'?'通知許可済み。設定を保存するとサーバーに登録します。':'「iPhoneの通知を許可する」を押してください。')
-}
-function openTimerNotificationSettings(){const dialog=document.getElementById('timerNotificationDialog');document.getElementById('timerNotifyEnabled').checked=timerNotifySettings.enabled;document.getElementById('timerNotifyDays').innerHTML=Array.from({length:8},(_,i)=>{const d=7-i;return `<label class="timer-notify-choice"><input type="checkbox" value="${d}" ${timerNotifySettings.days.includes(d)?'checked':''}>${d===0?'期限当日':d+'日前'}</label>`}).join('');timerNotificationStatus();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','')}
+try{const saved=JSON.parse(localStorage.getItem(TIMER_NOTIFY_KEY)||'null');if(saved&&typeof saved==='object')timerNotifySettings={enabled:!!saved.enabled,days:Array.isArray(saved.days)?saved.days.filter(n=>Number.isInteger(n)&&n>=1&&n<=7):[1],hours:Array.isArray(saved.hours)?saved.hours.filter(n=>Number.isInteger(n)&&n>=1&&n<=23):[]};const sent=JSON.parse(localStorage.getItem(TIMER_NOTIFY_SENT_KEY)||'{}');if(sent&&typeof sent==='object')timerNotifySent=sent}catch(e){}
+function timerNotificationStatus(){const el=document.getElementById('timerNotifyStatus');if(!el)return;const supported='Notification' in window;el.textContent=!supported?'この環境では通知に対応していません。':Notification.permission==='granted'?'通知は許可されています。':Notification.permission==='denied'?'通知がブロックされています。iPhoneの設定から許可してください。':'通知はまだ許可されていません。'}
+function openTimerNotificationSettings(){const dialog=document.getElementById('timerNotificationDialog');document.getElementById('timerNotifyEnabled').checked=timerNotifySettings.enabled;document.getElementById('timerNotifyDays').innerHTML=Array.from({length:7},(_,i)=>{const d=7-i;return `<label class="timer-notify-choice"><input type="checkbox" data-unit="day" value="${d}" ${timerNotifySettings.days.includes(d)?'checked':''}>${d}日前</label>`}).join('')+Array.from({length:23},(_,i)=>{const h=23-i;return `<label class="timer-notify-choice"><input type="checkbox" data-unit="hour" value="${h}" ${timerNotifySettings.hours.includes(h)?'checked':''}>${h}時間前</label>`}).join('');timerNotificationStatus();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','')}
 function closeTimerNotificationSettings(){const dialog=document.getElementById('timerNotificationDialog');if(dialog.open&&typeof dialog.close==='function')dialog.close();else dialog.removeAttribute('open')}
-function checkTimerNotifications(){/* バックグラウンド配信はCloudflare側が担当。二重通知を避けるためページ内通知は行わない。 */}
-function b64ToUint8(base64){const s=atob(base64.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-base64.length%4)%4));return Uint8Array.from(s,c=>c.charCodeAt(0))}
-async function registerPush(){
- if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))throw Error('この環境はWeb Push非対応です');
- if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!isStandalone())throw Error('Safariからホーム画面に追加して開いてください');
- const reg=await navigator.serviceWorker.register('/sw.js',{scope:'/'});
- let sub=await reg.pushManager.getSubscription();
- if(!sub){
-  if(Notification.permission!=='granted'){const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('通知が許可されませんでした')}
-  const r=await fetch('/api/push/key',{cache:'no-store'});if(!r.ok)throw Error('Cloudflareの通知APIが未設定です');const {publicKey}=await r.json();
-  sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToUint8(publicKey)});
- }
- pushSubscription=sub;return sub;
-}
-async function syncPush(){
- if(!timerNotifySettings.enabled){if(!pushSubscription&&'serviceWorker' in navigator){try{pushSubscription=await (await navigator.serviceWorker.ready).pushManager.getSubscription()}catch(e){}}if(pushSubscription){try{await fetch('/api/push/unsubscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:pushDeviceToken()})})}catch(e){throw Error('通知の停止をサーバーに反映できませんでした')} }return}
- if(Notification.permission!=='granted')return;
- const sub=await registerPush();
- const timers=state.timers.filter(t=>Number.isFinite(Number(t.endsAt))).map(t=>({id:String(t.id),name:String(t.timerName||'未設定').slice(0,100),map:String(t.map||'').slice(0,60),endsAt:Number(t.endsAt)}));
- const response=await fetch('/api/push/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:pushDeviceToken(),subscription:sub.toJSON(),timers,days:timerNotifySettings.days})});
- if(!response.ok)throw Error('通知予定の保存に失敗しました（'+response.status+'）');
-}
-function schedulePushSync(){clearTimeout(pushSyncTimer);pushSyncTimer=setTimeout(()=>{if(timerNotifySettings.enabled&&Notification.permission==='granted')syncPush().catch(e=>console.warn('Push sync:',e.message))},1000)}
-function initTimerNotificationSettings(){
- document.getElementById('openTimerNotificationSettings').addEventListener('click',openTimerNotificationSettings);
- document.getElementById('closeTimerNotificationSettings').addEventListener('click',closeTimerNotificationSettings);
- document.getElementById('timerNotifyPermission').addEventListener('click',async()=>{try{await registerPush();pushStatus('通知を許可しました。設定を保存してください。')}catch(e){pushStatus(e.message)}});
- document.getElementById('timerNotifySave').addEventListener('click',async()=>{
-  const days=[...document.querySelectorAll('#timerNotifyDays input:checked')].map(el=>Number(el.value)).sort((a,b)=>b-a);
-  const enabled=document.getElementById('timerNotifyEnabled').checked;
-  if(enabled&&!days.length){pushStatus('通知する日数を1つ以上選択してください。');return}
-  if(enabled){try{await registerPush()}catch(e){pushStatus(e.message);return}}
-  timerNotifySettings={enabled,days};try{localStorage.setItem(TIMER_NOTIFY_KEY,JSON.stringify(timerNotifySettings))}catch(e){pushStatus('設定の保存に失敗しました');return}
-  try{await syncPush();pushStatus('Cloudflareに通知予定を保存しました。');setTimeout(closeTimerNotificationSettings,800)}catch(e){pushStatus(e.message)}
- });
- if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
- window.addEventListener('online',schedulePushSync);
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedulePushSync()});
-}
+function checkTimerNotifications(){if(!timerNotifySettings.enabled||!('Notification' in window)||Notification.permission!=='granted')return;const now=Date.now();let changed=false;for(const timer of state.timers){if(!Number.isFinite(Number(timer.endsAt)))continue;for(const [unit,values,multiplier] of [['day',timerNotifySettings.days,86400000],['hour',timerNotifySettings.hours,3600000]]){for(const amount of values){const trigger=Number(timer.endsAt)-amount*multiplier;const key=String(timer.id)+'|'+Number(timer.endsAt)+'|'+unit+'|'+amount;if(now>=trigger&&now-trigger<90000&&!timerNotifySent[key]){timerNotifySent[key]=now;changed=true;try{new Notification('ARK Manager｜タイマー通知',{body:`${timer.timerName||'未設定'}（${timer.map||'マップ未設定'}）の期限まで${amount}${unit==='day'?'日':'時間'}です。`,tag:key})}catch(e){}}}}}if(changed){try{localStorage.setItem(TIMER_NOTIFY_SENT_KEY,JSON.stringify(timerNotifySent))}catch(e){}}}
+function initTimerNotificationSettings(){document.getElementById('openTimerNotificationSettings').addEventListener('click',openTimerNotificationSettings);document.getElementById('closeTimerNotificationSettings').addEventListener('click',closeTimerNotificationSettings);document.getElementById('timerNotifyPermission').addEventListener('click',async()=>{if(!('Notification' in window)){timerNotificationStatus();return}try{await Notification.requestPermission()}catch(e){}timerNotificationStatus()});document.getElementById('timerNotifySave').addEventListener('click',()=>{const days=[...document.querySelectorAll('#timerNotifyDays input[data-unit="day"]:checked')].map(el=>Number(el.value)).sort((a,b)=>b-a);const hours=[...document.querySelectorAll('#timerNotifyDays input[data-unit="hour"]:checked')].map(el=>Number(el.value)).sort((a,b)=>b-a);timerNotifySettings={enabled:document.getElementById('timerNotifyEnabled').checked,days,hours};try{localStorage.setItem(TIMER_NOTIFY_KEY,JSON.stringify(timerNotifySettings))}catch(e){alert('設定を保存できませんでした');return}closeTimerNotificationSettings();checkTimerNotifications()});}
 const STORAGE_KEY='arkTimer_store_v8';
 const MAPS=['アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー'];
 const DEFAULT_MAP_IMAGES={'アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
@@ -1498,7 +1447,6 @@ function normalizeTimers(){
 function save(){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.timers));
   localStorage.setItem(SORT_KEY,state.sortMode);
-  schedulePushSync();
 }
 
 function generateId(){return `timer_${Date.now()}_${Math.random().toString(36).slice(2,9)}`}
@@ -1761,7 +1709,6 @@ function init(){
   refreshImagePreviewForCurrentForm();
   render();
   startTicker();
-  schedulePushSync();
 }
 init();
 
