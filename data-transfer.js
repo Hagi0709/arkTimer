@@ -64,6 +64,13 @@
       }
       if (t.manualPin != null && (!object(t.manualPin) || ['left','top'].some(key =>
         !Number.isFinite(t.manualPin[key]) || t.manualPin[key] < 0 || t.manualPin[key] > 100))) fail();
+      if (t.notificationSettings !== undefined) {
+        const settings = t.notificationSettings;
+        if (!object(settings) || typeof settings.enabled !== 'boolean') fail();
+        for (const [key, max] of [['days',7],['hours',23]]) if (!Array.isArray(settings[key]) ||
+          settings[key].some(n => !Number.isInteger(n) || n < 1 || n > max)) fail();
+        if (settings.enabled && !settings.days.length && !settings.hours.length) fail();
+      }
     });
     list(data.servers, s => { string(s.map, 80); string(s.serverNo, 100); if (s.memo !== undefined) string(s.memo); },
       s => JSON.stringify([s.map, s.serverNo]));
@@ -135,7 +142,10 @@
         sortOrder: existing.length ? nextOrder + i : item.sortOrder ?? i }));
     }
     const characters = additions(current.characters, incoming.characters, remap);
-    const timers = additions(current.timers, incoming.timers);
+    const legacyDays=[...new Set(incoming.notificationSettings.days.filter(n=>n>=1))],legacyHours=[...new Set(incoming.notificationSettings.hours)];
+    const timers = additions(current.timers, incoming.timers, timer=>({...timer,
+      notificationSettings:timer.notificationSettings??{enabled:!!(legacyDays.length||legacyHours.length),days:[...legacyDays],hours:[...legacyHours]}
+    }));
     const servers = current.servers.slice(), serverIds = new Set(servers.map(s => JSON.stringify([s.map,s.serverNo])));
     for (const server of incoming.servers) if (!serverIds.has(JSON.stringify([server.map,server.serverNo]))) servers.push({ ...server });
     return {

@@ -32,8 +32,8 @@ function notificationOffsets(body) {
 }
 
 async function sync(body, env) {
-  const offsets = notificationOffsets(body);
-  if (!validSubscription(body.subscription) || !offsets?.length ||
+  const defaultOffsets = notificationOffsets(body);
+  if (!validSubscription(body.subscription) || defaultOffsets === null ||
       !Array.isArray(body.timers) || body.timers.length > 50) {
     return json({ error: '通知時刻・購読情報・タイマー（最大50件）を確認してください' }, 400);
   }
@@ -50,6 +50,20 @@ async function sync(body, env) {
         !Number.isSafeInteger(timer.endsAt) || timer.endsAt > now + 10000 * DAY ||
         (timer.startedAt !== undefined && (!Number.isSafeInteger(timer.startedAt) || timer.startedAt > timer.endsAt))) {
       return json({ error: 'invalid timer' }, 400);
+    }
+    let offsets = defaultOffsets;
+    if (timer.notificationSettings !== undefined) {
+      const settings = timer.notificationSettings;
+      if (!settings || typeof settings !== 'object' || Array.isArray(settings) ||
+          typeof settings.enabled !== 'boolean' || !Array.isArray(settings.days) || !Array.isArray(settings.hours) ||
+          settings.days.some(n => !Number.isInteger(n) || n < 1 || n > 7)) {
+        return json({ error: 'invalid timer notification settings' }, 400);
+      }
+      const customOffsets = notificationOffsets(settings);
+      if (customOffsets === null || (settings.enabled && !customOffsets.length)) {
+        return json({ error: 'invalid timer notification settings' }, 400);
+      }
+      offsets = settings.enabled ? customOffsets : [];
     }
     for (const offset of offsets) {
       const due = timer.endsAt - offset.ms;
@@ -100,7 +114,7 @@ async function api(req, env) {
   if (!configured(env)) return json({ error: '通知サーバーの設定が不足しています' }, 503);
   const path = new URL(req.url).pathname;
   if (req.method === 'GET' && path === '/api/push/key') {
-    return json({ publicKey: env.VAPID_PUBLIC_KEY, protocol: 2, workerVersion: env.CF_VERSION_METADATA?.id ?? null });
+    return json({ publicKey: env.VAPID_PUBLIC_KEY, protocol: 2, timerNotifications: true, workerVersion: env.CF_VERSION_METADATA?.id ?? null });
   }
   if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
   const text = await req.text();

@@ -11,7 +11,15 @@
     let saved;
     try { saved = JSON.parse(localStorage.getItem(SETTINGS) || 'null'); } catch {}
     const days=clean(saved?.days ?? [1],1,7),hours=clean(saved?.hours,1,23);
-    return { enabled: !!saved?.enabled && !!(days.length || hours.length), days, hours };
+    return { enabled: !!saved?.enabled, days, hours };
+  }
+  function timerNotificationSettings(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value) || typeof value.enabled !== 'boolean' ||
+        !Array.isArray(value.days) || !Array.isArray(value.hours) ||
+        value.days.some(n => !Number.isInteger(n) || n < 1 || n > 7) ||
+        value.hours.some(n => !Number.isInteger(n) || n < 1 || n > 23) ||
+        (value.enabled && !value.days.length && !value.hours.length)) throw Error('タイマーの通知時刻を確認してください。');
+    return { enabled: value.enabled, days: [...new Set(value.days)], hours: [...new Set(value.hours)] };
   }
   const applicationKey = key => Uint8Array.from(atob(key.replace(/-/g, '+').replace(/_/g, '/') +
     '='.repeat((4 - key.length % 4) % 4)), c => c.charCodeAt(0));
@@ -19,12 +27,13 @@
   class PushController {
     constructor({ getTimers }) {
       this.getTimers = getTimers;
-      this.settings = readSettings();
+      this.settings = this.readSettings();
       this.revision = Number(localStorage.getItem(REVISION)) || 0;
       this.pending = localStorage.getItem(PENDING) === '1';
       this.subscription = null;
       this.retryDelay = 1000;
     }
+    readSettings() { return readSettings(); }
     supported() {
       return window.isSecureContext && 'Notification' in window && 'PushManager' in window && 'serviceWorker' in navigator;
     }
@@ -85,6 +94,7 @@
         if (!response.ok) throw Error('通知サーバーに接続できません（' + response.status + '）。');
         const key = await response.json();
         if (key.protocol !== 2) throw Error('サーバーの通知機能の更新が必要です。');
+        this.supportsTimerNotifications = key.timerNotifications === true;
         this.publicKey = applicationKey(key.publicKey);
         this.subscription = await reg.pushManager.getSubscription();
         this.readyRegistration = reg;
@@ -106,7 +116,7 @@
     markChanged() {
       if (this.isStaticPage()) return Promise.resolve(false);
       try {
-        this.settings = readSettings();
+        this.settings = this.readSettings();
         if (!this.settings.enabled && !localStorage.getItem(TOKEN)) return;
         this.revision = Math.max(Date.now(), this.revision + 1, (Number(localStorage.getItem(REVISION)) || 0) + 1);
         localStorage.setItem(REVISION, String(this.revision));
@@ -121,15 +131,19 @@
       }
     }
     snapshot() {
-      this.settings = readSettings();
+      this.settings = this.readSettings();
       this.revision = Math.max(this.revision, Number(localStorage.getItem(REVISION)) || 0);
       const body = { token: this.deviceToken(), revision: this.revision };
+      if (this.settings.enabled && !this.supportsTimerNotifications) throw Error('通知サーバーを更新してから、通知設定を保存してください。');
       if (this.settings.enabled) Object.assign(body, {
-        subscription: this.subscription.toJSON(), days: this.settings.days, hours: this.settings.hours,
+        subscription: this.subscription.toJSON(), days: [], hours: [],
         timers: this.getTimers().map(timer => {
           const item = { id: String(timer.id), name: String(timer.timerName || '未設定').slice(0, 100),
             map: String(timer.map || '').slice(0, 60), endsAt: Number(timer.endsAt) };
           if (Number.isFinite(Number(timer.startedAt))) item.startedAt = Number(timer.startedAt);
+          item.notificationSettings = timerNotificationSettings(timer.notificationSettings === undefined ? {
+            enabled: !!(this.settings.days.length || this.settings.hours.length), days: this.settings.days, hours: this.settings.hours
+          } : timer.notificationSettings);
           return item;
         })
       });
@@ -170,7 +184,7 @@
     async drain() {
       while (this.pending) {
         if (navigator.onLine === false) throw Error('通信できません。');
-        if (readSettings().enabled) await this.ensureSubscription();
+        if (this.readSettings().enabled) await this.ensureSubscription();
         const snapshot = this.snapshot();
         await this.post(snapshot);
         if (snapshot.body.revision !== Number(localStorage.getItem(REVISION))) continue;
@@ -182,9 +196,9 @@
       return true;
     }
     flushOnHide() {
-      if (this.isStaticPage() || !this.pending || (readSettings().enabled && !this.subscription)) return;
+      if (this.isStaticPage() || !this.pending || (this.readSettings().enabled && !this.subscription)) return;
       // Revision checks on the Worker make this safe alongside an older in-flight request.
-      this.post(this.snapshot()).catch(() => {});
+      try { this.post(this.snapshot()).catch(() => {}); } catch { /* Keep pending until the server supports this snapshot. */ }
     }
     resume() {
       this.showStatus();
@@ -194,14 +208,8 @@
       return this.markChanged();
     }
     open() {
-      this.settings = readSettings();
+      this.settings = this.readSettings();
       $('timerNotifyEnabled').checked = this.settings.enabled;
-      $('timerNotifyDays').innerHTML = [['day', 7, this.settings.days, '日前'], ['hour', 23, this.settings.hours, '時間前']]
-        .map(([unit, max, selected, label]) => Array.from({ length: max }, (_, i) => {
-          const value = max - i;
-          return '<label class="timer-notify-choice"><input type="checkbox" data-unit="' + unit +
-            '" value="' + value + '" ' + (selected.includes(value) ? 'checked' : '') + '>' + value + label + '</label>';
-        }).join('')).join('');
       this.showStatus();
       const dialog = $('timerNotificationDialog');
       if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
@@ -222,7 +230,7 @@
         this.refreshPermissionButton();
         if (!this.readyRegistration) await this.prepare();
         await this.ensureSubscription();
-        this.settings = readSettings();
+        this.settings = this.readSettings();
         this.settings.enabled = true;
         localStorage.setItem(SETTINGS, JSON.stringify(this.settings));
         $('timerNotifyEnabled').checked = true;
@@ -231,10 +239,7 @@
       finally { this.allowing = false; this.refreshPermissionButton(); }
     }
     async saveSettings() {
-      const next = { enabled: $('timerNotifyEnabled').checked,
-        days: [...document.querySelectorAll('#timerNotifyDays input[data-unit="day"]:checked')].map(el => Number(el.value)),
-        hours: [...document.querySelectorAll('#timerNotifyDays input[data-unit="hour"]:checked')].map(el => Number(el.value)) };
-      if (next.enabled && !next.days.length && !next.hours.length) { this.status('通知時刻を1つ以上選んでください。'); return; }
+      const next = { ...this.readSettings(), enabled: $('timerNotifyEnabled').checked };
       try {
         if (this.isStaticPage()) {
           next.enabled = false;
@@ -285,6 +290,7 @@
     }
   }
   window.ARKPush = {
+    getSettings: readSettings,
     create: options => new PushController(options),
     init: options => {
       try { return new PushController(options).init(); }

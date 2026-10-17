@@ -28,6 +28,39 @@ async function due(env) {
   await call(env, 'sync', snapshot({ timers: [{ ...timer, endsAt: NOW + HOUR }], hours: [1] }));
 }
 
+test('タイマーごとの時刻・OFFを優先し、変更とリセットではその予定だけを更新',async t=>{
+  const env=setup(t),a={...timer,notificationSettings:{enabled:true,days:[],hours:[1]}},
+    b={...timer,id:'timer2',notificationSettings:{enabled:true,days:[],hours:[2]}},
+    off={...timer,id:'timer3',notificationSettings:{enabled:false,days:[1],hours:[]}};
+  const body=snapshot({days:[],hours:[],timers:[a,b,off]});
+  assert.equal((await call(env,'sync',body)).body.scheduled,2);
+  assert.deepEqual(alerts(env).map(a=>a.due_at),[NOW+HOUR,NOW+2*HOUR]);
+  const bId=alerts(env)[0].id;
+  await call(env,'sync',{...body,revision:2,timers:[{...a,notificationSettings:{enabled:false,days:[],hours:[1]}},b,off]});
+  assert.deepEqual(alerts(env).filter(a=>a.cancelled_at===null).map(a=>a.id),[bId]);
+  await call(env,'sync',{...body,revision:3,timers:[{...a,endsAt:NOW+6*HOUR},b,off]});
+  assert.deepEqual(alerts(env).filter(a=>a.cancelled_at===null).map(a=>a.due_at),[NOW+HOUR,NOW+5*HOUR]);
+});
+
+test('不正な個別設定は全体を保存前に拒否し、全OFFは予定を取消',async t=>{
+  const env=setup(t);await call(env,'sync',snapshot());
+  for(const notificationSettings of [null,[],{enabled:true,days:[],hours:[]},{enabled:'true',days:[1],hours:[]},
+    {enabled:true,days:[0],hours:[]},{enabled:true,days:[1],hours:[24]},{enabled:false,days:[],hours:null}]){
+    assert.equal((await call(env,'sync',snapshot({revision:2,timers:[timer,{...timer,id:'timer2',notificationSettings}]}))).status,400);
+    assert.equal(alerts(env).filter(a=>a.cancelled_at===null).length,2);
+  }
+  const result=await call(env,'sync',snapshot({revision:2,days:[],hours:[],timers:[{...timer,notificationSettings:{enabled:false,days:[],hours:[]}}]}));
+  assert.equal(result.status,200);assert.equal(result.body.scheduled,0);assert.ok(alerts(env).every(a=>a.cancelled_at!==null));
+});
+
+test('個別設定へ移行しても送信済みの同一通知を再送しない',async t=>{
+  const env=setup(t);await due(env);let sends=0;
+  await runScheduled(env,{send:async()=>{sends++;return 201}});
+  await call(env,'sync',snapshot({revision:2,days:[],hours:[],timers:[{...timer,endsAt:NOW+HOUR,notificationSettings:{enabled:true,days:[],hours:[1]}}]}));
+  await runScheduled(env,{send:async()=>{sends++;return 201}});
+  assert.equal(sends,1);assert.equal(alerts(env).length,1);
+});
+
 test('1時間前・2時間前・日前を正しく予約し、同一同期で重複しない', async t => {
   const env = setup(t);
   const body = snapshot({ days: [1], timers: [{ ...timer, endsAt: NOW + 2 * DAY }] });

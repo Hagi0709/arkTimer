@@ -1269,8 +1269,16 @@ body{
 .timer-notify-settings p{margin:0;color:var(--muted,#9ca8b7);font-size:12px;line-height:1.6}
 .timer-notify-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .timer-notify-choice{display:flex;align-items:center;gap:9px;padding:11px 10px;border:1px solid rgba(145,160,180,.24);border-radius:10px;font-size:13px}
-.timer-notify-choice input{accent-color:#4e9dff;width:17px;height:17px}
+.timer-notify-choice input{accent-color:#4e9dff;width:17px;height:17px;min-width:17px;padding:0;margin:0;flex:none}
 .timer-notify-status{font-size:13px;color:#a6b3c4}
+.timer-specific-notifications{display:grid;gap:12px;min-width:0;margin:0;padding:14px;border:1px solid var(--line);border-radius:14px}
+.timer-specific-notifications legend{padding:0 5px;font-weight:700}
+.timer-specific-notifications p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.timer-specific-notifications .timer-notify-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.timer-specific-notifications .timer-notify-choice{padding:8px 5px;gap:5px;font-size:12px;white-space:nowrap}
+.timer-notify-unit{display:grid;gap:8px}
+#timerNotificationChoices{display:grid;gap:14px}
+@media(max-width:380px){.timer-specific-notifications{padding:10px}.timer-specific-notifications .timer-notify-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* Fixed-size character list: square image with no crop or stretch. */
 #characterList .character-list-item{height:112px;min-height:112px;max-height:112px;align-items:stretch}
@@ -1300,8 +1308,12 @@ body{
 .install-guide-steps{margin:0;padding-left:24px}
 .install-guide-steps li{margin:12px 0;padding-left:3px}
 .install-guide-note{display:block;margin-top:4px;font-size:12px}
-.install-guide-actions{display:grid;grid-template-columns:1fr 1.6fr;gap:10px;margin-top:22px}
+.install-guide-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
 .install-guide-actions button{min-height:44px;padding:10px 8px;font-size:13px;white-space:normal;line-height:1.4}
+#homeScreenGuide .modal-header{align-items:center;gap:8px}
+#homeScreenGuide{width:min(calc(100vw - 28px),560px);max-width:calc(100vw - 28px);box-sizing:border-box}
+#homeScreenGuide .install-guide-body{padding:0}
+#homeScreenGuideTitle{flex:1;min-width:0;font-size:clamp(14px,4.1vw,22px);line-height:1.25;white-space:nowrap}
 .timer-notify-settings .submit-btn:disabled{background:rgba(115,240,209,.09);border:1px solid rgba(115,240,209,.24);color:#9cceca;box-shadow:none;cursor:default}
 .data-transfer-entry{grid-column:auto}
 .data-transfer-content{padding:18px;display:grid;gap:18px;min-width:0}
@@ -1430,9 +1442,9 @@ body{
     <dialog id="timerNotificationDialog" class="character-dialog" aria-label="タイマー通知設定">
       <div class="modal-header"><h2>タイマー通知設定</h2><button id="closeTimerNotificationSettings" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
       <div class="timer-notify-settings">
-        <label class="timer-notify-choice"><input type="checkbox" id="timerNotifyEnabled">通知を有効にする</label>
-        <div><strong>通知タイミング</strong></div>
-        <div class="timer-notify-grid" id="timerNotifyDays"></div>
+        <label class="timer-notify-choice"><input type="checkbox" id="timerNotifyEnabled">この端末の通知を有効にする</label>
+        <p>通知タイミングは、各タイマーの編集画面で設定します。</p>
+        <p>iPhoneで通知を受け取るには、ホーム画面にアプリとして追加する必要があります。</p>
         <button id="timerNotifyPermission" class="submit-btn" type="button">iPhoneの通知を許可する</button>
         <div id="timerNotifyStatus" class="timer-notify-status" role="status"></div>
         <div id="timerHostingGuide" class="timer-install-guide hidden"><strong>バックグラウンド通知を利用するには</strong><p>通知対応版でデータを読み込み、通知を設定してください。</p><a href="https://ark-manager.arktools.workers.dev" target="_blank" rel="noopener noreferrer">通知対応版を開く</a></div>
@@ -1455,7 +1467,7 @@ body{
       <div class="data-transfer-content">
         <p>キャラ・画像・タイマー・各種設定をまとめて引き継げます。</p>
         <section><h3>この端末から書き出す</h3><button id="exportData" class="submit-btn" type="button">引き継ぎファイルを書き出す</button><p>ファイルを保存し、AirDropや「ファイル」アプリなどで移行先へ渡してください。</p></section>
-        <section><h3>この端末に読み込む</h3><button id="selectTransferFile" class="manager-small-btn" type="button">引き継ぎファイルを選ぶ</button><input id="dataTransferFile" class="hidden-input" type="file" accept=".json,application/json"><p>今あるデータは残して追加します。同じIDのキャラ・タイマーは、この端末の内容を保持します。</p></section>
+        <section><h3>この端末に読み込む</h3><button id="selectTransferFile" class="manager-small-btn" type="button">引き継ぎファイルを選ぶ</button><input id="dataTransferFile" class="hidden-input" type="file" accept=".json,application/json"><p>今あるデータは残して追加します。</p></section>
         <section id="dataTransferPreview" class="data-transfer-preview hidden"><h3>読み込み内容</h3><p id="dataTransferSummary"></p><p>マップ・サーバーとレベル上限設定も追加します。通知の許可は端末ごとに必要です。</p><button id="confirmDataImport" class="submit-btn" type="button">この内容を追加する</button><button id="cancelDataImport" class="manager-small-btn" type="button">キャンセル</button></section>
         <p id="dataTransferStatus" role="status" aria-live="polite"></p>
         <section id="transferNotificationHint" class="hidden"><p>通知を利用する場合は、この端末で通知を許可し、通知設定を保存してください。</p><button id="transferOpenNotifications" class="manager-small-btn" type="button">通知設定を開く</button></section>
@@ -1568,6 +1580,13 @@ body{
           </div>
         </div>
 
+        <fieldset class="timer-specific-notifications">
+          <legend>通知タイミング</legend>
+          <label class="timer-notify-choice"><input id="timerNotificationEnabled" type="checkbox" checked>このタイマーを通知する</label>
+          <div id="timerNotificationChoices"></div>
+          <p>端末の通知は、一覧の「通知設定」で許可・有効化してください。</p>
+        </fieldset>
+
         <label class="field">
           <span>メモ</span>
           <textarea id="memoInput" rows="3" placeholder="任意で入力"></textarea>
@@ -1590,16 +1609,16 @@ body{
     </div>
   </div>
   <dialog id="homeScreenGuide" class="character-dialog" aria-labelledby="homeScreenGuideTitle" aria-describedby="homeScreenGuideIntro">
-    <div class="modal-header"><h2 id="homeScreenGuideTitle">ホーム画面に追加して使う</h2><button id="closeHomeScreenGuide" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
+    <div class="modal-header"><h2 id="homeScreenGuideTitle">ホーム画面にアプリ追加</h2><button id="closeHomeScreenGuide" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
     <div class="install-guide-body">
-      <p id="homeScreenGuideIntro">ARK ManagerをWebアプリとして登録すると、ホーム画面から開けるようになります。</p>
+      <p id="homeScreenGuideIntro">iPhoneで通知を受け取るには、ホーム画面にアプリとして追加する必要があります。</p>
       <ol class="install-guide-steps">
-        <li>Safariの<img class="safari-share-symbol" src="./safari-share-symbol.png" alt="" aria-hidden="true"><strong>「共有」</strong>をタップ<span class="install-guide-note">見当たらない場合は、Safariのメニューから「共有」を選択</span></li>
+        <li>Safariの<img class="safari-share-symbol" src="./safari-share-symbol.png" alt="" aria-hidden="true"><strong>「共有」</strong>をタップ</li>
         <li><strong>「ホーム画面に追加」</strong>を選択</li>
-        <li>表示された場合は<strong>「Webアプリとして開く」をオン</strong>にし、<strong>「追加」</strong>をタップ</li>
+        <li><strong>「Webアプリとして開く」をオン</strong>にし、<strong>「追加」</strong>をタップ</li>
         <li>ホーム画面の<strong>ARK Managerのアイコン</strong>から起動</li>
       </ol>
-      <div class="install-guide-actions"><button id="homeScreenGuideLater" class="manager-small-btn" type="button" autofocus>あとで</button><button id="homeScreenGuideNever" class="submit-btn" type="button">今後表示しない</button></div>
+      <div class="install-guide-actions"><button id="homeScreenGuideLater" class="manager-small-btn" type="button" autofocus>あとで</button><button id="homeScreenGuideNever" class="manager-small-btn" type="button">今後表示しない</button></div>
     </div>
   </dialog>
   <script src="./install-guide.js" defer></script>
@@ -1645,11 +1664,38 @@ function load(){
 }
 
 function normalizeTimers(){
-  state.timers=state.timers.map((timer,index)=>({
+  const legacy=legacyTimerNotificationSettings();
+  let migrated=false;
+  state.timers=state.timers.map((timer,index)=>{
+    const settings=timer.notificationSettings===undefined?{...legacy,days:[...legacy.days],hours:[...legacy.hours]}:timer.notificationSettings;
+    if(timer.notificationSettings===undefined)migrated=true;
+    return {
     showPin:timer.showPin!==false,
     sortOrder:Number.isFinite(Number(timer.sortOrder))?Number(timer.sortOrder):index,
-    ...timer
-  }));
+    ...timer,notificationSettings:settings
+  }});
+  if(migrated)try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state.timers))}catch(e){}
+}
+
+function legacyTimerNotificationSettings(){
+  let saved;
+  try{saved=window.ARKPush?.getSettings?.()||JSON.parse(localStorage.getItem('arkTimer_notification_settings_v1')||'null')}catch(e){}
+  const valid=(values,max)=>Array.isArray(values)?[...new Set(values.filter(n=>Number.isInteger(n)&&n>=1&&n<=max))]:[];
+  const days=valid(saved?.days??[1],7),hours=valid(saved?.hours,23);
+  return {enabled:!!(days.length||hours.length),days,hours};
+}
+function syncTimerNotificationUI(){$('timerNotificationChoices').classList.toggle('hidden',!$('timerNotificationEnabled').checked)}
+function setTimerNotificationForm(timer=null){
+  const settings=timer?(timer.notificationSettings??legacyTimerNotificationSettings()):{enabled:true,days:[1],hours:[]};
+  $('timerNotificationEnabled').checked=settings.enabled;
+  $('timerNotificationChoices').innerHTML=[['day','日前',7,settings.days],['hour','時間前',23,settings.hours]].map(([unit,label,max,selected])=>`<div class="timer-notify-unit"><strong>${unit==='day'?'日単位':'時間単位'}</strong><div class="timer-notify-grid">${Array.from({length:max},(_,i)=>`<label class="timer-notify-choice"><input type="checkbox" data-unit="${unit}" value="${i+1}"${selected.includes(i+1)?' checked':''}>${i+1}${label}</label>`).join('')}</div></div>`).join('');
+  syncTimerNotificationUI();
+}
+function readTimerNotificationForm(){
+  const values=unit=>[...document.querySelectorAll(`#timerNotificationChoices input[data-unit="${unit}"]:checked`)].map(input=>Number(input.value));
+  const settings={enabled:$('timerNotificationEnabled').checked,days:values('day'),hours:values('hour')};
+  if(settings.enabled&&!settings.days.length&&!settings.hours.length){alert('通知時刻を1つ以上選んでください');return null}
+  return settings;
 }
 
 function save(){
@@ -1733,6 +1779,7 @@ function openModal(editTarget=null){
   if(!editTarget){
     state.manualPin=null;state.pinDragPointer=null;
     timerForm.reset();
+    setTimerNotificationForm();
     refreshTimerMapChoices('アイランド');
     $('customMapInput').value='';$('customMapInput').classList.add('hidden');$('customMapInput').required=false;
     editIdInput.value='';
@@ -1751,6 +1798,7 @@ function openModal(editTarget=null){
     return;
   }
   editIdInput.value=editTarget.id;
+  setTimerNotificationForm(editTarget);
   refreshTimerMapChoices(editTarget.map||'',editTarget.serverNo||'');
   $('customMapInput').value=mapSelect.value==='__custom__'?(editTarget.map||''):'';
   $('customMapInput').classList.toggle('hidden',mapSelect.value!=='__custom__');
@@ -1849,9 +1897,10 @@ function buildTimerPayload(now,keepId=null,existingSortOrder=null){
   const map=timerMapValue(),type=typeSelect.value,customType=type==='other'?$('customTypeInput').value.trim():'',memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'未設定',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
   if(!map){alert('マップを選択してください');return null}
   if(durationMs<=0){alert('タイマーは1分以上で入力してください');return null}
+  const notificationSettings=readTimerNotificationForm();if(!notificationSettings)return null;
   const current=keepId?state.timers.find(timer=>timer.id===keepId):null;
   const preserveDeadline=current&&Math.floor((current.endsAt-current.startedAt)/60000)*60000===durationMs;
-  return {...current,id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,manualPin:normalizeManualPin(state.manualPin),showPin:showPinInput?showPinInput.checked:true,type,customType,customTypeImage:customTypeImageSource(state.pendingTypeImage),material:type==='building'?getSelectedMaterial():null,memo,startedAt:preserveDeadline?current.startedAt:now,endsAt:preserveDeadline?current.endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
+  return {...current,id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,manualPin:normalizeManualPin(state.manualPin),showPin:showPinInput?showPinInput.checked:true,type,customType,customTypeImage:customTypeImageSource(state.pendingTypeImage),material:type==='building'?getSelectedMaterial():null,memo,notificationSettings,startedAt:preserveDeadline?current.startedAt:now,endsAt:preserveDeadline?current.endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
 }
 function addTimerFromForm(event){
   event.preventDefault();
@@ -1908,6 +1957,7 @@ function bindEvents(){
   closeModalBtn.addEventListener('click',closeModal);
   overlay.addEventListener('click',closeModal);
   typeSelect.addEventListener('change',syncTypeUI);
+  $('timerNotificationEnabled').addEventListener('change',syncTimerNotificationUI);
   timerForm.addEventListener('submit',addTimerFromForm);
   list.addEventListener('click',bindListActions);
   list.addEventListener('keydown',event=>{const handle=event.target.closest('[data-timer-drag]');if(!handle||!['ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();const id=handle.dataset.timerDrag,ordered=getSortedTimers(),index=ordered.findIndex(timer=>timer.id===id),direction=event.key==='ArrowUp'?-1:1;if(index+direction<0||index+direction>=ordered.length)return;ordered.forEach((timer,i)=>{timer.sortOrder=i});state.sortMode='manual';sortSelect.value='manual';swapSortOrder(id,direction);[...list.querySelectorAll('[data-timer-drag]')].find(item=>item.dataset.timerDrag===id)?.focus()});
@@ -2140,7 +2190,19 @@ init();
  function refreshFormImage(field){const box=document.querySelector(`[data-form-image="${field}"]`);if(box)box.innerHTML=formImageInner(field,field==='appearance'?'キャラの見た目画像':'インプラント画像')}
  function showEditor(key=null){if(!ready){toast('キャラ保存機能を読み込み中です');return}editingField=key;const c=selected();$('characterDialogTitle').textContent=key?`${labels[key]}を編集`:'キャラ追加';if(key){$('characterFormFields').innerHTML=formField(key,c[key])+(key==='map'?formField('serverNo',c.serverNo||''):'')}else{pendingFormImages={appearance:'',implant:''};$('characterFormFields').innerHTML=formImagePicker('appearance','キャラの見た目画像')+Object.keys(labels).map(k=>formField(k)).join('')+formImagePicker('implant','インプラント画像')+newCharacterPanels()}returnFocus=document.activeElement;openDialog($('characterDialog'));$('characterFormFields').querySelector('input,select,button').focus()}
  $('characterDialog').addEventListener('close',()=>returnFocus?.isConnected&&returnFocus.focus());
- async function persistChange(next){try{await writeRecord(next);records=records.map(c=>c.id===next.id?next:c);renderCharacters();renderDetail();return true}catch(e){toast('保存できませんでした。端末の空き容量・ブラウザ設定を確認してください');return false}}
+ function refreshCharacterProgress(c){
+  const detail=$('characterDetail');
+  detail.querySelector('.level-summary').textContent=`現在の上限：Lv ${getLevelTotal(c)}`;
+  detail.querySelectorAll('[data-level-boss]').forEach(select=>{select.closest('.level-boss-row').querySelector('[data-boss-points]').textContent=`+${BOSS_LEVELS[bossTier(c,select.dataset.levelBoss)]} Lv`});
+  const owned=new Set(c.extNotes||[]),done={2:0,4:0},totals={2:0,4:0};
+  EXT_NOTES.forEach((group,index)=>{
+   const count=group.items.filter(item=>owned.has(item.id)).length;
+   done[group.mult]+=count;totals[group.mult]+=group.items.length;
+   detail.querySelector(`[data-note-group="${index}"] .ext-note-progress`).innerHTML=`${count}/${group.items.length} <span aria-hidden="true">⌄</span>`;
+  });
+  detail.querySelectorAll('.ext-note-total strong').forEach((node,index)=>{const mult=index===0?2:4;node.textContent=`${done[mult]} / ${totals[mult]}`});
+ }
+ async function persistChange(next,{progressOnly=false}={}){try{await writeRecord(next);records=records.map(c=>c.id===next.id?next:c);renderCharacters();if(selectedId===next.id){if(progressOnly)refreshCharacterProgress(next);else renderDetail()}return true}catch(e){toast('保存できませんでした。端末の空き容量・ブラウザ設定を確認してください');return false}}
  $('characterFormFields').addEventListener('change',e=>{
   if(e.target.matches('[data-new-boss]')){e.target.closest('.level-boss-row')?.querySelector('[data-boss-points]')?.replaceChildren(document.createTextNode('+'+BOSS_LEVELS[e.target.value]+' Lv'));updateNewLevelSummary();return}
 
@@ -2252,7 +2314,49 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
   if(btn.dataset.levelEdit!==undefined){$('levelRuleEditId').value=id;$('levelRuleName').value=rule.name;$('levelRulePoints').value=rule.points;$('levelRuleType').value=bossRule(rule)?'boss':'normal';syncRuleForm();$('levelRuleCancel').classList.remove('hidden');$('levelRuleName').focus();return}
   if(!window.confirm(`「${rule.name}」を削除しますか？\nキャラの上限計算からも除外されます。`))return;
   const old=levelRules;levelRules=levelRules.filter(r=>r.id!==id);try{saveLevelRules()}catch(err){levelRules=old;return toast('削除できませんでした')}renderLevelSettings();renderCharacters();if(selectedId)renderDetail()});
- $('characterDetail').addEventListener('change',async e=>{const note=e.target.closest('[data-ext-note]');if(note){const c=selected();if(!c)return;const opened=[...$('characterDetail').querySelectorAll('.ext-note-group[open]')].map(x=>x.dataset.noteGroup);const ids=new Set(Array.isArray(c.extNotes)?c.extNotes:[]);if(note.checked)ids.add(note.dataset.extNote);else{const label=note.closest('label')?.querySelector('.ext-note-name')?.firstChild?.textContent||'このノート';if(!window.confirm(`「${label}」の取得チェックを解除しますか？`)){note.checked=true;return}ids.delete(note.dataset.extNote);}const ok=await persistChange({...c,extNotes:[...ids]});if(ok)opened.forEach(i=>{const d=$('characterDetail').querySelector(`.ext-note-group[data-note-group="${i}"]`);if(d)d.open=true});else note.checked=!note.checked;return}const boss=e.target.closest('[data-level-boss]');if(boss){const c=selected();if(!c)return;const id=boss.dataset.levelBoss,tier=boss.value;const next={...c,levelBossTiers:{...(c.levelBossTiers||{}),[id]:tier}};await persistChange(next);return}const tribe=e.target.closest('[data-tribe-map]');if(tribe){const c=selected();if(!c)return;if(!tribe.checked){const label=tribe.closest('label')?.querySelector('span')?.textContent||'このマップ';if(!window.confirm(`「${label}」のトライブ所属を解除しますか？`)){tribe.checked=true;return}}const next={...c,tribeByMap:{...(c.tribeByMap||{}),[tribe.dataset.tribeMap]:tribe.checked}};if(!await persistChange(next))tribe.checked=!tribe.checked;return}const input=e.target.closest('[data-level-id]');if(!input)return;const c=selected();if(!c)return;const id=input.dataset.levelId;if(!levelRules.some(r=>r.id===id))return;const ids=new Set(checkedLevelIds(c));if(input.checked)ids.add(id);else{const label=input.closest('label')?.querySelector('span')?.textContent||'この項目';if(!window.confirm(`「${label}」のレベル上限解放チェックを解除しますか？`)){input.checked=true;return}ids.delete(id);if(id.startsWith('bobs_'))ids.delete('bobs_tall_tales');}const tiers={...(c.levelBossTiers||{})};if(bossRule(levelRules.find(r=>r.id===id))){if(input.checked&&!tiers[id])tiers[id]='alpha'}const ok=await persistChange({...c,levelUnlocks:[...ids],levelBossTiers:tiers});if(!ok)input.checked=!input.checked});
+ $('characterDetail').addEventListener('change',async e=>{
+  const c=selected();if(!c)return;
+  const options={progressOnly:true};
+  const note=e.target.closest('[data-ext-note]');
+  if(note){
+   const ids=new Set(Array.isArray(c.extNotes)?c.extNotes:[]);
+   if(note.checked)ids.add(note.dataset.extNote);
+   else{
+    const label=note.closest('label')?.querySelector('.ext-note-name')?.firstChild?.textContent||'このノート';
+    if(!window.confirm(`「${label}」の取得チェックを解除しますか？`)){note.checked=true;return}
+    ids.delete(note.dataset.extNote);
+   }
+   if(!await persistChange({...c,extNotes:[...ids]},options))note.checked=!note.checked;
+   return;
+  }
+  const boss=e.target.closest('[data-level-boss]');
+  if(boss){
+   const id=boss.dataset.levelBoss,tier=boss.value;
+   if(!await persistChange({...c,levelBossTiers:{...(c.levelBossTiers||{}),[id]:tier}},options))boss.value=bossTier(c,id);
+   return;
+  }
+  const tribe=e.target.closest('[data-tribe-map]');
+  if(tribe){
+   if(!tribe.checked){
+    const label=tribe.closest('label')?.querySelector('span')?.textContent||'このマップ';
+    if(!window.confirm(`「${label}」のトライブ所属を解除しますか？`)){tribe.checked=true;return}
+   }
+   if(!await persistChange({...c,tribeByMap:{...(c.tribeByMap||{}),[tribe.dataset.tribeMap]:tribe.checked}},options))tribe.checked=!tribe.checked;
+   return;
+  }
+  const input=e.target.closest('[data-level-id]');if(!input)return;
+  const id=input.dataset.levelId;if(!levelRules.some(r=>r.id===id))return;
+  const ids=new Set(checkedLevelIds(c));
+  if(input.checked)ids.add(id);
+  else{
+   const label=input.closest('label')?.querySelector('span')?.textContent||'この項目';
+   if(!window.confirm(`「${label}」のレベル上限解放チェックを解除しますか？`)){input.checked=true;return}
+   ids.delete(id);if(id.startsWith('bobs_'))ids.delete('bobs_tall_tales');
+  }
+  const tiers={...(c.levelBossTiers||{})};
+  if(bossRule(levelRules.find(r=>r.id===id))&&input.checked&&!tiers[id])tiers[id]='alpha';
+  if(!await persistChange({...c,levelUnlocks:[...ids],levelBossTiers:tiers},options))input.checked=!input.checked;
+ });
  $('characterDetail').addEventListener('click',async e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.hasAttribute('data-back'))return showList();if(btn.hasAttribute('data-open-level-settings'))return openLevelSettings();if(btn.dataset.edit)return showEditor(btn.dataset.edit);if(btn.dataset.copy)return copyField(btn.dataset.copy,btn);if(btn.dataset.upload)return upload(btn.dataset.upload);if(btn.dataset.photo){const field=btn.dataset.photo,c=selected();if(!c[field])return upload(field);$('characterViewerImage').src=c[field];if(field==='appearance')clearOuterDarkBackground(c[field]).then(src=>{if($('characterViewerImage').isConnected)$('characterViewerImage').src=src}).catch(()=>{});$('characterViewerImage').alt=field==='appearance'?'見た目画像':'インプラント画像';openDialog($('characterViewer'));return}if(btn.dataset.removePhoto){const c=selected(),field=btn.dataset.removePhoto;if(await openConfirm('画像の削除','この画像を削除しますか？'))await persistChange({...c,[field]:''});return}if(btn.hasAttribute('data-delete-character')){const c=selected();if(!await openConfirm('キャラの削除',`「${c.name}」を削除しますか？`))return;try{await writeRecord(c,true);records=records.filter(r=>r.id!==c.id);showList();toast('キャラを削除しました')}catch(e){toast('削除できませんでした')}}});
  function installReorder(container,handleSelector,itemSelector,onOrder){
  let active=null,pointer=null,startY=0,engaged=false,timer=null;

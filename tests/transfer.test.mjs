@@ -26,6 +26,25 @@ function empty() {
   return { characters: [], timers: [], servers: [], levelRules: [], sortMode: 'dueSoon',
     notificationSettings: { enabled: false, days: [1], hours: [] }, hasNotificationSettings: false };
 }
+
+test('個別の通知時刻・OFFを引き継ぎ、端末全体の通知は自動で有効化しない',()=>{
+  const source=fixture();source.timers[0].notificationSettings={enabled:true,days:[2],hours:[3]};
+  source.timers.push({...source.timers[0],id:'timer_2',notificationSettings:{enabled:false,days:[],hours:[1]}});
+  const backup=api.parse(JSON.stringify(api.createBackup(source))),next=api.plan(empty(),backup);
+  assert.deepEqual(plain(next.timers),source.timers);assert.equal(next.data.notificationSettings.enabled,false);
+  const current=fixture();current.timers[0].notificationSettings={enabled:true,days:[7],hours:[]};
+  assert.deepEqual(plain(api.plan(current,backup).data.timers[0].notificationSettings),current.timers[0].notificationSettings);
+  for(const value of [null,{enabled:true,days:[],hours:[]},{enabled:false,days:[0],hours:[]},{enabled:true,days:[],hours:[24]}]){
+    const bad=plain(backup);bad.data.timers[0].notificationSettings=value;assert.throws(()=>api.parse(JSON.stringify(bad)));
+  }
+});
+
+test('旧ファイルの通知時刻を追加タイマーへ移し、移行先の共通設定に左右されない',()=>{
+  const source=fixture(),current=empty();current.notificationSettings={enabled:false,days:[7],hours:[]};current.hasNotificationSettings=true;
+  const next=api.plan(current,api.createBackup(source));
+  assert.deepEqual(plain(next.timers[0].notificationSettings),{enabled:true,days:[1],hours:[1,2]});
+  assert.deepEqual(next.data.notificationSettings.days,[7]);
+});
 const storage = () => {
   const map = new Map([['unrelated', 'keep'],['arkManager_push_device_token_v1','existing-token']]);
   return { map, getItem: key => map.get(key) ?? null, setItem: (key,value) => map.set(key,value), removeItem: key => map.delete(key) };
