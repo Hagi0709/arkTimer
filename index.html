@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>ARK Manager</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
   <link rel="icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
   <style>
@@ -113,11 +115,11 @@ input:focus,select:focus,textarea:focus{
 }
 
 .brand-icon{
-  width:52px;
-  height:52px;
+  width:64px;
+  height:64px;
   object-fit:contain;
   flex:0 0 auto;
-  filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));
+  filter:drop-shadow(0 3px 9px rgba(49,197,221,.22));
 }
 
 .content{
@@ -710,8 +712,8 @@ input:focus,select:focus,textarea:focus{
   }
 
   .brand-icon{
-    width:40px;
-    height:40px;
+    width:60px;
+    height:60px;
   }
 
   .toolbar-head{
@@ -1171,11 +1173,31 @@ body{background-image:none;background-color:#0b1725}
 #utcConverterDialog #jstDateTime,#utcConverterDialog #utcResult,#utcConverterDialog #copyUtcTime{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
 
 
-/* 2026-10-14: Unified page background across header, tabs and list. */
-html,body{background:#0b1725!important;background-image:none!important}
+/* Shared ambient background; scroll with the page to avoid iOS fixed-layer seams. */
+html{height:auto;min-height:100%;background:#091623!important;background-image:none!important}
+body{
+  height:auto;
+  background-color:#091623!important;
+  background-image:
+    radial-gradient(ellipse 620px 540px at 100% 0,rgba(41,188,189,.17),transparent 72%),
+    radial-gradient(ellipse 640px 640px at 0 440px,rgba(65,119,198,.12),transparent 74%),
+    linear-gradient(rgba(139,199,218,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(139,199,218,.025) 1px,transparent 1px),
+    linear-gradient(155deg,#0c1e2d 0%,#091623 48%,#0b1d2b 100%)!important;
+  background-size:auto,auto,52px 52px,52px 52px,auto;
+  background-attachment:scroll;
+  background-repeat:no-repeat,no-repeat,repeat,repeat,no-repeat;
+}
 .app-shell,#characterPage,#characterListPage{background:transparent!important;background-image:none!important}
 .manager-tabs{background:transparent!important;background-image:none!important;isolation:auto}
-.topbar{background:#0b1725!important;background-image:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.topbar{
+  padding-top:calc(12px + env(safe-area-inset-top));
+  padding-bottom:12px;
+  background:linear-gradient(115deg,rgba(10,24,38,.98),rgba(13,37,48,.97))!important;
+  border-bottom-color:rgba(113,211,224,.12);
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
 
 
 /* Extinction explorer-note checklist */
@@ -1201,7 +1223,7 @@ html,body{background:#0b1725!important;background-image:none!important}
 .ext-note-english{display:block;color:#8fa0b3;font-size:11px;font-weight:500;line-height:1.4;margin-top:3px}
 .ext-note-group summary .ext-note-english{margin-top:0}
 /* Timer notification preferences */
-.timer-notify-row{display:flex;justify-content:flex-end;margin:8px 0 14px}
+.timer-notify-row{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
 .timer-notify-settings{padding:18px;display:grid;gap:16px}
 .timer-notify-settings p{margin:0;color:var(--muted,#9ca8b7);font-size:12px;line-height:1.6}
 .timer-notify-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -1210,8 +1232,8 @@ html,body{background:#0b1725!important;background-image:none!important}
 .timer-notify-status{font-size:13px;color:#a6b3c4}
 
 /* Fixed-size character list: square image with no crop or stretch. */
-#characterList .character-list-item{height:142px;min-height:142px;max-height:142px;align-items:stretch}
-#characterList .character-card{height:142px;min-height:142px;max-height:142px;align-items:center;overflow:hidden}
+#characterList .character-list-item{height:112px;min-height:112px;max-height:112px;align-items:stretch}
+#characterList .character-card{height:112px;min-height:112px;max-height:112px;align-items:center;overflow:hidden}
 #characterList .character-avatar{display:block;width:112px;height:112px;min-height:112px;max-height:112px;flex:0 0 112px;align-self:center;object-fit:contain;object-position:center;background:transparent;border-radius:10px}
 #characterList .character-summary{min-width:0;align-self:center}
 @media(max-width:380px){#characterList .character-avatar{width:94px;height:94px;min-height:94px;max-height:94px;flex-basis:94px}}
@@ -1229,13 +1251,23 @@ html,body{background:#0b1725!important;background-image:none!important}
 .timer-install-guide strong{color:#d9efff}
 .timer-install-guide ol{margin:10px 0 0;padding-left:22px}
 .timer-install-guide li{margin:7px 0}
+.timer-notify-settings .submit-btn:disabled{background:rgba(115,240,209,.09);border:1px solid rgba(115,240,209,.24);color:#9cceca;box-shadow:none;cursor:default}
+.data-transfer-entry{grid-column:1 / -1}
+.data-transfer-content{padding:18px;display:grid;gap:18px;min-width:0}
+.data-transfer-content p{margin:0;color:var(--muted);font-size:13px;line-height:1.65;overflow-wrap:anywhere}
+.data-transfer-content section{display:grid;gap:12px;min-width:0}
+.data-transfer-content h3{margin:0;font-size:16px}
+.data-transfer-content button{width:100%;white-space:normal;line-height:1.5}
+.data-transfer-content button:disabled{opacity:.5;cursor:default}
+.data-transfer-preview{padding:14px;border:1px solid rgba(103,187,255,.3);border-radius:14px;background:rgba(103,187,255,.06)}
+#dataTransferStatus:empty{display:none}
 </style>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <div class="brand-title">ARK Manager</div>
-      <img class="brand-icon" src="6A24B32B-C572-492B-AA91-5B2667D4133F.png" alt="icon">
+      <img class="brand-icon" src="ark-logo-transparent.png" alt="ARK" width="64" height="64">
     </header>
 
     <nav class="manager-tabs" aria-label="管理機能">
@@ -1246,7 +1278,7 @@ html,body{background:#0b1725!important;background-image:none!important}
       <div id="characterListPage">
         <div class="section-heading"><h1>キャラ一覧</h1><div class="character-heading-actions"><button id="recoveryRequest" type="button" class="manager-small-btn">復旧申請</button><button id="openUtcConverter" type="button" class="manager-small-btn">UTC時間</button><span id="characterCount">0人</span></div></div>
         <section id="characterEmpty" class="empty-state"><div class="empty-icon">◉</div><h2>キャラがありません</h2><p>右下の＋ボタンから追加してください</p></section>
-        <div id="characterList" class="character-list"></div><div class="server-settings-bar manager-settings-bottom"><button id="openLevelSettings" type="button" class="manager-small-btn">⚙ レベル上限設定</button><button id="openServerSettings" type="button" class="manager-small-btn">⚙ マップ・サーバー設定</button></div>
+        <div id="characterList" class="character-list"></div><div class="server-settings-bar manager-settings-bottom"><button id="openLevelSettings" type="button" class="manager-small-btn">⚙ レベル上限設定</button><button id="openServerSettings" type="button" class="manager-small-btn">⚙ マップ・サーバー設定</button><button data-open-transfer type="button" class="manager-small-btn data-transfer-entry">データ引き継ぎ</button></div>
       </div>
       <section id="characterDetail" class="hidden"></section>
     </main>
@@ -1277,7 +1309,7 @@ html,body{background:#0b1725!important;background-image:none!important}
         </select>
       </section>
 
-      <div class="timer-notify-row"><button type="button" id="openTimerNotificationSettings" class="manager-small-btn">⚙ 通知設定</button></div>
+      <div class="timer-notify-row"><button type="button" data-open-transfer class="manager-small-btn">データ引き継ぎ</button><button type="button" id="openTimerNotificationSettings" class="manager-small-btn">⚙ 通知設定</button></div>
       <section id="emptyState" class="empty-state">
         <div class="empty-icon">⌛</div>
         <h2>タイマーがありません</h2>
@@ -1306,6 +1338,17 @@ html,body{background:#0b1725!important;background-image:none!important}
           </ol>
         </div>
         <button id="timerNotifySave" class="submit-btn" type="button">設定を保存</button>
+      </div>
+    </dialog>
+    <dialog id="dataTransferDialog" class="character-dialog" aria-labelledby="dataTransferTitle">
+      <div class="modal-header"><h2 id="dataTransferTitle">データ引き継ぎ</h2><button id="closeDataTransfer" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
+      <div class="data-transfer-content">
+        <p>キャラ・画像・タイマー・各種設定をまとめて引き継げます。</p>
+        <section><h3>この端末から書き出す</h3><button id="exportData" class="submit-btn" type="button">引き継ぎファイルを書き出す</button><p>ファイルを保存し、AirDropや「ファイル」アプリなどで移行先へ渡してください。</p></section>
+        <section><h3>この端末に読み込む</h3><button id="selectTransferFile" class="manager-small-btn" type="button">引き継ぎファイルを選ぶ</button><input id="dataTransferFile" class="hidden-input" type="file" accept=".json,application/json"><p>今あるデータは残して追加します。同じIDのキャラ・タイマーは、この端末の内容を保持します。</p></section>
+        <section id="dataTransferPreview" class="data-transfer-preview hidden"><h3>読み込み内容</h3><p id="dataTransferSummary"></p><p>マップ・サーバーとレベル上限設定も追加します。通知の許可は端末ごとに必要です。</p><button id="confirmDataImport" class="submit-btn" type="button">この内容を追加する</button><button id="cancelDataImport" class="manager-small-btn" type="button">キャンセル</button></section>
+        <p id="dataTransferStatus" role="status" aria-live="polite"></p>
+        <section id="transferNotificationHint" class="hidden"><p>通知を利用する場合は、この端末で通知を許可し、通知設定を保存してください。</p><button id="transferOpenNotifications" class="manager-small-btn" type="button">通知設定を開く</button></section>
       </div>
     </dialog>
     <button id="add" class="fab hidden" type="button" aria-label="タイマー追加">＋</button>
@@ -1421,6 +1464,8 @@ html,body{background:#0b1725!important;background-image:none!important}
       </div>
     </div>
   </div>
+  <script src="/push-client.js"></script>
+  <script src="/data-transfer.js"></script>
   <script>
 /* Shared copy action for all copy buttons */
 window.ARKCopyText=async function(value){
@@ -1431,16 +1476,7 @@ window.ARKCopyText=async function(value){
  document.body.appendChild(tmp);tmp.focus();tmp.select();tmp.setSelectionRange(0,tmp.value.length);
  let copied=false;try{copied=document.execCommand('copy')}catch(e){}tmp.remove();return copied;
 };
-const TIMER_NOTIFY_KEY='arkTimer_notification_settings_v1';
-const TIMER_NOTIFY_SENT_KEY='arkTimer_notification_sent_v1';
-let timerNotifySettings={enabled:false,days:[1],hours:[]};
-let timerNotifySent={};
-try{const saved=JSON.parse(localStorage.getItem(TIMER_NOTIFY_KEY)||'null');if(saved&&typeof saved==='object')timerNotifySettings={enabled:!!saved.enabled,days:Array.isArray(saved.days)?saved.days.filter(n=>Number.isInteger(n)&&n>=1&&n<=7):[1],hours:Array.isArray(saved.hours)?saved.hours.filter(n=>Number.isInteger(n)&&n>=1&&n<=23):[]};const sent=JSON.parse(localStorage.getItem(TIMER_NOTIFY_SENT_KEY)||'{}');if(sent&&typeof sent==='object')timerNotifySent=sent}catch(e){}
-function timerNotificationStatus(){const el=document.getElementById('timerNotifyStatus');if(!el)return;const supported='Notification' in window;const guide=document.getElementById('timerInstallGuide');if(guide)guide.classList.toggle('hidden',supported);el.textContent=!supported?'この環境では通知に対応していません。':Notification.permission==='granted'?'通知は許可されています。':Notification.permission==='denied'?'通知がブロックされています。iPhoneの設定から許可してください。':'通知はまだ許可されていません。'}
-function openTimerNotificationSettings(){const dialog=document.getElementById('timerNotificationDialog');document.getElementById('timerNotifyEnabled').checked=timerNotifySettings.enabled;document.getElementById('timerNotifyDays').innerHTML=Array.from({length:7},(_,i)=>{const d=7-i;return `<label class="timer-notify-choice"><input type="checkbox" data-unit="day" value="${d}" ${timerNotifySettings.days.includes(d)?'checked':''}>${d}日前</label>`}).join('')+Array.from({length:23},(_,i)=>{const h=23-i;return `<label class="timer-notify-choice"><input type="checkbox" data-unit="hour" value="${h}" ${timerNotifySettings.hours.includes(h)?'checked':''}>${h}時間前</label>`}).join('');timerNotificationStatus();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','')}
-function closeTimerNotificationSettings(){const dialog=document.getElementById('timerNotificationDialog');if(dialog.open&&typeof dialog.close==='function')dialog.close();else dialog.removeAttribute('open')}
-function checkTimerNotifications(){if(!timerNotifySettings.enabled||!('Notification' in window)||Notification.permission!=='granted')return;const now=Date.now();let changed=false;for(const timer of state.timers){if(!Number.isFinite(Number(timer.endsAt)))continue;for(const [unit,values,multiplier] of [['day',timerNotifySettings.days,86400000],['hour',timerNotifySettings.hours,3600000]]){for(const amount of values){const trigger=Number(timer.endsAt)-amount*multiplier;const key=String(timer.id)+'|'+Number(timer.endsAt)+'|'+unit+'|'+amount;if(now>=trigger&&now-trigger<90000&&!timerNotifySent[key]){timerNotifySent[key]=now;changed=true;try{new Notification('ARK Manager｜タイマー通知',{body:`${timer.timerName||'未設定'}（${timer.map||'マップ未設定'}）の期限まで${amount}${unit==='day'?'日':'時間'}です。`,tag:key})}catch(e){}}}}}if(changed){try{localStorage.setItem(TIMER_NOTIFY_SENT_KEY,JSON.stringify(timerNotifySent))}catch(e){}}}
-function initTimerNotificationSettings(){document.getElementById('openTimerNotificationSettings').addEventListener('click',openTimerNotificationSettings);document.getElementById('closeTimerNotificationSettings').addEventListener('click',closeTimerNotificationSettings);document.getElementById('timerNotifyPermission').addEventListener('click',async()=>{if(!('Notification' in window)){timerNotificationStatus();return}try{const permission=await Notification.requestPermission();if(permission==='granted'){document.getElementById('timerNotifyEnabled').checked=true;timerNotifySettings.enabled=true;localStorage.setItem(TIMER_NOTIFY_KEY,JSON.stringify(timerNotifySettings))}}catch(e){}timerNotificationStatus()});document.getElementById('timerNotifySave').addEventListener('click',()=>{const days=[...document.querySelectorAll('#timerNotifyDays input[data-unit="day"]:checked')].map(el=>Number(el.value)).sort((a,b)=>b-a);const hours=[...document.querySelectorAll('#timerNotifyDays input[data-unit="hour"]:checked')].map(el=>Number(el.value)).sort((a,b)=>b-a);timerNotifySettings={enabled:document.getElementById('timerNotifyEnabled').checked,days,hours};try{localStorage.setItem(TIMER_NOTIFY_KEY,JSON.stringify(timerNotifySettings))}catch(e){alert('設定を保存できませんでした');return}closeTimerNotificationSettings();checkTimerNotifications()});}
+let timerPush=null;
 const STORAGE_KEY='arkTimer_store_v8';
 const MAPS=['アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー'];
 const DEFAULT_MAP_IMAGES={'アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
@@ -1479,6 +1515,7 @@ function normalizeTimers(){
 function save(){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.timers));
   localStorage.setItem(SORT_KEY,state.sortMode);
+  timerPush?.markChanged();
 }
 
 function generateId(){return `timer_${Date.now()}_${Math.random().toString(36).slice(2,9)}`}
@@ -1731,7 +1768,7 @@ function bindListActions(event){
 function handleImageChange(event){const file=event.target.files&&event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{state.pendingCustomImage=String(reader.result||'');imageModeInput.value='custom';setPreviewImage(state.pendingCustomImage);refreshPreviewPin()};reader.readAsDataURL(file)}
 function handleSortChange(){state.sortMode=sortSelect&&sortSelect.value?sortSelect.value:'dueSoon';save();render()}
 function bindMaterialEvents(){document.querySelectorAll('input[name="material"]').forEach(r=>r.addEventListener('change',updateMaterialDays))}
-function startTicker(){render();checkTimerNotifications();setInterval(()=>{render();checkTimerNotifications()},30000)}
+function startTicker(){render();setInterval(render,30000)}
 function bindEvents(){
   if(addBtn)addBtn.addEventListener('click',()=>openModal());
   closeModalBtn.addEventListener('click',closeModal);
@@ -1756,7 +1793,7 @@ function init(){
   load();
   if(sortSelect)sortSelect.value=state.sortMode;
   bindEvents();
-  initTimerNotificationSettings();
+  timerPush=window.ARKPush?.init({getTimers:()=>JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')})||null;
   syncTypeUI();
   refreshImagePreviewForCurrentForm();
   render();
@@ -1836,7 +1873,7 @@ init();
  }
  // Lock the page behind native dialogs, including iOS Safari overscroll.
  let dialogScrollY=0;
- const managerDialogs=['characterDialog','serverSettingsDialog','levelSettingsDialog','characterViewer'];
+ const managerDialogs=['characterDialog','serverSettingsDialog','levelSettingsDialog','characterViewer','dataTransferDialog'];
  function syncDialogScrollLock(){
   const hasOpen=managerDialogs.some(id=>{const d=$(id);return d&&(d.open||d.hasAttribute('open'))});
   if(hasOpen){
@@ -2038,7 +2075,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  appearanceObserver.observe($('characterDetail'),{childList:true,subtree:true});
  function readAppearanceImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/'))return reject(Error('image'));const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('read'));reader.readAsDataURL(file)})}
  function compressImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/'))return reject(Error('image'));const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{try{const scale=Math.min(1,1200/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.8))}catch(e){reject(e)}finally{URL.revokeObjectURL(url)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('decode'))};img.src=url})}
- $('characterImageInput').addEventListener('change',async e=>{const file=e.target.files[0],field=imageField;if(!file)return;toast('画像を読み込んでいます…');try{const src=field==='appearance'?await clearOuterDarkBackground(await readAppearanceImage(file)):await compressImage(file);if(imageContext==='form'){pendingFormImages[field]=src;refreshFormImage(field);toast('画像を追加しました');return}const c=selected();if(!c)return;const current=records.find(r=>r.id===c.id);if(current&&await persistChange({...current,[field]:src}))toast('画像を保存しました')}catch(e){toast('画像を読み込めませんでした。JPEG・PNGなどで再選択してください')}});
+ $('characterImageInput').addEventListener('change',async e=>{const file=e.target.files[0],field=imageField;if(!file)return;try{const src=field==='appearance'?await clearOuterDarkBackground(await readAppearanceImage(file)):await compressImage(file);if(imageContext==='form'){pendingFormImages[field]=src;refreshFormImage(field);return}const c=selected();if(!c)return;const current=records.find(r=>r.id===c.id);if(current)await persistChange({...current,[field]:src})}catch(e){toast('画像を読み込めませんでした。JPEG・PNGなどで再選択してください')}});
  $('characterFormFields').addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;if(button.dataset.formUpload)return upload(button.dataset.formUpload,'form');if(button.dataset.formRemove){pendingFormImages[button.dataset.formRemove]='';refreshFormImage(button.dataset.formRemove)}});
  $('openLevelSettings').addEventListener('click',openLevelSettings);
  $('closeLevelSettings').addEventListener('click',()=>closeDialog($('levelSettingsDialog')));
@@ -2101,7 +2138,27 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  $('closeCharacterDialog').addEventListener('click',()=>closeDialog($('characterDialog')));$('closeCharacterViewer').addEventListener('click',()=>closeDialog($('characterViewer')));
  for(const id of ['characterDialog','characterViewer'])$(id).addEventListener('click',e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog($(id))});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmOverlay.classList.contains('hidden'))closeConfirm(false);else if(!modal.classList.contains('hidden'))closeModal()}});
- renderCharacters();(async()=>{try{if(location.protocol==='file:'||!('indexedDB' in window)){records=loadLocalRecords()}else{db=await openDatabase();records=await readRecords()}}catch(e){db=null;records=loadLocalRecords()}ready=true;renderCharacters()})();
+ renderCharacters();const charactersReady=(async()=>{try{if(location.protocol==='file:'||!('indexedDB' in window)){records=loadLocalRecords()}else{db=await openDatabase();records=await readRecords()}}catch(e){db=null;records=loadLocalRecords()}ready=true;renderCharacters()})();
+ window.ARKTransfer?.init({
+  openDialog,closeDialog,
+  getCurrent:async()=>{
+   await charactersReady;
+   const raw=localStorage.getItem('arkTimer_notification_settings_v1');
+   const preferences=JSON.parse(raw||'{}')||{};
+   return {characters:db?await readRecords():JSON.parse(localStorage.getItem(CHARACTER_STORAGE_KEY)||'[]'),
+    timers:JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'),servers:JSON.parse(localStorage.getItem(SERVER_STORAGE_KEY)||JSON.stringify(savedServers)),
+    levelRules:JSON.parse(localStorage.getItem(LEVEL_RULES_KEY)||JSON.stringify(levelRules)),sortMode:localStorage.getItem(SORT_KEY)||state.sortMode,
+    notificationSettings:{enabled:!!preferences.enabled,days:preferences.days??[1],hours:preferences.hours??[]},hasNotificationSettings:raw!==null};
+  },
+  apply:async next=>{
+   await window.ARKTransfer.persist(next,{storage:localStorage,database:db});
+   records=next.data.characters;levelRules=next.data.levelRules;savedServers=next.data.servers;
+   state.timers=next.data.timers;state.sortMode=next.data.sortMode;sortSelect.value=state.sortMode;
+   renderCharacters();if(selectedId)renderDetail();render();renderServerSettings();renderLevelSettings();
+   timerPush?.markChanged();
+  },
+  openNotifications:()=>{switchTab('timers');timerPush?.open()}
+ });
 })();
 
 (function(){
