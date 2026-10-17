@@ -1275,7 +1275,7 @@ body{
 .timer-list-heading h1{white-space:nowrap}
 .timer-list-heading-actions{display:flex;align-items:center;gap:8px;min-width:0}
 .timer-list-heading #sortSelect{width:140px;max-width:40vw;min-width:0;min-height:36px;padding:8px;font-size:11px;border-radius:10px}
-#timerCount{font-size:13px;white-space:nowrap}
+#timerCount{font-size:16px;white-space:nowrap}
 .timer-list-item{display:flex;gap:8px;min-width:0;height:112px}
 .timer-list-item.dragging{opacity:.65;outline:2px solid var(--blue);border-radius:20px}
 .timer-select-card{display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:10px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.045);color:var(--text);text-align:left}
@@ -1286,23 +1286,45 @@ body{
 .timer-meta{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .timer-summary .remain-value{font-size:13px;white-space:nowrap;font-weight:800}
 .timer-reorder{flex:0 0 40px}
+.timer-row-tools{display:grid;grid-template-rows:minmax(0,1fr) 44px;gap:6px;flex:0 0 40px;width:40px;min-width:0}
+.timer-row-tools .timer-reorder{min-height:0;min-width:0;width:100%;padding:0}
+.timer-list-reset{display:grid;place-content:center;padding:2px;border:1px solid rgba(103,187,255,.25);border-radius:12px;background:rgba(103,187,255,.08);color:var(--blue)}
+.timer-list-reset .reset-symbol{font-size:20px;line-height:20px}
+.timer-list-reset .reset-label{font-size:9px;line-height:12px;white-space:nowrap}
 .timer-detail-map{position:relative;width:100%;aspect-ratio:1;background-size:100% 100%;background-position:center;background-repeat:no-repeat;border:1px solid var(--line);border-radius:20px;overflow:hidden}
 .timer-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
 .timer-detail-actions .character-delete{grid-column:1 / -1;margin:0}
 .timer-detail-value{font-size:17px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
 .map-edit-hint{font-size:12px;line-height:1.6;color:var(--muted);margin:0}
 .map-edit-actions{display:flex;justify-content:space-between;gap:10px}
-.map-preview{background-size:100% 100%}
+.map-preview,.map-viewer-image{background-size:100% 100%}
+#imagePreviewPin{width:26px;height:26px;touch-action:none;cursor:grab}
+#imagePreviewPin::before{content:"";position:absolute;inset:-12px}
 .field>.eos-help{margin:0}
 .character-field>.eos-help{margin:0 0 8px}
 .time-grid select{min-width:0;padding:12px 6px}
-@media(max-width:380px){.timer-list-heading h1{font-size:20px}.timer-list-heading-actions{gap:4px}.timer-list-heading #sortSelect{width:122px;padding:7px 5px;font-size:10px}.timer-select-card{gap:8px;padding:8px}.timer-map-thumbnail{width:66px;height:78px;flex-basis:66px}.timer-summary .timer-name{font-size:15px}.timer-summary .remain-value{font-size:11px}.timer-meta{font-size:10px}}
+@media(max-width:380px){.timer-list-heading{gap:6px}.timer-list-heading h1{font-size:20px}.timer-list-heading-actions{gap:4px}.timer-list-heading #sortSelect{width:112px;padding:7px 5px;font-size:10px}.timer-select-card{gap:8px;padding:8px}.timer-map-thumbnail{width:66px;height:78px;flex-basis:66px}.timer-summary .timer-name{font-size:15px}.timer-summary .remain-value{font-size:11px}.timer-meta{font-size:10px}}
+/* Keep both navigation tabs, and each detail's back button, above scrolling content. */
+:root{--app-header-height:calc(96px + env(safe-area-inset-top));--app-tabs-height:76px;--detail-back-height:48px}
+.app-shell{padding-top:calc(var(--app-header-height) + var(--app-tabs-height))}
+.topbar{height:var(--app-header-height)}
+.manager-tabs{position:fixed;top:var(--app-header-height);left:0;right:0;margin:0 auto;width:100%;max-width:820px;height:var(--app-tabs-height);padding:12px 16px;z-index:19;background:linear-gradient(115deg,#0a1826,#0d2530)!important;border-bottom:1px solid rgba(113,211,224,.12)}
+.manager-tabs button{height:52px;padding:14px 12px;line-height:22px}
+#characterDetail,#timerDetail{padding-top:var(--detail-back-height)}
+#characterDetail>.character-back,#timerDetail>.character-back{position:fixed;top:calc(var(--app-header-height) + var(--app-tabs-height));left:0;right:0;margin:0 auto;width:100%;max-width:820px;height:var(--detail-back-height);padding:0 16px;display:flex;align-items:center;z-index:18;background:linear-gradient(115deg,#0a1826,#0d2530);border-bottom:1px solid var(--line);text-align:left}
+/* Crop only the generated image's transparent padding in the layout. */
+.brand-title{position:relative;width:230px;max-width:calc(100% - 76px);aspect-ratio:1890 / 705;flex:0 1 230px;overflow:hidden}
+.brand-wordmark{position:absolute;display:block;width:104.445%;max-width:none;height:auto;left:-3.281%;top:-3.263%}
+#characterCount,#timerCount{font-size:16px;font-weight:400;line-height:1.4}
+.timer-list-heading{padding-right:48px}
+.timer-list-heading-actions{position:relative;flex:0 0 auto}
+#timerCount{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%)}
 </style>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand-title" aria-label="ARK Manager">𝒜ℛ𝒦 ℳ𝒶𝓃𝒶𝑔ℯ𝓇</div>
+      <div class="brand-title"><img class="brand-wordmark" src="ark-manager-wordmark.png" alt="ARK Manager" width="1974" height="797"></div>
       <img class="brand-icon" src="ark-logo-transparent.png" alt="ARK" width="64" height="64">
     </header>
 
@@ -1351,7 +1373,7 @@ body{
         <p>右下の＋ボタンから追加してください</p>
       </section>
       <section id="list" class="timer-list"></section>
-      <div class="manager-settings-bottom"><button type="button" data-open-transfer class="manager-small-btn">データ引き継ぎ</button><button type="button" id="openTimerNotificationSettings" class="manager-small-btn">⚙ 通知設定</button></div>
+      <div class="manager-settings-bottom"><button type="button" id="openTimerNotificationSettings" class="manager-small-btn">⚙ 通知設定</button><button type="button" data-open-transfer class="manager-small-btn">データ引き継ぎ</button></div>
       </div>
       <section id="timerDetail" class="hidden"></section>
     </main>
@@ -1438,7 +1460,7 @@ body{
               <div id="imagePreviewPin" class="map-pin hidden" aria-hidden="true"></div>
             </div>
           </button>
-          <p id="mapPinHelp" class="map-edit-hint">地図の好きな位置をタップしてピンを置けます。矢印キーでも移動できます。</p>
+          <p id="mapPinHelp" class="map-edit-hint">タップやピンのドラッグで自由に配置できます。手動配置時は座標欄を空にします。矢印キーでも移動できます。</p>
           <div class="map-edit-actions"><button id="changeMapImage" class="manager-small-btn" type="button">マップ画像を変更</button><button id="clearMapPin" class="manager-small-btn" type="button">ピンを消す</button></div>
         </div>
 
@@ -1450,7 +1472,7 @@ body{
           </div>
           <label class="check-row">
             <input id="showPinInput" type="checkbox" checked>
-            <span>座標にピンを表示</span>
+          <span>ピンを表示</span>
           </label>
         </div>
 
@@ -1528,7 +1550,7 @@ const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':20};
 const SORT_KEY='arkTimer_sort_mode';
 const $=id=>document.getElementById(id);
 const list=$('list'),addBtn=$('add'),sortSelect=$('sortSelect'),activeCount=$('activeCount'),emptyState=$('emptyState'),overlay=$('overlay'),modal=$('modal'),closeModalBtn=$('closeModal'),modalTitle=$('modalTitle'),submitBtn=$('submitBtn'),timerForm=$('timerForm'),editIdInput=$('editId'),imageModeInput=$('imageMode'),mapSelect=$('mapSelect'),typeSelect=$('typeSelect'),materialField=$('materialField'),customTimerField=$('customTimerField'),memoInput=$('memoInput'),timerNameInput=$('timerNameInput'),latInput=$('latInput'),lngInput=$('lngInput'),daysInput=$('daysInput'),hoursInput=$('hoursInput'),minutesInput=$('minutesInput'),imageInput=$('imageInput'),imagePreview=$('imagePreview'),imagePreviewButton=$('imagePreviewButton'),imagePreviewPin=$('imagePreviewPin'),showPinInput=$('showPinInput'),confirmOverlay=$('confirmOverlay'),confirmTitle=$('confirmTitle'),confirmText=$('confirmText'),confirmCancel=$('confirmCancel'),confirmOk=$('confirmOk'),materialDays=$('materialDays');
-const state={timers:[],pendingCustomImage:'',confirmResolver:null,sortMode:'dueSoon',selectedTimerId:null,previewImageSrc:''};
+const state={timers:[],pendingCustomImage:'',confirmResolver:null,sortMode:'dueSoon',selectedTimerId:null,previewImageSrc:'',manualPin:null,pinDragPointer:null};
 
 function load(){
   try{
@@ -1570,11 +1592,17 @@ function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src
 function getMapBounds(mapName){return MAP_BOUNDS[mapName]||{width:100,height:100}}
 function clamp(num,min,max){return Math.min(max,Math.max(min,num))}
 function parseCoord(value){const text=String(value??'').trim();if(!text)return null;const num=Number(text);return Number.isFinite(num)?num:null}
-function coordinatesFromPoint(rect,x,y,mapName){if(!(rect.width>0&&rect.height>0))return null;const bounds=getMapBounds(mapName);return{lat:Math.round(clamp((y-rect.top)/rect.height,0,1)*bounds.height*10)/10,lng:Math.round(clamp((x-rect.left)/rect.width,0,1)*bounds.width*10)/10}}
-function setPreviewCoordinates(lat,lng){latInput.value=String(lat);lngInput.value=String(lng);showPinInput.checked=true;refreshPreviewPin()}
-function placePreviewPin(event){if(event.detail===0){setPreviewCoordinates(50,50);return}const point=coordinatesFromPoint(imagePreview.getBoundingClientRect(),event.clientX,event.clientY,timerMapValue());if(point)setPreviewCoordinates(point.lat,point.lng)}
-function movePreviewPin(event){const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};if(!directions[event.key])return;event.preventDefault();const [dy,dx]=directions[event.key],step=event.shiftKey?0.1:1,bounds=getMapBounds(timerMapValue());setPreviewCoordinates(Math.round(clamp((parseCoord(latInput.value)??50)+dy*step,0,bounds.height)*10)/10,Math.round(clamp((parseCoord(lngInput.value)??50)+dx*step,0,bounds.width)*10)/10)}
-function getPinPosition(mapName,lat,lng){
+function normalizeManualPin(value){return value&&Number.isFinite(value.left)&&Number.isFinite(value.top)&&value.left>=0&&value.left<=100&&value.top>=0&&value.top<=100?{left:value.left,top:value.top}:null}
+function pinPositionFromPoint(rect,x,y){if(!(rect.width>0&&rect.height>0))return null;return{left:Math.round(clamp((x-rect.left)/rect.width,0,1)*1000)/10,top:Math.round(clamp((y-rect.top)/rect.height,0,1)*1000)/10}}
+function setPreviewPin(point){state.manualPin=normalizeManualPin(point);latInput.value='';lngInput.value='';showPinInput.checked=true;refreshPreviewPin()}
+function placePreviewPin(event){const point=event.detail===0?{left:50,top:50}:pinPositionFromPoint(imagePreview.getBoundingClientRect(),event.clientX,event.clientY);if(point)setPreviewPin(point)}
+function movePreviewPin(event){const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};if(!directions[event.key])return;event.preventDefault();const [dy,dx]=directions[event.key],step=event.shiftKey?0.1:1,point=getPinPosition(timerMapValue(),latInput.value,lngInput.value,state.manualPin)||{left:50,top:50};setPreviewPin({left:Math.round(clamp(point.left+dx*step,0,100)*10)/10,top:Math.round(clamp(point.top+dy*step,0,100)*10)/10})}
+function startPreviewPinDrag(event){if(event.button!==0||!event.target.closest('#imagePreviewPin'))return;event.preventDefault();state.pinDragPointer=event.pointerId;imagePreviewButton.setPointerCapture(event.pointerId)}
+function dragPreviewPin(event){if(state.pinDragPointer!==event.pointerId)return;event.preventDefault();const point=pinPositionFromPoint(imagePreview.getBoundingClientRect(),event.clientX,event.clientY);if(point)setPreviewPin(point)}
+function stopPreviewPinDrag(event){if(state.pinDragPointer!==event.pointerId)return;state.pinDragPointer=null;if(imagePreviewButton.hasPointerCapture(event.pointerId))imagePreviewButton.releasePointerCapture(event.pointerId)}
+function usePreviewCoordinates(){state.manualPin=null;refreshPreviewPin()}
+function getPinPosition(mapName,lat,lng,manualPin=null){
+  const manual=normalizeManualPin(manualPin);if(manual)return manual;
   const latNum=parseCoord(lat),lngNum=parseCoord(lng);
   if(latNum===null||lngNum===null)return null;
   const bounds=getMapBounds(mapName);
@@ -1582,9 +1610,9 @@ function getPinPosition(mapName,lat,lng){
   const top=clamp((latNum/bounds.height)*100,0,100);
   return {left,top};
 }
-function setPinElement(pinEl,mapName,lat,lng,showPin=true){
+function setPinElement(pinEl,mapName,lat,lng,showPin=true,manualPin=null){
   if(!pinEl)return;
-  const pos=showPin?getPinPosition(mapName,lat,lng):null;
+  const pos=showPin?getPinPosition(mapName,lat,lng,manualPin):null;
   if(!pos){pinEl.classList.add('hidden');return}
   pinEl.classList.remove('hidden');
   pinEl.style.left=`${pos.left}%`;
@@ -1610,7 +1638,7 @@ function timerMapValue(){const v=mapSelect.value;if(v.startsWith('__preset__')){
 function syncTimerServerChoice(){const v=mapSelect.value;if(v.startsWith('__preset__')){const s=timerSavedServers()[Number(v.slice(10))];if(s)$('timerServerNo').value=String(s.serverNo)}else{$('timerServerNo').value=''}syncCustomMapUI()}
 
 function syncCustomMapUI(){const custom=mapSelect.value==='__custom__';$('customMapInput').classList.toggle('hidden',!custom);$('customMapInput').required=custom;refreshImagePreviewForCurrentForm()}
-function refreshPreviewPin(){setPinElement(imagePreviewPin,timerMapValue(),latInput.value,lngInput.value,showPinInput.checked)}
+function refreshPreviewPin(){setPinElement(imagePreviewPin,timerMapValue(),latInput.value,lngInput.value,showPinInput.checked,state.manualPin)}
 function refreshImagePreviewForCurrentForm(){const defaultImage=getDefaultImageForMap(timerMapValue());imageModeInput.value='default';state.pendingCustomImage='';imageInput.value='';setPreviewImage(defaultImage||'');refreshPreviewPin()}
 
 function openModal(editTarget=null){
@@ -1619,6 +1647,7 @@ function openModal(editTarget=null){
   addBtn.classList.add('hidden');
   document.body.style.overflow='hidden';
   if(!editTarget){
+    state.manualPin=null;state.pinDragPointer=null;
     timerForm.reset();
     refreshTimerMapChoices('アイランド');
     $('customMapInput').value='';$('customMapInput').classList.add('hidden');$('customMapInput').required=false;
@@ -1645,8 +1674,9 @@ function openModal(editTarget=null){
   $('timerServerNo').value=editTarget.serverNo||'';
   memoInput.value=editTarget.memo||'';
   timerNameInput.value=editTarget.timerName||'';
-  latInput.value=editTarget.lat??'';
-  lngInput.value=editTarget.lng??'';
+  state.manualPin=normalizeManualPin(editTarget.manualPin);state.pinDragPointer=null;
+  latInput.value=state.manualPin?'':editTarget.lat??'';
+  lngInput.value=state.manualPin?'':editTarget.lng??'';
   if(showPinInput)showPinInput.checked=editTarget.showPin!==false;
   modalTitle.textContent='タイマー編集';
   submitBtn.textContent='保存';
@@ -1716,7 +1746,7 @@ function openMapViewer(timer){
   const pin=document.createElement('div');
   pin.className='map-pin viewer-pin hidden';
   imageEl.appendChild(pin);
-  setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false);
+  setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false,timer.manualPin);
   if(timer.type==='tribe_tower'){
     const badge=document.createElement('img');
     badge.className='overlay-badge';
@@ -1740,7 +1770,7 @@ function openMapViewer(timer){
 function decorateTimerMap(element,timer){
   element.style.backgroundImage=`url("${getTimerImageSrc(timer)}")`;
   const pin=document.createElement('span');pin.className='map-pin hidden';element.appendChild(pin);
-  setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false);
+  setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false,timer.manualPin);
   if(timer.type==='tribe_tower'||timer.type==='generator'){
     const badge=document.createElement('img');badge.className='overlay-badge';
     badge.src=timer.type==='tribe_tower'?TRIBE_TOWER_ICON:GENERATOR_ICON;badge.alt='';element.appendChild(badge);
@@ -1769,7 +1799,7 @@ function render(){
   for(const timer of sorted){
     const remain=getRemainingMs(timer);if(remain>0)active++;
     const row=document.createElement('div');row.className='timer-list-item';row.dataset.id=timer.id;
-    row.innerHTML=`<button class="timer-select-card${remain<=0?' expired':''}" type="button" data-timer="${escapeHtml(timer.id)}"><span class="timer-map-thumbnail" aria-hidden="true"></span><span class="timer-summary"><span class="timer-name">${escapeHtml(timer.timerName||'未設定')}</span><span class="timer-meta">${escapeHtml(timer.map)}${timer.serverNo?'：'+escapeHtml(timer.serverNo):''}</span><span class="timer-meta">${escapeHtml(buildTypeLabel(timer))}</span><span class="remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</span></span><span class="character-chevron" aria-hidden="true">›</span></button><div class="character-drag-handle timer-reorder" data-timer-drag="${escapeHtml(timer.id)}" role="button" tabindex="0" aria-label="長押しでタイマを並び替え、矢印キーで上下へ移動">☰</div>`;
+    row.innerHTML=`<button class="timer-select-card${remain<=0?' expired':''}" type="button" data-timer="${escapeHtml(timer.id)}"><span class="timer-map-thumbnail" aria-hidden="true"></span><span class="timer-summary"><span class="timer-name">${escapeHtml(timer.timerName||'未設定')}</span><span class="timer-meta">${escapeHtml(timer.map)}${timer.serverNo?'：'+escapeHtml(timer.serverNo):''}</span><span class="timer-meta">${escapeHtml(buildTypeLabel(timer))}</span><span class="remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</span></span><span class="character-chevron" aria-hidden="true">›</span></button><div class="timer-row-tools"><div class="character-drag-handle timer-reorder" data-timer-drag="${escapeHtml(timer.id)}" role="button" tabindex="0" aria-label="長押しでタイマを並び替え、矢印キーで上下へ移動">☰</div><button class="timer-list-reset" type="button" data-action="reset" data-id="${escapeHtml(timer.id)}" aria-label="${escapeHtml(timer.timerName||'未設定')}をリセット"><span class="reset-symbol" aria-hidden="true">↻</span><span class="reset-label" aria-hidden="true">リセット</span></button></div>`;
     decorateTimerMap(row.querySelector('.timer-map-thumbnail'),timer);list.appendChild(row);
   }
   if(activeCount)activeCount.textContent=String(active);
@@ -1783,7 +1813,7 @@ function buildTimerPayload(now,keepId=null,existingSortOrder=null){
   if(durationMs<=0){alert('タイマーは1分以上で入力してください');return null}
   const current=keepId?state.timers.find(timer=>timer.id===keepId):null;
   const preserveDeadline=current&&Math.floor((current.endsAt-current.startedAt)/60000)*60000===durationMs;
-  return {...current,id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,showPin:showPinInput?showPinInput.checked:true,type,material:type==='building'?getSelectedMaterial():null,memo,startedAt:preserveDeadline?current.startedAt:now,endsAt:preserveDeadline?current.endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
+  return {...current,id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,manualPin:normalizeManualPin(state.manualPin),showPin:showPinInput?showPinInput.checked:true,type,material:type==='building'?getSelectedMaterial():null,memo,startedAt:preserveDeadline?current.startedAt:now,endsAt:preserveDeadline?current.endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
 }
 function addTimerFromForm(event){
   event.preventDefault();
@@ -1842,14 +1872,18 @@ function bindEvents(){
   $('timerDetail').addEventListener('click',event=>{if(event.target.closest('[data-timer-back]'))return showTimerList();if(event.target.closest('[data-open-timer-map]'))return openMapViewer(state.timers.find(timer=>timer.id===state.selectedTimerId));bindListActions(event)});
   mapSelect.addEventListener('change',syncTimerServerChoice);
   $('customMapInput').addEventListener('input',()=>{if(mapSelect.value==='__custom__')refreshPreviewPin()});
-  latInput.addEventListener('input',refreshPreviewPin);
-  lngInput.addEventListener('input',refreshPreviewPin);
+  latInput.addEventListener('input',usePreviewCoordinates);
+  lngInput.addEventListener('input',usePreviewCoordinates);
   if(showPinInput)showPinInput.addEventListener('change',refreshPreviewPin);
   imageInput.addEventListener('change',handleImageChange);
   imagePreviewButton.addEventListener('click',placePreviewPin);
   imagePreviewButton.addEventListener('keydown',movePreviewPin);
+  imagePreviewButton.addEventListener('pointerdown',startPreviewPinDrag);
+  imagePreviewButton.addEventListener('pointermove',dragPreviewPin);
+  imagePreviewButton.addEventListener('pointerup',stopPreviewPinDrag);
+  imagePreviewButton.addEventListener('pointercancel',stopPreviewPinDrag);
   $('changeMapImage').addEventListener('click',()=>imageInput.click());
-  $('clearMapPin').addEventListener('click',()=>{latInput.value='';lngInput.value='';showPinInput.checked=false;refreshPreviewPin()});
+  $('clearMapPin').addEventListener('click',()=>{state.manualPin=null;latInput.value='';lngInput.value='';showPinInput.checked=false;refreshPreviewPin()});
   confirmCancel.addEventListener('click',()=>closeConfirm(false));
   confirmOk.addEventListener('click',()=>closeConfirm(true));
   confirmOverlay.addEventListener('click',e=>{if(e.target===confirmOverlay)closeConfirm(false)});

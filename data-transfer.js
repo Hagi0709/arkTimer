@@ -57,6 +57,8 @@
       if (!['building','tribe_tower','generator','other'].includes(t.type)) fail();
       if (t.type === 'building' && !['わら','木','石','金属','TEK'].includes(t.material)) fail();
       image(t.imageSrc);
+      if (t.manualPin != null && (!object(t.manualPin) || ['left','top'].some(key =>
+        !Number.isFinite(t.manualPin[key]) || t.manualPin[key] < 0 || t.manualPin[key] > 100))) fail();
     });
     list(data.servers, s => { string(s.map, 80); string(s.serverNo, 100); if (s.memo !== undefined) string(s.memo); },
       s => JSON.stringify([s.map, s.serverNo]));

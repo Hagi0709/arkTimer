@@ -63,6 +63,15 @@ test('新規端末には画像と期限を保って追加し、通知は勝手�
   assert.equal(next.data.sortMode, 'manual');
 });
 
+test('座標が空の手動ピンも書き出し・読み込みで同じ位置を保持', () => {
+  const source=fixture();source.timers[0]={...source.timers[0],lat:'',lng:'',manualPin:{left:0,top:75.5}};
+  const backup=api.parse(JSON.stringify(api.createBackup(source))),next=api.plan(empty(),backup);
+  assert.deepEqual(plain(next.timers[0].manualPin),{left:0,top:75.5});assert.equal(next.timers[0].lat,'');assert.equal(next.timers[0].lng,'');
+  for(const manualPin of [{left:101,top:10},{left:10,top:-1},{left:'10',top:10},[]]){
+    const bad=plain(backup);bad.data.timers[0].manualPin=manualPin;assert.throws(()=>api.parse(JSON.stringify(bad)));
+  }
+});
+
 test('同じファイルの繰り返し読み込みで重複せず既存編集・通知設定を保持', () => {
   const current = fixture();
   current.characters[0].name = 'この端末で編集';

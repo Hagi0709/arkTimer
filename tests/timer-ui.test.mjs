@@ -16,6 +16,7 @@ function harness(){
         classList:{add:n=>classes.add(n),remove:n=>classes.delete(n),contains:n=>classes.has(n),toggle:(n,on)=>on?classes.add(n):classes.delete(n)},
         getAttribute:()=>id==='timerTab'?'true':null,querySelector:()=>null,appendChild(option){this.options.push(option)},
         getBoundingClientRect:()=>({left:50,top:100,width:200,height:200}),reset(){},
+        setPointerCapture(id){this.pointer=id},hasPointerCapture(id){return this.pointer===id},releasePointerCapture(){this.pointer=null},
         set innerHTML(value){this.options=[...value.matchAll(/<option value="([^"]+)"/g)].map(m=>({value:m[1]}));if(this.options.length)this.value=this.options[0].value}
       };nodes.set(id,item);
     }return nodes.get(id);
@@ -42,20 +43,32 @@ test('空欄や不正座標ではピンを表示せず、0座標は正しく表�
   assert.deepEqual(plain(h.run("getPinPosition('アイランド','0','0')")),{left:0,top:0});
 });
 
-test('タップ位置から緯度・経度を計算し地図の外側は範囲内に丸める',()=>{
+test('タップ位置を座標とは別に保持し、地図の外側は範囲内に丸める',()=>{
   const h=harness();
-  assert.deepEqual(plain(h.run("coordinatesFromPoint({left:50,top:100,width:200,height:200},150,250,'アイランド')")),{lat:75,lng:50});
-  assert.deepEqual(plain(h.run("coordinatesFromPoint({left:50,top:100,width:200,height:200},-10,500,'アイランド')")),{lat:100,lng:0});
-  assert.equal(h.run("coordinatesFromPoint({width:0,height:0},10,10,'アイランド')"),null);
+  assert.deepEqual(plain(h.run("pinPositionFromPoint({left:50,top:100,width:200,height:200},150,250)")),{left:50,top:75});
+  assert.deepEqual(plain(h.run("pinPositionFromPoint({left:50,top:100,width:200,height:200},-10,500)")),{left:0,top:100});
+  assert.equal(h.run("pinPositionFromPoint({width:0,height:0},10,10)"),null);
+  h.node('latInput').value='10';h.node('lngInput').value='20';
   h.run('placePreviewPin({detail:1,clientX:150,clientY:250})');
-  assert.equal(h.node('latInput').value,'75');assert.equal(h.node('lngInput').value,'50');assert.equal(h.node('showPinInput').checked,true);
+  assert.equal(h.node('latInput').value,'');assert.equal(h.node('lngInput').value,'');assert.equal(h.node('showPinInput').checked,true);
+  assert.deepEqual(plain(h.run('state.manualPin')),{left:50,top:75});
 });
 
 test('矢印キーによるピン移動と0.1刻みの微調整',()=>{
   const h=harness();h.node('latInput').value='50';h.node('lngInput').value='50';
   h.run("movePreviewPin({key:'ArrowRight',shiftKey:true,preventDefault(){}})");
-  assert.equal(h.node('lngInput').value,'50.1');
-  h.run("movePreviewPin({key:'ArrowUp',preventDefault(){}})");assert.equal(h.node('latInput').value,'49');
+  assert.deepEqual(plain(h.run('state.manualPin')),{left:50.1,top:50});
+  h.run("movePreviewPin({key:'ArrowUp',preventDefault(){}})");assert.equal(h.run('state.manualPin.top'),49);
+  assert.equal(h.node('latInput').value,'');assert.equal(h.node('lngInput').value,'');
+});
+
+test('ピンのドラッグは座標を空にし、無関係なポインターでは位置を変えない',()=>{
+  const h=harness();h.node('latInput').value='10';h.node('lngInput').value='20';
+  h.run('startPreviewPinDrag({button:0,pointerId:7,target:{closest:()=>imagePreviewPin},preventDefault(){}})');
+  h.run('dragPreviewPin({pointerId:8,clientX:200,clientY:120,preventDefault(){}})');assert.equal(h.run('state.manualPin'),null);
+  h.run('dragPreviewPin({pointerId:7,clientX:200,clientY:120,preventDefault(){}});stopPreviewPinDrag({pointerId:7})');
+  assert.deepEqual(plain(h.run('state.manualPin')),{left:75,top:10});assert.equal(h.run('state.pinDragPointer'),null);
+  assert.equal(h.node('latInput').value,'');assert.equal(h.node('lngInput').value,'');
 });
 
 test('既存の2時間2分を編集画面で維持し、日・時間・分を選択できる',()=>{
@@ -78,6 +91,22 @@ test('ピンやメモだけの編集は開始時刻・期限・ID・並び順を
   const next=plain(h.run("buildTimerPayload(1900000000000,'timer_1',3)"));
   assert.equal(next.startedAt,previous.startedAt);assert.equal(next.endsAt,previous.endsAt);assert.equal(next.id,previous.id);assert.equal(next.sortOrder,3);
   assert.equal(next.lat,'75');assert.equal(next.lng,'50');assert.equal(next.memo,'新メモ');
+});
+
+test('手動ピンの保存・再編集でも位置を保持し、座標入力時は座標のピンへ切り替える',()=>{
+  const h=harness(),previous=timer();h.setTimers([previous]);h.run('setupDurationSelects();openModal(state.timers[0]);setPreviewPin({left:25,top:60})');
+  const next=plain(h.run("buildTimerPayload(1900000000000,'timer_1',3)"));
+  assert.equal(next.lat,'');assert.equal(next.lng,'');assert.equal(next.endsAt,previous.endsAt);assert.deepEqual(next.manualPin,{left:25,top:60});
+  h.setTimers([next]);h.run('openModal(state.timers[0])');assert.equal(h.node('imagePreviewPin').style.left,'25%');assert.equal(h.node('imagePreviewPin').style.top,'60%');
+  h.node('latInput').value='40';h.node('lngInput').value='10';h.run('usePreviewCoordinates()');
+  assert.equal(h.run('state.manualPin'),null);assert.equal(h.node('imagePreviewPin').style.left,'10%');assert.equal(h.node('imagePreviewPin').style.top,'40%');
+});
+
+test('一覧からのリセットは同じ長さで再開し、ID・画像・手動ピンを維持',async()=>{
+  const h=harness(),previous={...timer(),lat:'',lng:'',manualPin:{left:25,top:60}};h.setTimers([previous]);
+  h.run('Date.now=()=>1900000000000;openConfirm=async()=>true;render=()=>{}');await h.run('resetTimer("timer_1")');
+  const next=plain(h.run('state.timers[0]'));assert.equal(next.id,previous.id);assert.equal(next.startedAt,1900000000000);
+  assert.equal(next.endsAt,1900000000000+previous.endsAt-previous.startedAt);assert.deepEqual(next.manualPin,previous.manualPin);assert.equal(next.imageSrc,previous.imageSrc);
 });
 
 test('時間の変更時だけ新しい長さを反映し、既存の画像は保持',()=>{
