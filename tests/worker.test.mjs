@@ -49,6 +49,14 @@ test('編集・リセット・削除・通知設定変更を原子的に同期�
   assert.equal(alerts(env).filter(a => a.cancelled_at === null).length, 0);
   assert.equal(alerts(env).length, 4);
 });
+test('9999日23時間59分の通知も予約し、許容範囲を超える更新で既存予定を失わない', async t => {
+  const env=setup(t),endsAt=NOW+10000*DAY-60000;
+  const result=await call(env,'sync',snapshot({days:[1],timers:[{...timer,startedAt:NOW,endsAt}]}));
+  assert.equal(result.status,200);assert.equal(result.body.scheduled,3);
+  assert.deepEqual(alerts(env).map(a=>a.due_at),[endsAt-DAY,endsAt-2*HOUR,endsAt-HOUR]);
+  const invalid=await call(env,'sync',snapshot({revision:2,timers:[{...timer,endsAt:NOW+10000*DAY+1}]}));
+  assert.equal(invalid.status,400);assert.equal(alerts(env).filter(a=>a.cancelled_at===null).length,3);
+});
 test('古い同期・古い通知停止が新しい設定を上書きしない', async t => {
   const env = setup(t);
   await call(env, 'sync', snapshot({ revision: 5 }));

@@ -30,7 +30,15 @@ try {
   assert.equal(result.scheduled, 2);
   const status = await post('status', { token });
   assert.deepEqual(status.alerts.map(a => a.due_at).sort(), [now + 3600000, now + 7200000]);
-  await post('unsubscribe', { token, revision: now + 1 });
+  const farEnd=now+10000*86400000-60000;
+  const extended=await post('sync',{
+    token,revision:now+1,days:[],hours:[1,2],
+    subscription:{endpoint:'https://push.example.invalid/local-test-only',keys:{p256dh:'B'.repeat(87),auth:'A'.repeat(22)}},
+    timers:[{id:'local-test',name:'9999 days',map:'ジェネシス1(Ocean)',startedAt:now,endsAt:farEnd}]
+  });
+  assert.equal(extended.scheduled,2);
+  assert.deepEqual((await post('status',{token})).alerts.filter(a=>a.cancelled_at===null).map(a=>a.due_at).sort(),[farEnd-7200000,farEnd-3600000]);
+  await post('unsubscribe', { token, revision: now + 2 });
   assert.ok((await post('status', { token })).alerts.every(a => a.cancelled_at !== null));
   const cron = await app.fetch('http://localhost/cdn-cgi/local/scheduled');
   assert.equal(cron.status, 200);
@@ -39,5 +47,8 @@ try {
     assert.equal(response.status, 200, path);
     if (path !== '/manifest.webmanifest') assert.equal(response.headers.get('cache-control'), 'no-cache', path);
   }
-  console.log('Local Workers + D1: hour schedule, cancellation, Cron and PWA assets passed');
+  for(const path of ['/ark-manager-app-icon.png','/genesis1-ocean.jpg','/genesis1-genesis.jpg']){
+    const response=await app.fetch('http://localhost'+path);assert.equal(response.status,200,path);assert.match(response.headers.get('content-type'),/^image\//);
+  }
+  console.log('Local Workers + D1: hour/9999-day schedules, cancellation, Cron and PWA/map assets passed');
 } finally { await app.stop(); }

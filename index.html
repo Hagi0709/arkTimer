@@ -6,8 +6,9 @@
   <title>ARK Manager</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="apple-touch-icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
-  <link rel="icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
+  <meta name="theme-color" content="#0c1e2d">
+  <link rel="apple-touch-icon" href="./ark-manager-app-icon.png">
+  <link rel="icon" href="./ark-manager-app-icon.png">
   <style>
 :root{
   --bg:#08111c;
@@ -805,7 +806,14 @@ input:focus,select:focus,textarea:focus{
 
 .fab{
   z-index:90;
+  appearance:none;
+  -webkit-appearance:none;
+  padding:0;
+  line-height:0;
 }
+.fab::before,.fab::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:currentColor;border-radius:1px;pointer-events:none}
+.fab::before{width:26px;height:4px}
+.fab::after{width:4px;height:26px}
 
 .card-pin{
   width:16px;
@@ -1305,16 +1313,18 @@ body{
 .time-grid select{min-width:0;padding:12px 6px}
 @media(max-width:380px){.timer-list-heading{gap:6px}.timer-list-heading h1{font-size:20px}.timer-list-heading-actions{gap:4px}.timer-list-heading #sortSelect{width:112px;padding:7px 5px;font-size:10px}.timer-select-card{gap:8px;padding:8px}.timer-map-thumbnail{width:66px;height:78px;flex-basis:66px}.timer-summary .timer-name{font-size:15px}.timer-summary .remain-value{font-size:11px}.timer-meta{font-size:10px}}
 /* Keep both navigation tabs, and each detail's back button, above scrolling content. */
-:root{--app-header-height:calc(96px + env(safe-area-inset-top));--app-tabs-height:76px;--detail-back-height:48px}
+:root{--app-header-height:calc(64px + env(safe-area-inset-top));--app-tabs-height:40px;--detail-back-height:48px}
 .app-shell{padding-top:calc(var(--app-header-height) + var(--app-tabs-height))}
-.topbar{height:var(--app-header-height)}
-.manager-tabs{position:fixed;top:var(--app-header-height);left:0;right:0;margin:0 auto;width:100%;max-width:820px;height:var(--app-tabs-height);padding:12px 16px;z-index:19;background:linear-gradient(115deg,#0a1826,#0d2530)!important;border-bottom:1px solid rgba(113,211,224,.12)}
-.manager-tabs button{height:52px;padding:14px 12px;line-height:22px}
+.topbar{height:var(--app-header-height);padding-top:calc(4px + env(safe-area-inset-top));padding-bottom:4px}
+.manager-tabs{position:fixed;top:var(--app-header-height);left:0;right:0;margin:0 auto;width:100%;max-width:820px;height:var(--app-tabs-height);padding:6px 16px;z-index:19;border-bottom:1px solid rgba(113,211,224,.12);--chrome-y:calc(0px - var(--app-header-height))}
+.manager-tabs button{height:28px;padding:3px 12px;line-height:20px;font-size:13px;border-radius:10px}
 #characterDetail,#timerDetail{padding-top:var(--detail-back-height)}
 #characterDetail>.character-back,#timerDetail>.character-back{position:fixed;top:calc(var(--app-header-height) + var(--app-tabs-height));left:0;right:0;margin:0 auto;width:100%;max-width:820px;height:var(--detail-back-height);padding:0 16px;display:flex;align-items:center;z-index:18;background:linear-gradient(115deg,#0a1826,#0d2530);border-bottom:1px solid var(--line);text-align:left}
 /* Crop only the generated image's transparent padding in the layout. */
-.brand-title{position:relative;width:230px;max-width:calc(100% - 76px);aspect-ratio:1890 / 705;flex:0 1 230px;overflow:hidden}
+.brand-title{position:relative;width:150px;max-width:100%;aspect-ratio:1890 / 705;flex:0 1 150px;overflow:hidden}
 .brand-wordmark{position:absolute;display:block;width:104.445%;max-width:none;height:auto;left:-3.281%;top:-3.263%}
+.topbar,.manager-tabs,#characterDetail>.character-back,#timerDetail>.character-back{background-color:#0c1e2d!important;background-image:linear-gradient(rgba(139,199,218,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(139,199,218,.025) 1px,transparent 1px),linear-gradient(90deg,#0c1e2d,#10303a)!important;background-size:52px 52px,52px 52px,auto!important;background-position:0 var(--chrome-y,0px),0 0,0 0}
+#characterDetail>.character-back,#timerDetail>.character-back{--chrome-y:calc(0px - var(--app-header-height) - var(--app-tabs-height))}
 #characterCount,#timerCount{font-size:16px;font-weight:400;line-height:1.4}
 .timer-list-heading{padding-right:48px}
 .timer-list-heading-actions{position:relative;flex:0 0 auto}
@@ -1325,7 +1335,6 @@ body{
   <div class="app-shell">
     <header class="topbar">
       <div class="brand-title"><img class="brand-wordmark" src="ark-manager-wordmark.png" alt="ARK Manager" width="1974" height="797"></div>
-      <img class="brand-icon" src="ark-logo-transparent.png" alt="ARK" width="64" height="64">
     </header>
 
     <nav class="manager-tabs" aria-label="管理機能">
@@ -1340,7 +1349,7 @@ body{
       </div>
       <section id="characterDetail" class="hidden"></section>
     </main>
-    <button id="addCharacter" class="fab" type="button" aria-label="キャラ追加">＋</button>
+    <button id="addCharacter" class="fab" type="button" aria-label="キャラ追加"></button>
     <dialog id="characterDialog" class="character-dialog" aria-labelledby="characterDialogTitle">
       <div class="modal-header"><h2 id="characterDialogTitle">キャラ追加</h2><button id="closeCharacterDialog" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
       <form id="characterForm" class="form"><div id="characterFormFields"></div><button id="characterSubmit" class="submit-btn" type="submit">保存</button></form>
@@ -1412,7 +1421,7 @@ body{
         <section id="transferNotificationHint" class="hidden"><p>通知を利用する場合は、この端末で通知を許可し、通知設定を保存してください。</p><button id="transferOpenNotifications" class="manager-small-btn" type="button">通知設定を開く</button></section>
       </div>
     </dialog>
-    <button id="add" class="fab hidden" type="button" aria-label="タイマー追加">＋</button>
+    <button id="add" class="fab hidden" type="button" aria-label="タイマー追加"></button>
 
     <div id="overlay" class="overlay hidden"></div>
 
@@ -1446,6 +1455,8 @@ body{
             <option value="ラグナロク">ラグナロク</option>
             <option value="バルゲロ">バルゲロ</option>
             <option value="ロストコロニー">ロストコロニー</option>
+            <option value="ジェネシス1(Ocean)">ジェネシス1(Ocean)</option>
+            <option value="ジェネシス1(Genesis)">ジェネシス1(Genesis)</option>
             <option value="__custom__">自由入力</option>
           </select>
           <input id="customMapInput" class="hidden" type="text" maxlength="80" placeholder="マップ名を入力" aria-label="自由入力マップ名">
@@ -1460,7 +1471,7 @@ body{
               <div id="imagePreviewPin" class="map-pin hidden" aria-hidden="true"></div>
             </div>
           </button>
-          <p id="mapPinHelp" class="map-edit-hint">タップやピンのドラッグで自由に配置できます。手動配置時は座標欄を空にします。矢印キーでも移動できます。</p>
+          <p id="mapPinHelp" class="map-edit-hint">地図をタップしてピンを配置できます。手動配置時は座標欄を空にします。</p>
           <div class="map-edit-actions"><button id="changeMapImage" class="manager-small-btn" type="button">マップ画像を変更</button><button id="clearMapPin" class="manager-small-btn" type="button">ピンを消す</button></div>
         </div>
 
@@ -1482,8 +1493,13 @@ body{
             <option value="building">建築タイマー</option>
             <option value="tribe_tower">トライブタワー</option>
             <option value="generator">ジェネレータ</option>
-            <option value="other">その他</option>
+            <option value="other">自由入力</option>
           </select>
+        </label>
+
+        <label id="customTypeField" class="field hidden">
+          <span>種類名</span>
+          <input id="customTypeInput" type="text" maxlength="80" placeholder="例：テイム・食料補充">
         </label>
 
         <div id="materialField" class="field">
@@ -1541,9 +1557,9 @@ window.ARKCopyText=async function(value){
 };
 let timerPush=null;
 const STORAGE_KEY='arkTimer_store_v8';
-const MAPS=['アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー'];
-const DEFAULT_MAP_IMAGES={'アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
-const MAP_BOUNDS={'アイランド':{width:100,height:100},'スコーチドアース':{width:100,height:100},'センター':{width:100,height:100},'アベレーション':{width:100,height:100},'エクスティンクション':{width:100,height:100},'アストレオス':{width:100,height:100},'ラグナロク':{width:100,height:100},'バルゲロ':{width:100,height:100},'ロストコロニー':{width:100,height:100},'その他':{width:100,height:100}};
+const MAPS=['ジェネシス1(Ocean)','ジェネシス1(Genesis)','アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー'];
+const DEFAULT_MAP_IMAGES={'ジェネシス1(Ocean)':'genesis1-ocean.jpg','ジェネシス1(Genesis)':'genesis1-genesis.jpg','アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
+const MAP_BOUNDS={'ジェネシス1(Ocean)':{width:100,height:100},'ジェネシス1(Genesis)':{width:100,height:100},'アイランド':{width:100,height:100},'スコーチドアース':{width:100,height:100},'センター':{width:100,height:100},'アベレーション':{width:100,height:100},'エクスティンクション':{width:100,height:100},'アストレオス':{width:100,height:100},'ラグナロク':{width:100,height:100},'バルゲロ':{width:100,height:100},'ロストコロニー':{width:100,height:100},'その他':{width:100,height:100}};
 const TRIBE_TOWER_ICON='7369529A-E04B-4212-8F0A-F320CC106E5E.png';
 const GENERATOR_ICON='026D0A6D-7E86-4E5E-823D-3DE7D2909B98.png';
 const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':20};
@@ -1584,8 +1600,8 @@ function save(){
 function generateId(){return `timer_${Date.now()}_${Math.random().toString(36).slice(2,9)}`}
 function getSelectedMaterial(){const checked=document.querySelector('input[name="material"]:checked');return checked?checked.value:'TEK'}
 function updateMaterialDays(){const material=getSelectedMaterial();materialDays.textContent=`${material} ${BUILDING_DURATIONS[material]}日`}
-function syncTypeUI(){const type=typeSelect.value;materialField.classList.toggle('hidden',type!=='building');customTimerField.classList.toggle('hidden',type==='building');updateMaterialDays()}
-function setupDurationSelects(){for(const [select,max,label]of [[daysInput,365,'日'],[hoursInput,23,'時間'],[minutesInput,59,'分']])select.innerHTML=Array.from({length:max+1},(_,n)=>`<option value="${n}">${n}${label}</option>`).join('')}
+function syncTypeUI(){const type=typeSelect.value;materialField.classList.toggle('hidden',type!=='building');customTimerField.classList.toggle('hidden',type==='building');$('customTypeField').classList.toggle('hidden',type!=='other');updateMaterialDays()}
+function setupDurationSelects(){for(const [select,max,label]of [[daysInput,9999,'日'],[hoursInput,23,'時間'],[minutesInput,59,'分']])select.innerHTML=Array.from({length:max+1},(_,n)=>`<option value="${n}">${n}${label}</option>`).join('')}
 function setDurationValue(select,value,label){const n=Math.max(0,Math.floor(Number(value)||0));if(![...select.options].some(option=>option.value===String(n))){const option=document.createElement('option');option.value=String(n);option.textContent=n+label;select.appendChild(option)}select.value=String(n)}
 function getDefaultImageForMap(mapName){return DEFAULT_MAP_IMAGES[mapName]||DEFAULT_MAP_IMAGES['その他']}
 function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src}")`:'';imagePreview.classList.toggle('is-empty',!src);state.previewImageSrc=src;imagePreview.style.aspectRatio='1';if(src){const image=new Image();image.onload=()=>{if(state.previewImageSrc===src&&image.naturalWidth&&image.naturalHeight)imagePreview.style.aspectRatio=image.naturalWidth+'/'+image.naturalHeight};image.src=src}}
@@ -1655,6 +1671,7 @@ function openModal(editTarget=null){
     imageModeInput.value='default';
     state.pendingCustomImage='';
     typeSelect.value='building';
+    $('customTypeInput').value='';
     if(showPinInput)showPinInput.checked=true;
     const tek=document.querySelector('input[name="material"][value="TEK"]');
     if(tek)tek.checked=true;
@@ -1671,6 +1688,7 @@ function openModal(editTarget=null){
   $('customMapInput').classList.toggle('hidden',mapSelect.value!=='__custom__');
   $('customMapInput').required=mapSelect.value==='__custom__';
   typeSelect.value=editTarget.type;
+  $('customTypeInput').value=editTarget.customType||'';
   $('timerServerNo').value=editTarget.serverNo||'';
   memoInput.value=editTarget.memo||'';
   timerNameInput.value=editTarget.timerName||'';
@@ -1712,7 +1730,7 @@ function formatDateWithWeekday(timestamp){const date=new Date(timestamp);const w
 function formatRemaining(ms){if(ms<=0)return '期限切れ';const totalMinutes=Math.floor(ms/60000);const days=Math.floor(totalMinutes/1440);const hours=Math.floor((totalMinutes%1440)/60);const minutes=totalMinutes%60;if(days>0)return `${days}日 ${hours}時間 ${minutes}分`;if(hours>0)return `${hours}時間 ${minutes}分`;return `${minutes}分`}
 function getRemainingMs(timer){return timer.endsAt-Date.now()}
 function getRemainClass(ms){const dayMs=24*60*60*1000;if(ms>=14*dayMs)return 'green';if(ms>=7*dayMs)return 'orange';if(ms<=0)return 'red5';const daysLeft=ms/dayMs;if(daysLeft>6)return 'red0';if(daysLeft>5)return 'red1';if(daysLeft>3)return 'red2';if(daysLeft>2)return 'red3';if(daysLeft>1)return 'red4';return 'red5'}
-function buildTypeLabel(timer){if(timer.type==='building')return `建材:${timer.material}`;if(timer.type==='tribe_tower')return 'トライブタワー';if(timer.type==='generator')return 'ジェネレータ';return 'その他'}
+function buildTypeLabel(timer){if(timer.type==='building')return `建材:${timer.material}`;if(timer.type==='tribe_tower')return 'トライブタワー';if(timer.type==='generator')return 'ジェネレータ';return String(timer.customType||'').trim()||'自由入力'}
 function getDurationMsFromInput(type){if(type==='building'){return BUILDING_DURATIONS[getSelectedMaterial()]*24*60*60*1000}const days=Number(daysInput.value||0),hours=Number(hoursInput.value||0),minutes=Number(minutesInput.value||0);return ((((days*24)+hours)*60)+minutes)*60*1000}
 function getTimerImageSrc(timer){if(timer.imageMode==='custom'&&timer.imageSrc)return timer.imageSrc;return getDefaultImageForMap(timer.map)}
 function escapeHtml(value){return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
@@ -1808,12 +1826,12 @@ function render(){
 }
 
 function buildTimerPayload(now,keepId=null,existingSortOrder=null){
-  const map=timerMapValue(),type=typeSelect.value,memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'未設定',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
+  const map=timerMapValue(),type=typeSelect.value,customType=type==='other'?$('customTypeInput').value.trim():'',memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'未設定',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
   if(!map){alert('マップを選択してください');return null}
   if(durationMs<=0){alert('タイマーは1分以上で入力してください');return null}
   const current=keepId?state.timers.find(timer=>timer.id===keepId):null;
   const preserveDeadline=current&&Math.floor((current.endsAt-current.startedAt)/60000)*60000===durationMs;
-  return {...current,id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,manualPin:normalizeManualPin(state.manualPin),showPin:showPinInput?showPinInput.checked:true,type,material:type==='building'?getSelectedMaterial():null,memo,startedAt:preserveDeadline?current.startedAt:now,endsAt:preserveDeadline?current.endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
+  return {...current,id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,manualPin:normalizeManualPin(state.manualPin),showPin:showPinInput?showPinInput.checked:true,type,customType,material:type==='building'?getSelectedMaterial():null,memo,startedAt:preserveDeadline?current.startedAt:now,endsAt:preserveDeadline?current.endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
 }
 function addTimerFromForm(event){
   event.preventDefault();

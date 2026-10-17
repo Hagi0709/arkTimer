@@ -47,7 +47,7 @@ async function sync(body, env) {
   for (const timer of body.timers) {
     // Reject the entire snapshot instead of silently cancelling invalid/truncated timers.
     if (!timer || typeof timer.id !== 'string' || !timer.id || timer.id.length > 200 ||
-        !Number.isSafeInteger(timer.endsAt) || timer.endsAt > now + 365 * DAY ||
+        !Number.isSafeInteger(timer.endsAt) || timer.endsAt > now + 10000 * DAY ||
         (timer.startedAt !== undefined && (!Number.isSafeInteger(timer.startedAt) || timer.startedAt > timer.endsAt))) {
       return json({ error: 'invalid timer' }, 400);
     }

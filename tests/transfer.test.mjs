@@ -62,6 +62,12 @@ test('新規端末には画像と期限を保って追加し、通知は勝手�
   assert.deepEqual(plain(next.data.notificationSettings.hours), [1,2]);
   assert.equal(next.data.sortMode, 'manual');
 });
+test('自由入力の種類名と9999日のタイマーをそのまま引き継ぐ',()=>{
+  const source=fixture();source.timers[0]={...source.timers[0],type:'other',customType:'食料補充',endsAt:source.timers[0].startedAt+9999*86400000};
+  const next=api.plan(empty(),api.parse(JSON.stringify(api.createBackup(source))));
+  assert.equal(next.timers[0].customType,'食料補充');assert.equal(next.timers[0].endsAt,source.timers[0].endsAt);
+  const bad=api.createBackup(source);bad.data.timers[0].customType={};assert.throws(()=>api.parse(JSON.stringify(bad)));
+});
 
 test('座標が空の手動ピンも書き出し・読み込みで同じ位置を保持', () => {
   const source=fixture();source.timers[0]={...source.timers[0],lat:'',lng:'',manualPin:{left:0,top:75.5}};

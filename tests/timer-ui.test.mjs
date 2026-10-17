@@ -73,7 +73,7 @@ test('ピンのドラッグは座標を空にし、無関係なポインター�
 
 test('既存の2時間2分を編集画面で維持し、日・時間・分を選択できる',()=>{
   const h=harness();h.run('setupDurationSelects()');h.setTimers([timer()]);h.run('openModal(state.timers[0])');
-  assert.equal(h.node('daysInput').options.length,366);assert.equal(h.node('hoursInput').options.length,24);assert.equal(h.node('minutesInput').options.length,60);
+  assert.equal(h.node('daysInput').options.length,10000);assert.equal(h.node('hoursInput').options.length,24);assert.equal(h.node('minutesInput').options.length,60);
   assert.equal(h.node('daysInput').value,'0');assert.equal(h.node('hoursInput').value,'2');assert.equal(h.node('minutesInput').value,'2');
   h.run("typeSelect.value='generator';syncTypeUI()");assert.equal(h.node('hoursInput').value,'2');assert.equal(h.node('minutesInput').value,'2');
 });
@@ -117,7 +117,24 @@ test('時間の変更時だけ新しい長さを反映し、既存の画像は�
   assert.equal(next.imageSrc,previous.imageSrc);
 });
 
-test('既存の長い日数を選択肢の上限で切り捨てない',()=>{
-  const h=harness();h.run('setupDurationSelects();setDurationValue(daysInput,500,"日")');assert.equal(h.node('daysInput').value,'500');
-  assert.ok(h.node('daysInput').options.some(option=>option.value==='500'));
+test('9999日23時間59分を選択して保存でき、既存の上限を超える日数も切り捨てない',()=>{
+  const h=harness();h.run('setupDurationSelects()');h.node('daysInput').value='9999';h.node('hoursInput').value='23';h.node('minutesInput').value='59';
+  const next=plain(h.run('buildTimerPayload(1900000000000)'));assert.equal(next.endsAt-next.startedAt,10000*86400000-60000);
+  h.run('setDurationValue(daysInput,15000,"日")');assert.equal(h.node('daysInput').value,'15000');
+  assert.ok(h.node('daysInput').options.some(option=>option.value==='15000'));
+});
+
+test('自由入力の種類名を保存・再編集し、既存のその他タイマーも開ける',()=>{
+  const h=harness(),previous=timer();h.setTimers([previous]);h.run('setupDurationSelects();openModal(state.timers[0])');
+  assert.equal(h.node('customTypeField').classList.contains('hidden'),false);assert.equal(h.run('buildTypeLabel(state.timers[0])'),'自由入力');
+  h.node('customTypeInput').value=' テイム待機 ';const next=plain(h.run("buildTimerPayload(1900000000000,'timer_1',3)"));
+  assert.equal(next.customType,'テイム待機');assert.equal(next.endsAt,previous.endsAt);h.setTimers([next]);h.run('openModal(state.timers[0])');
+  assert.equal(h.node('customTypeInput').value,'テイム待機');assert.equal(h.run('buildTypeLabel(state.timers[0])'),'テイム待機');
+  h.run("typeSelect.value='building';syncTypeUI()");assert.equal(h.node('customTypeField').classList.contains('hidden'),true);
+});
+
+test('ジェネシス1の2つのマップ画像を名前ごとに解決',()=>{
+  const h=harness();
+  assert.equal(h.run("getDefaultImageForMap('ジェネシス1(Ocean)')"),'genesis1-ocean.jpg');
+  assert.equal(h.run("getDefaultImageForMap('ジェネシス1(Genesis)')"),'genesis1-genesis.jpg');
 });

@@ -55,6 +55,7 @@
       if (!Number.isFinite(t.startedAt) || !Number.isFinite(t.endsAt) ||
         Math.abs(t.startedAt) > 8640000000000000 || Math.abs(t.endsAt) > 8640000000000000 || t.endsAt < t.startedAt) fail();
       if (!['building','tribe_tower','generator','other'].includes(t.type)) fail();
+      if (t.customType !== undefined) string(t.customType, 80);
       if (t.type === 'building' && !['わら','木','石','金属','TEK'].includes(t.material)) fail();
       image(t.imageSrc);
       if (t.manualPin != null && (!object(t.manualPin) || ['left','top'].some(key =>
