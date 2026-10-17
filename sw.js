@@ -1,4 +1,4 @@
-const ICON = '/ark-manager-app-icon-dodo.jpg';
+const ICON = '/ark-manager-app-icon-dodo-v2.jpg';
 let pushQueue = Promise.resolve();
 
 // Store only the device identity needed to renew a subscription while the app is closed.
