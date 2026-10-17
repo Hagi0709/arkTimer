@@ -7,8 +7,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0c1e2d">
-  <link rel="apple-touch-icon" href="./ark-manager-app-icon-pastel.png">
-  <link rel="icon" href="./ark-manager-app-icon-pastel.png">
+  <link rel="apple-touch-icon" href="./ark-manager-app-icon-dodo.jpg">
+  <link rel="icon" href="./ark-manager-app-icon-dodo.jpg">
   <style>
 :root{
   --bg:#08111c;
@@ -251,18 +251,6 @@ input:focus,select:focus,textarea:focus{
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
-}
-
-.overlay-badge{
-  position:absolute;
-  right:0;
-  bottom:0;
-  width:50%;
-  height:50%;
-  object-fit:contain;
-  border-top-left-radius:8px;
-  background:rgba(6,12,20,.4);
-  backdrop-filter:blur(2px);
 }
 
 .info{
@@ -643,6 +631,9 @@ input:focus,select:focus,textarea:focus{
   background:rgba(103,187,255,.14);
   color:#d7eeff;
 }
+.chip input:focus-visible + span{outline:2px solid var(--blue);outline-offset:3px}
+#materialField .chip span{gap:6px;padding:0 10px}
+.material-icon{display:block;width:22px;height:22px;object-fit:contain}
 
 .material-days{
   font-size:12px;
@@ -1267,6 +1258,15 @@ body{
 .timer-install-guide ol{margin:10px 0 0;padding-left:22px}
 .timer-install-guide li{margin:7px 0}
 .timer-install-guide a{display:inline-block;margin-top:8px;color:var(--cyan);font-weight:700}
+.safari-share-symbol{display:inline-block;width:1.5em;height:1.5em;object-fit:contain;vertical-align:-.35em;margin:0 .15em;filter:brightness(0) invert(1)}
+.install-guide-body{padding:18px;color:var(--muted);font-size:14px;line-height:1.7}
+.install-guide-body>p{margin:0 0 16px}
+.install-guide-body strong{color:var(--text)}
+.install-guide-steps{margin:0;padding-left:24px}
+.install-guide-steps li{margin:12px 0;padding-left:3px}
+.install-guide-note{display:block;margin-top:4px;font-size:12px}
+.install-guide-actions{display:grid;grid-template-columns:1fr 1.6fr;gap:10px;margin-top:22px}
+.install-guide-actions button{min-height:44px;padding:10px 8px;font-size:13px;white-space:normal;line-height:1.4}
 .timer-notify-settings .submit-btn:disabled{background:rgba(115,240,209,.09);border:1px solid rgba(115,240,209,.24);color:#9cceca;box-shadow:none;cursor:default}
 .data-transfer-entry{grid-column:auto}
 .data-transfer-content{padding:18px;display:grid;gap:18px;min-width:0}
@@ -1290,9 +1290,12 @@ body{
 .timer-select-card.expired{border-color:rgba(255,117,117,.4)}
 .timer-map-thumbnail{position:relative;display:block;flex:0 0 82px;width:82px;height:82px;border-radius:12px;background-size:100% 100%;background-position:center;overflow:hidden}
 .timer-summary{display:grid;gap:6px;flex:1;min-width:0}
-.timer-summary .timer-name{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timer-summary.has-kind-icon{grid-template-columns:minmax(0,1fr) 50px;column-gap:8px}
+.timer-summary>span{grid-column:1;min-width:0}
+.timer-summary .timer-name{grid-column:1 / -1;display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .timer-meta{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.timer-summary .remain-value{font-size:13px;white-space:nowrap;font-weight:800}
+.timer-summary .remain-value{font-size:13px;line-height:1.3;overflow-wrap:anywhere;font-weight:800}
+.timer-kind-icon{grid-column:2;grid-row:2 / 5;align-self:center;display:block;width:50px;height:54px;object-fit:contain;pointer-events:none}
 .timer-reorder{flex:0 0 40px}
 .timer-row-tools{display:grid;grid-template-rows:minmax(0,1fr) 44px;gap:6px;flex:0 0 40px;width:40px;min-width:0}
 .timer-row-tools .timer-reorder{min-height:0;min-width:0;width:100%;padding:0}
@@ -1310,7 +1313,7 @@ body{
 .field>.eos-help{margin:0}
 .character-field>.eos-help{margin:0 0 8px}
 .time-grid select{min-width:0;padding:12px 6px}
-@media(max-width:380px){.timer-list-heading{gap:6px}.timer-list-heading h1{font-size:20px}.timer-list-heading-actions{gap:4px}.timer-list-heading #sortSelect{width:112px;padding:7px 5px;font-size:10px}.timer-select-card{gap:8px;padding:8px}.timer-map-thumbnail{width:66px;height:78px;flex-basis:66px}.timer-summary .timer-name{font-size:15px}.timer-summary .remain-value{font-size:11px}.timer-meta{font-size:10px}}
+@media(max-width:380px){.timer-list-heading{gap:6px}.timer-list-heading h1{font-size:20px}.timer-list-heading-actions{gap:4px}.timer-list-heading #sortSelect{width:112px;padding:7px 5px;font-size:10px}.timer-select-card{gap:8px;padding:8px}.timer-map-thumbnail{width:66px;height:78px;flex-basis:66px}.timer-summary.has-kind-icon{grid-template-columns:minmax(0,1fr) 42px;column-gap:6px}.timer-kind-icon{width:42px;height:48px}.timer-summary .timer-name{font-size:15px}.timer-summary .remain-value{font-size:11px}.timer-meta{font-size:10px}}
 /* Keep both navigation tabs, and each detail's back button, above scrolling content. */
 :root{--manager-control-height:32px;--app-header-height:calc(64px + env(safe-area-inset-top));--app-tabs-height:calc(var(--manager-control-height) + 12px);--detail-back-height:48px}
 .app-shell{padding-top:calc(var(--app-header-height) + var(--app-tabs-height))}
@@ -1401,10 +1404,10 @@ body{
           <strong>iPhoneで通知を利用するには（iOS 16.4以降）</strong>
           <ol>
             <li>SafariでARK Managerを開く</li>
-            <li>画面下の共有ボタン（□に↑）をタップ</li>
+            <li><img class="safari-share-symbol" src="./safari-share-symbol.png" alt="" aria-hidden="true">「共有」をタップ<span class="install-guide-note">見当たらない場合は、Safariのメニューから「共有」を選択</span></li>
             <li>「ホーム画面に追加」を選択</li>
-            <li><strong>「Webアプリとして開く」をオン</strong>にする</li>
-            <li>右上の「追加」をタップ</li>
+            <li>表示された場合は<strong>「Webアプリとして開く」をオン</strong>にする</li>
+            <li>「追加」をタップ</li>
             <li>ホーム画面のARK Managerを起動し、「iPhoneの通知を許可する」をタップ</li>
           </ol>
         </div>
@@ -1505,11 +1508,11 @@ body{
         <div id="materialField" class="field">
           <span>建材</span>
           <div class="chip-grid">
-            <label class="chip"><input type="radio" name="material" value="わら"><span>わら</span></label>
-            <label class="chip"><input type="radio" name="material" value="木"><span>木</span></label>
-            <label class="chip"><input type="radio" name="material" value="石"><span>石</span></label>
-            <label class="chip"><input type="radio" name="material" value="金属"><span>金属</span></label>
-            <label class="chip"><input type="radio" name="material" value="TEK" checked><span>TEK</span></label>
+            <label class="chip"><input type="radio" name="material" value="わら"><span><img class="material-icon" src="./timer-material-thatch.png" alt="" aria-hidden="true">わら</span></label>
+            <label class="chip"><input type="radio" name="material" value="木"><span><img class="material-icon" src="./timer-material-wood.png" alt="" aria-hidden="true">木</span></label>
+            <label class="chip"><input type="radio" name="material" value="石"><span><img class="material-icon" src="./timer-material-stone.png" alt="" aria-hidden="true">石</span></label>
+            <label class="chip"><input type="radio" name="material" value="金属"><span><img class="material-icon" src="./timer-material-metal.png" alt="" aria-hidden="true">金属</span></label>
+            <label class="chip"><input type="radio" name="material" value="TEK" checked><span><img class="material-icon" src="./timer-material-tek.png" alt="" aria-hidden="true">TEK</span></label>
           </div>
           <div id="materialDays" class="material-days">TEK 20日</div>
         </div>
@@ -1543,6 +1546,20 @@ body{
       </div>
     </div>
   </div>
+  <dialog id="homeScreenGuide" class="character-dialog" aria-labelledby="homeScreenGuideTitle" aria-describedby="homeScreenGuideIntro">
+    <div class="modal-header"><h2 id="homeScreenGuideTitle">ホーム画面に追加して使う</h2><button id="closeHomeScreenGuide" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
+    <div class="install-guide-body">
+      <p id="homeScreenGuideIntro">ARK ManagerをWebアプリとして登録すると、ホーム画面から開けるようになります。</p>
+      <ol class="install-guide-steps">
+        <li>Safariの<img class="safari-share-symbol" src="./safari-share-symbol.png" alt="" aria-hidden="true"><strong>「共有」</strong>をタップ<span class="install-guide-note">見当たらない場合は、Safariのメニューから「共有」を選択</span></li>
+        <li><strong>「ホーム画面に追加」</strong>を選択</li>
+        <li>表示された場合は<strong>「Webアプリとして開く」をオン</strong>にし、<strong>「追加」</strong>をタップ</li>
+        <li>ホーム画面の<strong>ARK Managerのアイコン</strong>から起動</li>
+      </ol>
+      <div class="install-guide-actions"><button id="homeScreenGuideLater" class="manager-small-btn" type="button" autofocus>あとで</button><button id="homeScreenGuideNever" class="submit-btn" type="button">今後表示しない</button></div>
+    </div>
+  </dialog>
+  <script src="./install-guide.js" defer></script>
   <script src="./push-client.js"></script>
   <script src="./data-transfer.js"></script>
   <script>
@@ -1560,8 +1577,9 @@ const STORAGE_KEY='arkTimer_store_v8';
 const MAPS=['ジェネシス1(Ocean)','ジェネシス1(Genesis)','アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー'];
 const DEFAULT_MAP_IMAGES={'ジェネシス1(Ocean)':'genesis1-ocean.jpg','ジェネシス1(Genesis)':'genesis1-genesis.jpg','アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
 const MAP_BOUNDS={'ジェネシス1(Ocean)':{width:100,height:100},'ジェネシス1(Genesis)':{width:100,height:100},'アイランド':{width:100,height:100},'スコーチドアース':{width:100,height:100},'センター':{width:100,height:100},'アベレーション':{width:100,height:100},'エクスティンクション':{width:100,height:100},'アストレオス':{width:100,height:100},'ラグナロク':{width:100,height:100},'バルゲロ':{width:100,height:100},'ロストコロニー':{width:100,height:100},'その他':{width:100,height:100}};
-const TRIBE_TOWER_ICON='7369529A-E04B-4212-8F0A-F320CC106E5E.png';
-const GENERATOR_ICON='026D0A6D-7E86-4E5E-823D-3DE7D2909B98.png';
+const TRIBE_TOWER_ICON='timer-tribe-tower.png';
+const GENERATOR_ICON='timer-generator.png';
+const MATERIAL_ICONS={'わら':'timer-material-thatch.png','木':'timer-material-wood.png','石':'timer-material-stone.png','金属':'timer-material-metal.png','TEK':'timer-material-tek.png'};
 const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':20};
 const SORT_KEY='arkTimer_sort_mode';
 const $=id=>document.getElementById(id);
@@ -1732,6 +1750,8 @@ function formatRemaining(ms){if(ms<=0)return '期限切れ';const totalMinutes=M
 function getRemainingMs(timer){return timer.endsAt-Date.now()}
 function getRemainClass(ms){const dayMs=24*60*60*1000;if(ms>=14*dayMs)return 'green';if(ms>=7*dayMs)return 'orange';if(ms<=0)return 'red5';const daysLeft=ms/dayMs;if(daysLeft>6)return 'red0';if(daysLeft>5)return 'red1';if(daysLeft>3)return 'red2';if(daysLeft>2)return 'red3';if(daysLeft>1)return 'red4';return 'red5'}
 function buildTypeLabel(timer){if(timer.type==='building')return `建材:${timer.material}`;if(timer.type==='tribe_tower')return 'トライブタワー';if(timer.type==='generator')return 'ジェネレータ';return String(timer.customType||'').trim()||'自由入力'}
+function timerKindIcon(timer){if(timer.type==='building')return Object.hasOwn(MATERIAL_ICONS,timer.material)?MATERIAL_ICONS[timer.material]:'';if(timer.type==='tribe_tower')return TRIBE_TOWER_ICON;if(timer.type==='generator')return GENERATOR_ICON;return ''}
+function buildTimerKindImage(timer){const src=timerKindIcon(timer);return src?`<img class="timer-kind-icon" src="./${src}" alt="" aria-hidden="true" decoding="async">`:''}
 function getDurationMsFromInput(type){if(type==='building'){return BUILDING_DURATIONS[getSelectedMaterial()]*24*60*60*1000}const days=Number(daysInput.value||0),hours=Number(hoursInput.value||0),minutes=Number(minutesInput.value||0);return ((((days*24)+hours)*60)+minutes)*60*1000}
 function getTimerImageSrc(timer){if(timer.imageMode==='custom'&&timer.imageSrc)return timer.imageSrc;return getDefaultImageForMap(timer.map)}
 function escapeHtml(value){return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
@@ -1766,20 +1786,6 @@ function openMapViewer(timer){
   pin.className='map-pin viewer-pin hidden';
   imageEl.appendChild(pin);
   setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false,timer.manualPin);
-  if(timer.type==='tribe_tower'){
-    const badge=document.createElement('img');
-    badge.className='overlay-badge';
-    badge.src=TRIBE_TOWER_ICON;
-    badge.alt='トライブタワー';
-    imageEl.appendChild(badge);
-  }
-  if(timer.type==='generator'){
-    const badge=document.createElement('img');
-    badge.className='overlay-badge';
-    badge.src=GENERATOR_ICON;
-    badge.alt='ジェネレータ';
-    imageEl.appendChild(badge);
-  }
   const close=()=>viewer.remove();
   viewer.querySelector('.map-viewer-close').addEventListener('click',close);
   viewer.querySelector('.map-viewer-backdrop').addEventListener('click',close);
@@ -1790,10 +1796,6 @@ function decorateTimerMap(element,timer){
   element.style.backgroundImage=`url("${getTimerImageSrc(timer)}")`;
   const pin=document.createElement('span');pin.className='map-pin hidden';element.appendChild(pin);
   setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false,timer.manualPin);
-  if(timer.type==='tribe_tower'||timer.type==='generator'){
-    const badge=document.createElement('img');badge.className='overlay-badge';
-    badge.src=timer.type==='tribe_tower'?TRIBE_TOWER_ICON:GENERATOR_ICON;badge.alt='';element.appendChild(badge);
-  }
 }
 function showTimerList(){
   state.selectedTimerId=null;$('timerDetail').classList.add('hidden');$('timerListPage').classList.remove('hidden');
@@ -1816,9 +1818,9 @@ function renderTimerDetail(){
 function render(){
   const sorted=getSortedTimers();list.innerHTML='';let active=0;
   for(const timer of sorted){
-    const remain=getRemainingMs(timer);if(remain>0)active++;
+    const remain=getRemainingMs(timer),kindImage=buildTimerKindImage(timer);if(remain>0)active++;
     const row=document.createElement('div');row.className='timer-list-item';row.dataset.id=timer.id;
-    row.innerHTML=`<button class="timer-select-card${remain<=0?' expired':''}" type="button" data-timer="${escapeHtml(timer.id)}"><span class="timer-map-thumbnail" aria-hidden="true"></span><span class="timer-summary"><span class="timer-name">${escapeHtml(timer.timerName||'未設定')}</span><span class="timer-meta">${escapeHtml(timer.map)}${timer.serverNo?'：'+escapeHtml(timer.serverNo):''}</span><span class="timer-meta">${escapeHtml(buildTypeLabel(timer))}</span><span class="remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</span></span><span class="character-chevron" aria-hidden="true">›</span></button><div class="timer-row-tools"><div class="character-drag-handle timer-reorder" data-timer-drag="${escapeHtml(timer.id)}" role="button" tabindex="0" aria-label="長押しでタイマを並び替え、矢印キーで上下へ移動">☰</div><button class="timer-list-reset" type="button" data-action="reset" data-id="${escapeHtml(timer.id)}" aria-label="${escapeHtml(timer.timerName||'未設定')}をリセット"><span class="reset-symbol" aria-hidden="true">↻</span><span class="reset-label" aria-hidden="true">リセット</span></button></div>`;
+    row.innerHTML=`<button class="timer-select-card${remain<=0?' expired':''}" type="button" data-timer="${escapeHtml(timer.id)}"><span class="timer-map-thumbnail" aria-hidden="true"></span><span class="timer-summary${kindImage?' has-kind-icon':''}"><span class="timer-name">${escapeHtml(timer.timerName||'未設定')}</span><span class="timer-meta">${escapeHtml(timer.map)}${timer.serverNo?'：'+escapeHtml(timer.serverNo):''}</span><span class="timer-meta">${escapeHtml(buildTypeLabel(timer))}</span><span class="remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</span>${kindImage}</span><span class="character-chevron" aria-hidden="true">›</span></button><div class="timer-row-tools"><div class="character-drag-handle timer-reorder" data-timer-drag="${escapeHtml(timer.id)}" role="button" tabindex="0" aria-label="長押しでタイマを並び替え、矢印キーで上下へ移動">☰</div><button class="timer-list-reset" type="button" data-action="reset" data-id="${escapeHtml(timer.id)}" aria-label="${escapeHtml(timer.timerName||'未設定')}をリセット"><span class="reset-symbol" aria-hidden="true">↻</span><span class="reset-label" aria-hidden="true">リセット</span></button></div>`;
     decorateTimerMap(row.querySelector('.timer-map-thumbnail'),timer);list.appendChild(row);
   }
   if(activeCount)activeCount.textContent=String(active);

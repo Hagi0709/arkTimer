@@ -42,12 +42,12 @@ try {
   assert.ok((await post('status', { token })).alerts.every(a => a.cancelled_at !== null));
   const cron = await app.fetch('http://localhost/cdn-cgi/local/scheduled');
   assert.equal(cron.status, 200);
-  for (const path of ['/', '/push-client.js', '/sw.js', '/manifest.webmanifest', '/build-info.json']) {
+  for (const path of ['/', '/push-client.js', '/install-guide.js', '/sw.js', '/manifest.webmanifest', '/build-info.json']) {
     const response = await app.fetch('http://localhost' + path);
     assert.equal(response.status, 200, path);
     if (path !== '/manifest.webmanifest') assert.equal(response.headers.get('cache-control'), 'no-cache', path);
   }
-  for(const path of ['/ark-manager-app-icon-pastel.png','/genesis1-ocean.jpg','/genesis1-genesis.jpg']){
+  for(const path of ['/ark-manager-app-icon-dodo.jpg','/safari-share-symbol.png','/timer-tribe-tower.png','/timer-generator.png',...['thatch','wood','stone','metal','tek'].map(name=>`/timer-material-${name}.png`),'/genesis1-ocean.jpg','/genesis1-genesis.jpg']){
     const response=await app.fetch('http://localhost'+path);assert.equal(response.status,200,path);assert.match(response.headers.get('content-type'),/^image\//);
   }
   console.log('Local Workers + D1: hour/9999-day schedules, cancellation, Cron and PWA/map assets passed');

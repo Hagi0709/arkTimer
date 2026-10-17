@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { Script } from 'node:vm';
 import assert from 'node:assert/strict';
 
-for (const path of ['worker.js', 'push-client.js', 'data-transfer.js', 'sw.js', 'app.js', 'scripts/build.mjs']) {
+for (const path of ['worker.js', 'push-client.js', 'data-transfer.js', 'install-guide.js', 'sw.js', 'app.js', 'scripts/build.mjs']) {
   execFileSync(process.execPath, ['--check', path], { stdio: 'inherit' });
 }
 const html = readFileSync('index.html', 'utf8');
