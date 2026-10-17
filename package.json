@@ -1,1 +1,14 @@
-{"private":true,"type":"module","scripts":{"deploy":"node scripts/build.mjs && wrangler deploy","build":"node scripts/build.mjs"},"dependencies":{"web-push":"^3.6.7"},"devDependencies":{"wrangler":"^4.0.0"}}
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:runtime": "node scripts/build.mjs && wrangler d1 migrations apply ark-manager-push --local && node scripts/test-runtime.mjs",
+    "deploy:dry": "node scripts/build.mjs && wrangler deploy --dry-run --outdir dist",
+    "deploy": "node scripts/build.mjs && wrangler deploy"
+  },
+  "dependencies": { "web-push": "^3.6.7" },
+  "devDependencies": { "wrangler": "^4.0.0", "fake-indexeddb": "^6.2.5" }
+}

@@ -1,0 +1,192 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+
+const source = readFileSync('push-client.js', 'utf8');
+const SETTINGS = 'arkTimer_notification_settings_v1', TOKEN = 'arkManager_push_device_token_v1';
+const PENDING = 'arkManager_push_pending_v2';
+const token = 'c'.repeat(64);
+function harness({ settings = { enabled: true, days: [], hours: [1, 2] }, storage, permission = 'granted', online = true } = {}) {
+  storage ??= new Map([[SETTINGS, JSON.stringify(settings)], [TOKEN, token]]);
+  const calls = [], traces = [], listeners = {}, nodes = new Map(), timers = new Map();
+  let sequence = 0;
+  const node = id => {
+    if (!nodes.has(id)) nodes.set(id, { textContent: '', checked: false, open: true, classList: { toggle() {}, add() {}, remove() {} },
+      addEventListener(name, handler) { listeners[id + ':' + name] = handler; }, close() { this.open = false; },
+      showModal() { this.open = true; }, setAttribute() {}, removeAttribute() {} });
+    return nodes.get(id);
+  };
+  const localStorage = { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) };
+  const sub = { async unsubscribe() { traces.push('unsubscribe'); return true; },
+    toJSON: () => ({ endpoint: 'https://push.example.test/device', keys: { p256dh: 'B'.repeat(87), auth: 'A'.repeat(22) } }) };
+  const reg = { active: { postMessage() {} }, pushManager: { async getSubscription() { return sub; }, async subscribe() { return sub; } } };
+  const navigator = { onLine: online, standalone: true, userAgent: 'iPhone', serviceWorker: {
+    async register() { traces.push('register'); return reg; }, ready: Promise.resolve(reg),
+    addEventListener(name, handler) { listeners['sw:' + name] = handler; }
+  } };
+  const Notification = { permission, async requestPermission() { traces.push('permission'); this.permission = 'granted'; return 'granted'; } };
+  const window = { isSecureContext: true, Notification, PushManager() {}, matchMedia: () => ({ matches: true }),
+    addEventListener(name, handler) { listeners[name] = handler; } };
+  const document = { hidden: false, getElementById: node, querySelectorAll: () => [],
+    addEventListener(name, handler) { listeners[name] = handler; } };
+  const h = { storage, calls, traces, node, navigator, window, document, listeners, Notification, localStorage, timers,
+    timersData: [{ id: 'timer1', timerName: '拠点', map: 'アイランド', startedAt: 1800000000000, endsAt: 1800007200000, imageSrc: 'private-image' }],
+    async response() { return new Response(JSON.stringify({ ok: true, scheduled: 2 }), { status: 200 }); }
+  };
+  runInNewContext(source, { window, document, navigator, Notification, localStorage, crypto, Uint8Array, atob, AbortSignal,
+    setTimeout(fn) { const id = ++sequence; timers.set(id, fn); return id; }, clearTimeout(id) { timers.delete(id); },
+    async fetch(path, options) {
+      traces.push(path);
+      if (path.endsWith('/key')) return new Response(JSON.stringify({ publicKey: 'AQ', protocol: 2 }));
+      const call = { path, options, body: JSON.parse(options.body) };
+      calls.push(call);
+      return h.response(call);
+    }
+  });
+  h.controller = window.ARKPush.create({ getTimers: () => h.timersData });
+  return h;
+}
+async function until(condition) {
+  for (let i = 0; i < 100; i++) {
+    if (condition()) return;
+    await new Promise(resolve => setImmediate(resolve));
+  }
+  assert.fail('async condition not met');
+}
+
+test('既存端末トークン・時間設定を維持して画像を送らず同期', async () => {
+  const h = harness();
+  assert.equal(await h.controller.markChanged(), true);
+  assert.deepEqual(h.calls[0].body.hours, [1, 2]);
+  assert.equal(h.calls[0].body.token, token);
+  assert.equal(h.calls[0].body.timers[0].imageSrc, undefined);
+  assert.equal(h.calls[0].options.keepalive, true);
+  assert.equal(h.storage.get(PENDING), '0');
+  assert.ok(!h.traces.includes('permission'));
+});
+test('同期中の追加変更を直列化し最新予定まで保存', async () => {
+  const h = harness();
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  h.response = async () => { if (h.calls.length === 1) await gate; return new Response('{"ok":true,"scheduled":2}'); };
+  const running = h.controller.markChanged();
+  await until(() => h.calls.length === 1);
+  h.timersData = [{ ...h.timersData[0], endsAt: 1800009900000 }];
+  h.controller.markChanged();
+  release();
+  await running;
+  assert.equal(h.calls.length, 2);
+  assert.equal(h.calls[1].body.timers[0].endsAt, 1800009900000);
+  assert.ok(h.calls[1].body.revision > h.calls[0].body.revision);
+});
+test('閉じる直前の最新変更をkeepaliveで送る', async () => {
+  const h = harness();
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  h.response = async () => { if (h.calls.length === 1) await gate; return new Response('{"ok":true,"scheduled":2}'); };
+  const running = h.controller.markChanged();
+  await until(() => h.calls.length === 1);
+  h.timersData = [];
+  h.controller.markChanged();
+  h.controller.flushOnHide();
+  await until(() => h.calls.length === 2);
+  assert.equal(h.calls[1].options.keepalive, true);
+  assert.deepEqual(h.calls[1].body.timers, []);
+  release();
+  await running;
+});
+test('オフラインでも未同期状態を残し、再起動後に同期', async () => {
+  const h = harness({ online: false });
+  assert.equal(await h.controller.markChanged(), false);
+  assert.equal(h.calls.length, 0);
+  assert.equal(h.storage.get(PENDING), '1');
+  const reopened = harness({ storage: h.storage });
+  assert.equal(await reopened.controller.markChanged(), true);
+  assert.equal(reopened.storage.get(PENDING), '0');
+});
+test('HTTP保存失敗を成功表示せず、再送できる', async () => {
+  const h = harness();
+  h.response = async () => new Response('{"error":"test failure"}', { status: 503 });
+  assert.equal(await h.controller.markChanged(), false);
+  assert.equal(h.storage.get(PENDING), '1');
+  assert.match(h.node('timerNotifyStatus').textContent, /未同期/);
+  h.response = async () => new Response('{"ok":true,"scheduled":2}');
+  assert.equal(await h.controller.flush(), true);
+  assert.equal(h.storage.get(PENDING), '0');
+});
+test('通知OFFは購読取得・権限許可を待たずサーバー停止を同期', async () => {
+  const h = harness({ settings: { enabled: false, days: [], hours: [] }, permission: 'denied' });
+  assert.equal(await h.controller.markChanged(), true);
+  assert.equal(h.calls[0].path, '/api/push/unsubscribe');
+  assert.ok(!h.traces.includes('register'));
+});
+test('iOSの許可要求がネットワーク/SW登録より先に始まる', async () => {
+  const h = harness({ permission: 'default' });
+  await h.controller.allow();
+  assert.equal(h.traces[0], 'permission');
+  assert.equal(h.calls.length, 1);
+});
+test('許可済みの購読を許可処理や通常保存で作り直さない', async () => {
+  const h = harness();
+  await h.controller.markChanged();
+  assert.ok(!h.traces.includes('unsubscribe'));
+  await h.controller.allow();
+  assert.equal(h.traces.filter(value => value === 'unsubscribe').length, 0);
+  assert.equal(h.calls.at(-1).body.token, token);
+});
+
+test('許可済みは準備完了後や再表示後も押せない許可済み表示', async () => {
+  const h = harness();
+  h.controller.init();
+  await until(() => !h.controller.preparing && !h.controller.running);
+  assert.equal(h.node('timerNotifyPermission').disabled, true);
+  assert.match(h.node('timerNotifyPermission').textContent, /許可済み/);
+  assert.equal(h.node('timerNotifyStatus').textContent, '');
+  h.controller.open();
+  assert.equal(h.node('timerNotifyPermission').disabled, true);
+  assert.equal(h.node('timerNotifyStatus').textContent, '');
+});
+
+test('未許可は準備後に押せる、許可後は即座に押せなくなる', async () => {
+  const h = harness({ permission: 'default', settings: { enabled: false, days: [1], hours: [] } });
+  h.controller.init();
+  assert.equal(h.node('timerNotifyPermission').disabled, true);
+  await until(() => !h.controller.preparing);
+  assert.equal(h.node('timerNotifyPermission').disabled, false);
+  await h.controller.allow();
+  assert.equal(h.node('timerNotifyPermission').disabled, true);
+  assert.match(h.node('timerNotifyPermission').textContent, /許可済み/);
+  assert.equal(h.traces.filter(value => value === 'permission').length, 1);
+  assert.equal(h.node('timerNotifyStatus').textContent, '');
+});
+
+test('通知拒否は押せないブロック表示、同期エラーは残す', async () => {
+  const h = harness({ permission: 'denied' });
+  h.controller.showStatus();
+  assert.equal(h.node('timerNotifyPermission').disabled, true);
+  assert.match(h.node('timerNotifyPermission').textContent, /ブロック/);
+  assert.match(h.node('timerNotifyStatus').textContent, /端末の設定/);
+  assert.equal(await h.controller.markChanged(), false);
+  assert.match(h.node('timerNotifyStatus').textContent, /未同期/);
+});
+test('時間だけの設定を許可し、サーバー保存成功後に閉じる', async () => {
+  const h = harness();
+  h.node('timerNotifyEnabled').checked = true;
+  h.document.querySelectorAll = selector => selector.includes('"hour"') ? [{ value: '1' }, { value: '2' }] : [];
+  await h.controller.saveSettings();
+  assert.deepEqual(h.calls[0].body.days, []);
+  assert.deepEqual(h.calls[0].body.hours, [1, 2]);
+  assert.equal(h.node('timerNotificationDialog').open, false);
+});
+test('旧day=0設定を通知設定UIでも保持', () => {
+  const h = harness({ settings: { enabled: true, days: [0, 1], hours: [] } });
+  h.controller.open();
+  assert.match(h.node('timerNotifyDays').innerHTML, /value="0" checked>期限当日/);
+});
+test('通知ストレージエラーがタイマー画面の初期化を中断しない', () => {
+  const h = harness();
+  h.localStorage.getItem = () => { throw Error('Storage denied'); };
+  assert.equal(h.window.ARKPush.init({ getTimers: () => [] }), null);
+  assert.match(h.node('timerNotifyStatus').textContent, /ストレージ/);
+});
