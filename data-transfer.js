@@ -58,6 +58,10 @@
       if (t.customType !== undefined) string(t.customType, 80);
       if (t.type === 'building' && !['わら','木','石','金属','TEK'].includes(t.material)) fail();
       image(t.imageSrc);
+      if(t.customTypeImage!==undefined&&t.customTypeImage!==''){
+        image(t.customTypeImage);
+        if(typeof t.customTypeImage!=='string'||!/^data:image\//i.test(t.customTypeImage))fail();
+      }
       if (t.manualPin != null && (!object(t.manualPin) || ['left','top'].some(key =>
         !Number.isFinite(t.manualPin[key]) || t.manualPin[key] < 0 || t.manualPin[key] > 100))) fail();
     });

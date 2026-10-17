@@ -47,7 +47,7 @@ try {
     assert.equal(response.status, 200, path);
     if (path !== '/manifest.webmanifest') assert.equal(response.headers.get('cache-control'), 'no-cache', path);
   }
-  for(const path of ['/ark-manager-app-icon-dodo-v2.jpg','/safari-share-symbol.png','/timer-tribe-tower.png','/timer-generator.png',...['thatch','wood','stone','metal','tek'].map(name=>`/timer-material-${name}.png`),'/genesis1-ocean.jpg','/genesis1-genesis.jpg']){
+  for(const path of ['/ark-manager-app-icon-dodo-v2.jpg','/safari-share-symbol.png','/timer-tribe-tower.png','/timer-generator.png','/timer-material-stone.webp',...['thatch','wood','metal','tek'].map(name=>`/timer-material-${name}.png`),'/genesis1-ocean.jpg','/genesis1-genesis.jpg']){
     const response=await app.fetch('http://localhost'+path);assert.equal(response.status,200,path);assert.match(response.headers.get('content-type'),/^image\//);
   }
   console.log('Local Workers + D1: hour/9999-day schedules, cancellation, Cron and PWA/map assets passed');

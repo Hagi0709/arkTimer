@@ -78,6 +78,16 @@ test('座標が空の手動ピンも書き出し・読み込みで同じ位置�
   }
 });
 
+test('自由入力の種類画像をマップ画像・期限と分けて引き継ぎ、不正な画像は拒否',()=>{
+  const source=fixture();source.timers[0]={...source.timers[0],type:'other',customTypeImage:'data:image/png;base64,dHlwZQ=='};
+  const backup=api.parse(JSON.stringify(api.createBackup(source))),next=api.plan(empty(),backup);
+  assert.equal(next.timers[0].customTypeImage,source.timers[0].customTypeImage);
+  assert.equal(next.timers[0].imageSrc,picture);assert.equal(next.timers[0].endsAt,source.timers[0].endsAt);
+  for(const value of ['https://example.test/image.png','data:image/svg+xml;base64,c3Zn','image.png',{},false,null]){
+    const bad=plain(backup);bad.data.timers[0].customTypeImage=value;assert.throws(()=>api.parse(JSON.stringify(bad)));
+  }
+});
+
 test('同じファイルの繰り返し読み込みで重複せず既存編集・通知設定を保持', () => {
   const current = fixture();
   current.characters[0].name = 'この端末で編集';

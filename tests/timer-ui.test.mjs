@@ -14,7 +14,7 @@ function harness(){
       const classes=new Set();
       const item={value:'',checked:false,style:{},options:[],
         classList:{add:n=>classes.add(n),remove:n=>classes.delete(n),contains:n=>classes.has(n),toggle:(n,on)=>on?classes.add(n):classes.delete(n)},
-        getAttribute:()=>id==='timerTab'?'true':null,querySelector:()=>null,appendChild(option){this.options.push(option)},
+        getAttribute:()=>id==='timerTab'?'true':null,removeAttribute(key){delete this[key]},querySelector:()=>null,appendChild(option){this.options.push(option)},
         getBoundingClientRect:()=>({left:50,top:100,width:200,height:200}),reset(){},
         setPointerCapture(id){this.pointer=id},hasPointerCapture(id){return this.pointer===id},releasePointerCapture(){this.pointer=null},
         set innerHTML(value){this.options=[...value.matchAll(/<option value="([^"]+)"/g)].map(m=>({value:m[1]}));if(this.options.length)this.value=this.options[0].value}
@@ -157,4 +157,42 @@ test('ジェネシス1の2つのマップ画像を名前ごとに解決',()=>{
   const h=harness();
   assert.equal(h.run("getDefaultImageForMap('ジェネシス1(Ocean)')"),'genesis1-ocean.jpg');
   assert.equal(h.run("getDefaultImageForMap('ジェネシス1(Genesis)')"),'genesis1-genesis.jpg');
+});
+
+test('自由入力の種類画像はマップ画像と別に保存・再編集し、期限を維持',()=>{
+  const h=harness(),picture='data:image/png;base64,aW1hZ2U=',previous={...timer(),imageMode:'custom',imageSrc:'data:image/png;base64,bWFw'};
+  h.setTimers([previous]);h.run('setupDurationSelects();openModal(state.timers[0])');h.context.picture=picture;
+  h.run('state.pendingTypeImage=picture;updateTypeImagePreview()');
+  const next=plain(h.run("buildTimerPayload(1900000000000,'timer_1',3)"));
+  assert.equal(next.customTypeImage,picture);assert.equal(next.imageSrc,previous.imageSrc);assert.equal(next.endsAt,previous.endsAt);
+  h.setTimers([next]);h.run('openModal(state.timers[0])');assert.equal(h.node('customTypeImagePreview').src,picture);
+  assert.equal(h.run('timerKindIcon(state.timers[0])'),picture);assert.match(h.run('buildTimerKindImage(state.timers[0])'),/src="data:image\/png/);
+  assert.doesNotMatch(h.run('buildTimerKindImage(state.timers[0])'),/src="\.\/data:/);
+  h.run('clearTypeImage()');assert.equal(h.node('customTypeImagePreview').classList.contains('hidden'),true);
+  assert.equal(plain(h.run("buildTimerPayload(1900000000000,'timer_1',3)")).customTypeImage,'');
+});
+
+test('画像なしの旧タイマーを表示でき、新規フォームに前の種類画像を持ち越さない',()=>{
+  const h=harness();assert.equal(h.run("buildTimerKindImage({type:'other'})"),'');
+  for(const value of ['https://example.test/image.png','data:image/svg+xml;base64,c3Zn',{}]){
+    h.context.untrusted=value;assert.equal(h.run('customTypeImageSource(untrusted)'),'');
+  }
+  h.run("state.pendingTypeImage='data:image/png;base64,aW1hZ2U=';setupDurationSelects();openModal();typeSelect.value='other';syncTypeUI()");
+  assert.equal(h.run('state.pendingTypeImage'),'');assert.equal(h.node('customTypeImageField').classList.contains('hidden'),false);
+  h.run("typeSelect.value='building';syncTypeUI()");assert.equal(h.node('customTypeImageField').classList.contains('hidden'),true);
+});
+
+test('読み込み中の保存を防ぎ、画像を外した後に古い読み込み結果を反映しない',async()=>{
+  const h=harness();h.run('readTimerTypeImage=()=>new Promise(resolve=>{globalThis.finishTypeImage=resolve})');
+  const pending=h.run("handleTypeImageChange({target:{files:[{type:'image/png'}],value:'file'}})");
+  assert.equal(h.node('submitBtn').disabled,true);assert.throws(()=>h.run('buildTimerPayload(1900000000000)'),/読み込み中/);
+  h.run("clearTypeImage();finishTypeImage('data:image/png;base64,aW1hZ2U=')");await pending;
+  assert.equal(h.run('state.pendingTypeImage'),'');assert.equal(h.node('submitBtn').disabled,false);
+});
+
+test('編集中に閉じた場合も遅れて読み込んだ種類画像を次のフォームへ混ぜない',async()=>{
+  const h=harness();h.run('setupDurationSelects();readTimerTypeImage=()=>new Promise(resolve=>{globalThis.finishTypeImage=resolve})');
+  const pending=h.run("handleTypeImageChange({target:{files:[{type:'image/png'}],value:'file'}})");
+  h.run("closeModal();openModal();finishTypeImage('data:image/png;base64,aW1hZ2U=')");await pending;
+  assert.equal(h.run('state.pendingTypeImage'),'');assert.equal(h.node('submitBtn').disabled,false);
 });

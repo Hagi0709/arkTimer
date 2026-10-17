@@ -632,8 +632,17 @@ input:focus,select:focus,textarea:focus{
   color:#d7eeff;
 }
 .chip input:focus-visible + span{outline:2px solid var(--blue);outline-offset:3px}
-#materialField .chip span{gap:6px;padding:0 10px}
-.material-icon{display:block;width:22px;height:22px;object-fit:contain}
+#materialField .chip-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+#materialField .chip{min-width:0}
+#materialField .chip span{width:100%;gap:3px;padding:0 3px;font-size:11px;white-space:nowrap}
+.material-icon{display:block;flex:0 0 18px;width:18px;height:18px;object-fit:contain}
+.custom-type-image-row{display:flex;align-items:center;gap:10px;min-width:0}
+.custom-type-image-preview{width:50px;height:54px;flex-shrink:0;object-fit:contain}
+.custom-type-image-actions{display:flex;gap:8px;flex-wrap:wrap}
+.custom-type-image-status:empty{display:none}
+.custom-type-image-status{font-size:12px;color:var(--muted)}
+@media(max-width:380px){#materialField .chip span{gap:2px;padding:0 2px;font-size:10px}.material-icon{width:16px;height:16px;flex-basis:16px}}
+@media(max-width:360px){#materialField .chip-grid{gap:4px}#materialField .chip span{gap:1px;padding:0 1px}.material-icon{width:14px;height:14px;flex-basis:14px}}
 
 .material-days{
   font-size:12px;
@@ -1504,13 +1513,19 @@ body{
           <span>種類名</span>
           <input id="customTypeInput" type="text" maxlength="80" placeholder="例：テイム・食料補充">
         </label>
+        <div id="customTypeImageField" class="field hidden">
+          <span>一覧右側の画像</span>
+          <input id="customTypeImageInput" class="hidden-input" type="file" accept="image/*">
+          <div class="custom-type-image-row"><img id="customTypeImagePreview" class="custom-type-image-preview hidden" alt="種類の画像"><div class="custom-type-image-actions"><button id="chooseCustomTypeImage" class="manager-small-btn" type="button">画像を選択</button><button id="clearCustomTypeImage" class="manager-small-btn" type="button" disabled>画像を外す</button></div></div>
+          <div id="customTypeImageStatus" class="custom-type-image-status" role="status"></div>
+        </div>
 
         <div id="materialField" class="field">
           <span>建材</span>
           <div class="chip-grid">
             <label class="chip"><input type="radio" name="material" value="わら"><span><img class="material-icon" src="./timer-material-thatch.png" alt="" aria-hidden="true">わら</span></label>
             <label class="chip"><input type="radio" name="material" value="木"><span><img class="material-icon" src="./timer-material-wood.png" alt="" aria-hidden="true">木</span></label>
-            <label class="chip"><input type="radio" name="material" value="石"><span><img class="material-icon" src="./timer-material-stone.png" alt="" aria-hidden="true">石</span></label>
+            <label class="chip"><input type="radio" name="material" value="石"><span><img class="material-icon" src="./timer-material-stone.webp" alt="" aria-hidden="true">石</span></label>
             <label class="chip"><input type="radio" name="material" value="金属"><span><img class="material-icon" src="./timer-material-metal.png" alt="" aria-hidden="true">金属</span></label>
             <label class="chip"><input type="radio" name="material" value="TEK" checked><span><img class="material-icon" src="./timer-material-tek.png" alt="" aria-hidden="true">TEK</span></label>
           </div>
@@ -1579,12 +1594,12 @@ const DEFAULT_MAP_IMAGES={'ジェネシス1(Ocean)':'genesis1-ocean.jpg','ジェ
 const MAP_BOUNDS={'ジェネシス1(Ocean)':{width:100,height:100},'ジェネシス1(Genesis)':{width:100,height:100},'アイランド':{width:100,height:100},'スコーチドアース':{width:100,height:100},'センター':{width:100,height:100},'アベレーション':{width:100,height:100},'エクスティンクション':{width:100,height:100},'アストレオス':{width:100,height:100},'ラグナロク':{width:100,height:100},'バルゲロ':{width:100,height:100},'ロストコロニー':{width:100,height:100},'その他':{width:100,height:100}};
 const TRIBE_TOWER_ICON='timer-tribe-tower.png';
 const GENERATOR_ICON='timer-generator.png';
-const MATERIAL_ICONS={'わら':'timer-material-thatch.png','木':'timer-material-wood.png','石':'timer-material-stone.png','金属':'timer-material-metal.png','TEK':'timer-material-tek.png'};
+const MATERIAL_ICONS={'わら':'timer-material-thatch.png','木':'timer-material-wood.png','石':'timer-material-stone.webp','金属':'timer-material-metal.png','TEK':'timer-material-tek.png'};
 const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':20};
 const SORT_KEY='arkTimer_sort_mode';
 const $=id=>document.getElementById(id);
 const list=$('list'),addBtn=$('add'),sortSelect=$('sortSelect'),activeCount=$('activeCount'),emptyState=$('emptyState'),overlay=$('overlay'),modal=$('modal'),closeModalBtn=$('closeModal'),modalTitle=$('modalTitle'),submitBtn=$('submitBtn'),timerForm=$('timerForm'),editIdInput=$('editId'),imageModeInput=$('imageMode'),mapSelect=$('mapSelect'),typeSelect=$('typeSelect'),materialField=$('materialField'),customTimerField=$('customTimerField'),memoInput=$('memoInput'),timerNameInput=$('timerNameInput'),latInput=$('latInput'),lngInput=$('lngInput'),daysInput=$('daysInput'),hoursInput=$('hoursInput'),minutesInput=$('minutesInput'),imageInput=$('imageInput'),imagePreview=$('imagePreview'),imagePreviewButton=$('imagePreviewButton'),imagePreviewPin=$('imagePreviewPin'),showPinInput=$('showPinInput'),confirmOverlay=$('confirmOverlay'),confirmTitle=$('confirmTitle'),confirmText=$('confirmText'),confirmCancel=$('confirmCancel'),confirmOk=$('confirmOk'),materialDays=$('materialDays');
-const state={timers:[],pendingCustomImage:'',confirmResolver:null,sortMode:'dueSoon',selectedTimerId:null,previewImageSrc:'',manualPin:null,pinDragPointer:null};
+const state={timers:[],pendingCustomImage:'',pendingTypeImage:'',typeImageRequest:0,typeImageLoading:false,confirmResolver:null,sortMode:'dueSoon',selectedTimerId:null,previewImageSrc:'',manualPin:null,pinDragPointer:null};
 
 function load(){
   try{
@@ -1618,7 +1633,7 @@ function save(){
 function generateId(){return `timer_${Date.now()}_${Math.random().toString(36).slice(2,9)}`}
 function getSelectedMaterial(){const checked=document.querySelector('input[name="material"]:checked');return checked?checked.value:'TEK'}
 function updateMaterialDays(){const material=getSelectedMaterial();materialDays.textContent=`${material} ${BUILDING_DURATIONS[material]}日`}
-function syncTypeUI(){const type=typeSelect.value;materialField.classList.toggle('hidden',type!=='building');customTimerField.classList.toggle('hidden',type==='building');$('customTypeField').classList.toggle('hidden',type!=='other');updateMaterialDays()}
+function syncTypeUI(){const type=typeSelect.value;materialField.classList.toggle('hidden',type!=='building');customTimerField.classList.toggle('hidden',type==='building');$('customTypeField').classList.toggle('hidden',type!=='other');$('customTypeImageField').classList.toggle('hidden',type!=='other');updateMaterialDays()}
 function setupDurationSelects(){for(const [select,max,label]of [[daysInput,9999,'日'],[hoursInput,23,'時間'],[minutesInput,59,'分']])select.innerHTML=Array.from({length:max+1},(_,n)=>`<option value="${n}">${n}${label}</option>`).join('')}
 function setDurationValue(select,value,label){const n=Math.max(0,Math.floor(Number(value)||0));if(![...select.options].some(option=>option.value===String(n))){const option=document.createElement('option');option.value=String(n);option.textContent=n+label;select.appendChild(option)}select.value=String(n)}
 function getDefaultImageForMap(mapName){return DEFAULT_MAP_IMAGES[mapName]||DEFAULT_MAP_IMAGES['その他']}
@@ -1681,6 +1696,9 @@ function openModal(editTarget=null){
   modal.classList.remove('hidden');
   addBtn.classList.add('hidden');
   document.body.style.overflow='hidden';
+  state.typeImageRequest++;state.typeImageLoading=false;
+  state.pendingTypeImage=customTypeImageSource(editTarget?.customTypeImage);
+  $('customTypeImageInput').value='';updateTypeImagePreview();
   if(!editTarget){
     state.manualPin=null;state.pinDragPointer=null;
     timerForm.reset();
@@ -1742,7 +1760,7 @@ function openModal(editTarget=null){
   syncTypeUI();
   refreshPreviewPin();
 }
-function closeModal(){overlay.classList.add('hidden');modal.classList.add('hidden');document.body.style.overflow='';addBtn.classList.toggle('hidden',$('timerTab').getAttribute('aria-selected')!=='true'||!!state.selectedTimerId)}
+function closeModal(){state.typeImageRequest++;state.typeImageLoading=false;submitBtn.disabled=false;overlay.classList.add('hidden');modal.classList.add('hidden');document.body.style.overflow='';addBtn.classList.toggle('hidden',$('timerTab').getAttribute('aria-selected')!=='true'||!!state.selectedTimerId)}
 function openConfirm(title,text){confirmTitle.textContent=title||'確認';confirmText.textContent=text||'実行しますか？';confirmOverlay.classList.remove('hidden');return new Promise(resolve=>{state.confirmResolver=resolve})}
 function closeConfirm(result){confirmOverlay.classList.add('hidden');if(state.confirmResolver){const resolver=state.confirmResolver;state.confirmResolver=null;resolver(!!result)}}
 function formatDateWithWeekday(timestamp){const date=new Date(timestamp);const w=['日','月','火','水','木','金','土'][date.getDay()];const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,'0');const d=String(date.getDate()).padStart(2,'0');const hh=String(date.getHours()).padStart(2,'0');const mm=String(date.getMinutes()).padStart(2,'0');return `${y}/${m}/${d}(${w}) ${hh}:${mm}`}
@@ -1750,8 +1768,9 @@ function formatRemaining(ms){if(ms<=0)return '期限切れ';const totalMinutes=M
 function getRemainingMs(timer){return timer.endsAt-Date.now()}
 function getRemainClass(ms){const dayMs=24*60*60*1000;if(ms>=14*dayMs)return 'green';if(ms>=7*dayMs)return 'orange';if(ms<=0)return 'red5';const daysLeft=ms/dayMs;if(daysLeft>6)return 'red0';if(daysLeft>5)return 'red1';if(daysLeft>3)return 'red2';if(daysLeft>2)return 'red3';if(daysLeft>1)return 'red4';return 'red5'}
 function buildTypeLabel(timer){if(timer.type==='building')return `建材:${timer.material}`;if(timer.type==='tribe_tower')return 'トライブタワー';if(timer.type==='generator')return 'ジェネレータ';return String(timer.customType||'').trim()||'自由入力'}
-function timerKindIcon(timer){if(timer.type==='building')return Object.hasOwn(MATERIAL_ICONS,timer.material)?MATERIAL_ICONS[timer.material]:'';if(timer.type==='tribe_tower')return TRIBE_TOWER_ICON;if(timer.type==='generator')return GENERATOR_ICON;return ''}
-function buildTimerKindImage(timer){const src=timerKindIcon(timer);return src?`<img class="timer-kind-icon" src="./${src}" alt="" aria-hidden="true" decoding="async">`:''}
+function customTypeImageSource(value){return typeof value==='string'&&/^data:image\/(?:png|jpeg|webp|gif|avif);base64,[A-Za-z0-9+/=\r\n]+$/i.test(value)?value:''}
+function timerKindIcon(timer){if(timer.type==='building')return Object.hasOwn(MATERIAL_ICONS,timer.material)?MATERIAL_ICONS[timer.material]:'';if(timer.type==='tribe_tower')return TRIBE_TOWER_ICON;if(timer.type==='generator')return GENERATOR_ICON;return timer.type==='other'?customTypeImageSource(timer.customTypeImage):''}
+function buildTimerKindImage(timer){const src=timerKindIcon(timer);return src?`<img class="timer-kind-icon" src="${escapeHtml(/^data:/i.test(src)?src:'./'+src)}" alt="" aria-hidden="true" decoding="async">`:''}
 function getDurationMsFromInput(type){if(type==='building'){return BUILDING_DURATIONS[getSelectedMaterial()]*24*60*60*1000}const days=Number(daysInput.value||0),hours=Number(hoursInput.value||0),minutes=Number(minutesInput.value||0);return ((((days*24)+hours)*60)+minutes)*60*1000}
 function getTimerImageSrc(timer){if(timer.imageMode==='custom'&&timer.imageSrc)return timer.imageSrc;return getDefaultImageForMap(timer.map)}
 function escapeHtml(value){return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
@@ -1829,12 +1848,13 @@ function render(){
 }
 
 function buildTimerPayload(now,keepId=null,existingSortOrder=null){
+  if(state.typeImageLoading){alert('画像を読み込み中です。少し待ってから保存してください。');return null}
   const map=timerMapValue(),type=typeSelect.value,customType=type==='other'?$('customTypeInput').value.trim():'',memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'未設定',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
   if(!map){alert('マップを選択してください');return null}
   if(durationMs<=0){alert('タイマーは1分以上で入力してください');return null}
   const current=keepId?state.timers.find(timer=>timer.id===keepId):null;
   const preserveDeadline=current&&Math.floor((current.endsAt-current.startedAt)/60000)*60000===durationMs;
-  return {...current,id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,manualPin:normalizeManualPin(state.manualPin),showPin:showPinInput?showPinInput.checked:true,type,customType,material:type==='building'?getSelectedMaterial():null,memo,startedAt:preserveDeadline?current.startedAt:now,endsAt:preserveDeadline?current.endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
+  return {...current,id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,manualPin:normalizeManualPin(state.manualPin),showPin:showPinInput?showPinInput.checked:true,type,customType,customTypeImage:customTypeImageSource(state.pendingTypeImage),material:type==='building'?getSelectedMaterial():null,memo,startedAt:preserveDeadline?current.startedAt:now,endsAt:preserveDeadline?current.endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
 }
 function addTimerFromForm(event){
   event.preventDefault();
@@ -1879,6 +1899,10 @@ function bindListActions(event){
   if(action==='move-down')return swapSortOrder(id,1);
 }
 function handleImageChange(event){const file=event.target.files&&event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{state.pendingCustomImage=String(reader.result||'');imageModeInput.value='custom';setPreviewImage(state.pendingCustomImage);refreshPreviewPin()};reader.readAsDataURL(file)}
+function updateTypeImagePreview(){const src=customTypeImageSource(state.pendingTypeImage),preview=$('customTypeImagePreview');if(src)preview.src=src;else preview.removeAttribute('src');preview.classList.toggle('hidden',!src);$('chooseCustomTypeImage').textContent=src?'画像を変更':'画像を選択';$('clearCustomTypeImage').disabled=!src&&!state.typeImageLoading;$('customTypeImageStatus').textContent=state.typeImageLoading?'画像を読み込み中…':'';submitBtn.disabled=state.typeImageLoading}
+function clearTypeImage(){state.typeImageRequest++;state.typeImageLoading=false;state.pendingTypeImage='';$('customTypeImageInput').value='';updateTypeImagePreview()}
+function readTimerTypeImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/'))return reject(Error('image'));const url=URL.createObjectURL(file),image=new Image();image.onload=()=>{try{const scale=Math.min(1,256/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/png'))}catch(error){reject(error)}finally{URL.revokeObjectURL(url)}};image.onerror=()=>{URL.revokeObjectURL(url);reject(Error('decode'))};image.src=url})}
+async function handleTypeImageChange(event){const file=event.target.files&&event.target.files[0];if(!file)return;event.target.value='';const request=++state.typeImageRequest;state.typeImageLoading=true;updateTypeImagePreview();try{const src=await readTimerTypeImage(file);if(request===state.typeImageRequest)state.pendingTypeImage=src}catch{if(request===state.typeImageRequest)alert('画像を読み込めませんでした。別の画像を選択してください。')}finally{if(request===state.typeImageRequest){state.typeImageLoading=false;updateTypeImagePreview()}}}
 function handleSortChange(){state.sortMode=sortSelect&&sortSelect.value?sortSelect.value:'dueSoon';save();render()}
 function bindMaterialEvents(){document.querySelectorAll('input[name="material"]').forEach(r=>r.addEventListener('change',updateMaterialDays))}
 function startTicker(){render();setInterval(()=>{if(!list.querySelector('.dragging'))render()},30000)}
@@ -1897,6 +1921,9 @@ function bindEvents(){
   lngInput.addEventListener('input',usePreviewCoordinates);
   if(showPinInput)showPinInput.addEventListener('change',refreshPreviewPin);
   imageInput.addEventListener('change',handleImageChange);
+  $('customTypeImageInput').addEventListener('change',handleTypeImageChange);
+  $('chooseCustomTypeImage').addEventListener('click',()=>$('customTypeImageInput').click());
+  $('clearCustomTypeImage').addEventListener('click',clearTypeImage);
   imagePreviewButton.addEventListener('click',placePreviewPin);
   imagePreviewButton.addEventListener('keydown',movePreviewPin);
   imagePreviewButton.addEventListener('pointerdown',startPreviewPinDrag);
