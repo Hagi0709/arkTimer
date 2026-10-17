@@ -181,10 +181,21 @@ test('時間だけの設定を許可し、サーバー保存成功後に閉じ�
   assert.deepEqual(h.calls[0].body.hours, [1, 2]);
   assert.equal(h.node('timerNotificationDialog').open, false);
 });
-test('旧day=0設定を通知設定UIでも保持', () => {
+test('期限当日をUIと同期対象から外し、既存の日前設定は維持', async () => {
   const h = harness({ settings: { enabled: true, days: [0, 1], hours: [] } });
   h.controller.open();
-  assert.match(h.node('timerNotifyDays').innerHTML, /value="0" checked>期限当日/);
+  assert.doesNotMatch(h.node('timerNotifyDays').innerHTML, /value="0"|期限当日/);
+  assert.match(h.node('timerNotifyDays').innerHTML, /value="1" checked>1日前/);
+  await h.controller.markChanged();
+  assert.deepEqual(h.calls[0].body.days, [1]);
+});
+
+test('期限当日のみだった設定は空の予約を送らず通知停止として同期', async () => {
+  const h = harness({ settings: { enabled: true, days: [0], hours: [] } });
+  h.controller.open();
+  assert.equal(h.node('timerNotifyEnabled').checked, false);
+  assert.equal(await h.controller.markChanged(), true);
+  assert.equal(h.calls[0].path, '/api/push/unsubscribe');
 });
 test('通知ストレージエラーがタイマー画面の初期化を中断しない', () => {
   const h = harness();

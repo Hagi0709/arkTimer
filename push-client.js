@@ -10,7 +10,8 @@
   function readSettings() {
     let saved;
     try { saved = JSON.parse(localStorage.getItem(SETTINGS) || 'null'); } catch {}
-    return { enabled: !!saved?.enabled, days: clean(saved?.days ?? [1], 0, 7), hours: clean(saved?.hours, 1, 23) };
+    const days=clean(saved?.days ?? [1],1,7),hours=clean(saved?.hours,1,23);
+    return { enabled: !!saved?.enabled && !!(days.length || hours.length), days, hours };
   }
   const applicationKey = key => Uint8Array.from(atob(key.replace(/-/g, '+').replace(/_/g, '/') +
     '='.repeat((4 - key.length % 4) % 4)), c => c.charCodeAt(0));
@@ -196,10 +197,10 @@
       this.settings = readSettings();
       $('timerNotifyEnabled').checked = this.settings.enabled;
       $('timerNotifyDays').innerHTML = [['day', 7, this.settings.days, '日前'], ['hour', 23, this.settings.hours, '時間前']]
-        .map(([unit, max, selected, label]) => Array.from({ length: unit === 'day' ? max + 1 : max }, (_, i) => {
+        .map(([unit, max, selected, label]) => Array.from({ length: max }, (_, i) => {
           const value = max - i;
           return '<label class="timer-notify-choice"><input type="checkbox" data-unit="' + unit +
-            '" value="' + value + '" ' + (selected.includes(value) ? 'checked' : '') + '>' + (value === 0 ? '期限当日' : value + label) + '</label>';
+            '" value="' + value + '" ' + (selected.includes(value) ? 'checked' : '') + '>' + value + label + '</label>';
         }).join('')).join('');
       this.showStatus();
       const dialog = $('timerNotificationDialog');

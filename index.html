@@ -1260,7 +1260,7 @@ body{
 .timer-install-guide li{margin:7px 0}
 .timer-install-guide a{display:inline-block;margin-top:8px;color:var(--cyan);font-weight:700}
 .timer-notify-settings .submit-btn:disabled{background:rgba(115,240,209,.09);border:1px solid rgba(115,240,209,.24);color:#9cceca;box-shadow:none;cursor:default}
-.data-transfer-entry{grid-column:1 / -1}
+.data-transfer-entry{grid-column:auto}
 .data-transfer-content{padding:18px;display:grid;gap:18px;min-width:0}
 .data-transfer-content p{margin:0;color:var(--muted);font-size:13px;line-height:1.65;overflow-wrap:anywhere}
 .data-transfer-content section{display:grid;gap:12px;min-width:0}
@@ -1269,24 +1269,52 @@ body{
 .data-transfer-content button:disabled{opacity:.5;cursor:default}
 .data-transfer-preview{padding:14px;border:1px solid rgba(103,187,255,.3);border-radius:14px;background:rgba(103,187,255,.06)}
 #dataTransferStatus:empty{display:none}
+/* Matching character/timer list layout. */
+#timerListPage{min-width:0;width:100%}
+.timer-list-heading{gap:10px;min-width:0}
+.timer-list-heading h1{white-space:nowrap}
+.timer-list-heading-actions{display:flex;align-items:center;gap:8px;min-width:0}
+.timer-list-heading #sortSelect{width:140px;max-width:40vw;min-width:0;min-height:36px;padding:8px;font-size:11px;border-radius:10px}
+#timerCount{font-size:13px;white-space:nowrap}
+.timer-list-item{display:flex;gap:8px;min-width:0;height:112px}
+.timer-list-item.dragging{opacity:.65;outline:2px solid var(--blue);border-radius:20px}
+.timer-select-card{display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:10px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.045);color:var(--text);text-align:left}
+.timer-select-card.expired{border-color:rgba(255,117,117,.4)}
+.timer-map-thumbnail{position:relative;display:block;flex:0 0 82px;width:82px;height:82px;border-radius:12px;background-size:100% 100%;background-position:center;overflow:hidden}
+.timer-summary{display:grid;gap:6px;flex:1;min-width:0}
+.timer-summary .timer-name{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timer-meta{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timer-summary .remain-value{font-size:13px;white-space:nowrap;font-weight:800}
+.timer-reorder{flex:0 0 40px}
+.timer-detail-map{position:relative;width:100%;aspect-ratio:1;background-size:100% 100%;background-position:center;background-repeat:no-repeat;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.timer-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.timer-detail-actions .character-delete{grid-column:1 / -1;margin:0}
+.timer-detail-value{font-size:17px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.map-edit-hint{font-size:12px;line-height:1.6;color:var(--muted);margin:0}
+.map-edit-actions{display:flex;justify-content:space-between;gap:10px}
+.map-preview{background-size:100% 100%}
+.field>.eos-help{margin:0}
+.character-field>.eos-help{margin:0 0 8px}
+.time-grid select{min-width:0;padding:12px 6px}
+@media(max-width:380px){.timer-list-heading h1{font-size:20px}.timer-list-heading-actions{gap:4px}.timer-list-heading #sortSelect{width:122px;padding:7px 5px;font-size:10px}.timer-select-card{gap:8px;padding:8px}.timer-map-thumbnail{width:66px;height:78px;flex-basis:66px}.timer-summary .timer-name{font-size:15px}.timer-summary .remain-value{font-size:11px}.timer-meta{font-size:10px}}
 </style>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand-title">ARK Manager</div>
+      <div class="brand-title" aria-label="ARK Manager">𝒜ℛ𝒦 ℳ𝒶𝓃𝒶𝑔ℯ𝓇</div>
       <img class="brand-icon" src="ark-logo-transparent.png" alt="ARK" width="64" height="64">
     </header>
 
     <nav class="manager-tabs" aria-label="管理機能">
       <button id="characterTab" class="selected" role="tab" aria-selected="true" aria-controls="characterPage">キャラ管理</button>
-      <button id="timerTab" role="tab" aria-selected="false" aria-controls="timerPage">タイマー</button>
+      <button id="timerTab" role="tab" aria-selected="false" aria-controls="timerPage">タイマ管理</button>
     </nav>
     <main id="characterPage" class="content" role="tabpanel" aria-labelledby="characterTab">
       <div id="characterListPage">
         <div class="section-heading"><h1>キャラ一覧</h1><div class="character-heading-actions"><button id="recoveryRequest" type="button" class="manager-small-btn">復旧申請</button><button id="openUtcConverter" type="button" class="manager-small-btn">UTC時間</button><span id="characterCount">0人</span></div></div>
         <section id="characterEmpty" class="empty-state"><div class="empty-icon">◉</div><h2>キャラがありません</h2><p>右下の＋ボタンから追加してください</p></section>
-        <div id="characterList" class="character-list"></div><div class="server-settings-bar manager-settings-bottom"><button id="openLevelSettings" type="button" class="manager-small-btn">⚙ レベル上限設定</button><button id="openServerSettings" type="button" class="manager-small-btn">⚙ マップ・サーバー設定</button><button data-open-transfer type="button" class="manager-small-btn data-transfer-entry">データ引き継ぎ</button></div>
+        <div id="characterList" class="character-list"></div><div class="server-settings-bar manager-settings-bottom"><button id="openServerSettings" type="button" class="manager-small-btn">⚙ マップ設定</button><button data-open-transfer type="button" class="manager-small-btn">データ引き継ぎ</button></div>
       </div>
       <section id="characterDetail" class="hidden"></section>
     </main>
@@ -1307,7 +1335,8 @@ body{
     <dialog id="characterViewer" class="character-viewer" aria-label="画像を拡大"><button id="closeCharacterViewer" class="icon-btn" type="button" aria-label="閉じる">×</button><img id="characterViewerImage" alt=""></dialog>
     <div id="managerToast" class="manager-toast hidden" role="status"></div>
     <main id="timerPage" class="content hidden" role="tabpanel" aria-labelledby="timerTab">
-      <section class="toolbar-card toolbar-card-compact">
+      <div id="timerListPage">
+      <div class="section-heading timer-list-heading"><h1>タイマ一覧</h1><div class="timer-list-heading-actions">
         <select id="sortSelect" aria-label="並び順">
           <option value="dueSoon">期限が近い順</option>
           <option value="dueLate">期限が遠い順</option>
@@ -1315,15 +1344,16 @@ body{
           <option value="map">マップ順</option>
           <option value="manual">手動並び替え</option>
         </select>
-      </section>
-
-      <div class="timer-notify-row"><button type="button" data-open-transfer class="manager-small-btn">データ引き継ぎ</button><button type="button" id="openTimerNotificationSettings" class="manager-small-btn">⚙ 通知設定</button></div>
+      <span id="timerCount">0件</span></div></div>
       <section id="emptyState" class="empty-state">
         <div class="empty-icon">⌛</div>
         <h2>タイマーがありません</h2>
         <p>右下の＋ボタンから追加してください</p>
       </section>
       <section id="list" class="timer-list"></section>
+      <div class="manager-settings-bottom"><button type="button" data-open-transfer class="manager-small-btn">データ引き継ぎ</button><button type="button" id="openTimerNotificationSettings" class="manager-small-btn">⚙ 通知設定</button></div>
+      </div>
+      <section id="timerDetail" class="hidden"></section>
     </main>
 
     <dialog id="timerNotificationDialog" class="character-dialog" aria-label="タイマー通知設定">
@@ -1403,11 +1433,13 @@ body{
         <div class="field">
           <span>マップ画像</span>
           <input id="imageInput" type="file" accept="image/*" class="hidden-input">
-          <button id="imagePreviewButton" class="map-preview-button" type="button" aria-label="マップ画像を変更">
+          <button id="imagePreviewButton" class="map-preview-button" type="button" aria-label="地図をタップしてピンを配置" aria-describedby="mapPinHelp">
             <div id="imagePreview" class="map-preview is-empty">
               <div id="imagePreviewPin" class="map-pin hidden" aria-hidden="true"></div>
             </div>
           </button>
+          <p id="mapPinHelp" class="map-edit-hint">地図の好きな位置をタップしてピンを置けます。矢印キーでも移動できます。</p>
+          <div class="map-edit-actions"><button id="changeMapImage" class="manager-small-btn" type="button">マップ画像を変更</button><button id="clearMapPin" class="manager-small-btn" type="button">ピンを消す</button></div>
         </div>
 
         <div class="field">
@@ -1447,9 +1479,9 @@ body{
         <div id="customTimerField" class="field hidden">
           <span>タイマー</span>
           <div class="time-grid">
-            <input id="daysInput" type="number" min="0" step="1" value="" placeholder="日">
-            <input id="hoursInput" type="number" min="0" max="23" step="1" value="" placeholder="時間">
-            <input id="minutesInput" type="number" min="0" max="59" step="1" value="" placeholder="分">
+            <select id="daysInput" aria-label="日"></select>
+            <select id="hoursInput" aria-label="時間"></select>
+            <select id="minutesInput" aria-label="分"></select>
           </div>
         </div>
 
@@ -1496,7 +1528,7 @@ const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':20};
 const SORT_KEY='arkTimer_sort_mode';
 const $=id=>document.getElementById(id);
 const list=$('list'),addBtn=$('add'),sortSelect=$('sortSelect'),activeCount=$('activeCount'),emptyState=$('emptyState'),overlay=$('overlay'),modal=$('modal'),closeModalBtn=$('closeModal'),modalTitle=$('modalTitle'),submitBtn=$('submitBtn'),timerForm=$('timerForm'),editIdInput=$('editId'),imageModeInput=$('imageMode'),mapSelect=$('mapSelect'),typeSelect=$('typeSelect'),materialField=$('materialField'),customTimerField=$('customTimerField'),memoInput=$('memoInput'),timerNameInput=$('timerNameInput'),latInput=$('latInput'),lngInput=$('lngInput'),daysInput=$('daysInput'),hoursInput=$('hoursInput'),minutesInput=$('minutesInput'),imageInput=$('imageInput'),imagePreview=$('imagePreview'),imagePreviewButton=$('imagePreviewButton'),imagePreviewPin=$('imagePreviewPin'),showPinInput=$('showPinInput'),confirmOverlay=$('confirmOverlay'),confirmTitle=$('confirmTitle'),confirmText=$('confirmText'),confirmCancel=$('confirmCancel'),confirmOk=$('confirmOk'),materialDays=$('materialDays');
-const state={timers:[],pendingCustomImage:'',confirmResolver:null,sortMode:'dueSoon'};
+const state={timers:[],pendingCustomImage:'',confirmResolver:null,sortMode:'dueSoon',selectedTimerId:null,previewImageSrc:''};
 
 function load(){
   try{
@@ -1530,12 +1562,18 @@ function save(){
 function generateId(){return `timer_${Date.now()}_${Math.random().toString(36).slice(2,9)}`}
 function getSelectedMaterial(){const checked=document.querySelector('input[name="material"]:checked');return checked?checked.value:'TEK'}
 function updateMaterialDays(){const material=getSelectedMaterial();materialDays.textContent=`${material} ${BUILDING_DURATIONS[material]}日`}
-function syncTypeUI(){const type=typeSelect.value;materialField.classList.toggle('hidden',type!=='building');customTimerField.classList.toggle('hidden',type==='building');if(type!=='building'){daysInput.value='';hoursInput.value='';minutesInput.value=''}updateMaterialDays()}
+function syncTypeUI(){const type=typeSelect.value;materialField.classList.toggle('hidden',type!=='building');customTimerField.classList.toggle('hidden',type==='building');updateMaterialDays()}
+function setupDurationSelects(){for(const [select,max,label]of [[daysInput,365,'日'],[hoursInput,23,'時間'],[minutesInput,59,'分']])select.innerHTML=Array.from({length:max+1},(_,n)=>`<option value="${n}">${n}${label}</option>`).join('')}
+function setDurationValue(select,value,label){const n=Math.max(0,Math.floor(Number(value)||0));if(![...select.options].some(option=>option.value===String(n))){const option=document.createElement('option');option.value=String(n);option.textContent=n+label;select.appendChild(option)}select.value=String(n)}
 function getDefaultImageForMap(mapName){return DEFAULT_MAP_IMAGES[mapName]||DEFAULT_MAP_IMAGES['その他']}
-function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src}")`:'';imagePreview.classList.toggle('is-empty',!src)}
+function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src}")`:'';imagePreview.classList.toggle('is-empty',!src);state.previewImageSrc=src;imagePreview.style.aspectRatio='1';if(src){const image=new Image();image.onload=()=>{if(state.previewImageSrc===src&&image.naturalWidth&&image.naturalHeight)imagePreview.style.aspectRatio=image.naturalWidth+'/'+image.naturalHeight};image.src=src}}
 function getMapBounds(mapName){return MAP_BOUNDS[mapName]||{width:100,height:100}}
 function clamp(num,min,max){return Math.min(max,Math.max(min,num))}
-function parseCoord(value){const num=Number(String(value||'').trim());return Number.isFinite(num)?num:null}
+function parseCoord(value){const text=String(value??'').trim();if(!text)return null;const num=Number(text);return Number.isFinite(num)?num:null}
+function coordinatesFromPoint(rect,x,y,mapName){if(!(rect.width>0&&rect.height>0))return null;const bounds=getMapBounds(mapName);return{lat:Math.round(clamp((y-rect.top)/rect.height,0,1)*bounds.height*10)/10,lng:Math.round(clamp((x-rect.left)/rect.width,0,1)*bounds.width*10)/10}}
+function setPreviewCoordinates(lat,lng){latInput.value=String(lat);lngInput.value=String(lng);showPinInput.checked=true;refreshPreviewPin()}
+function placePreviewPin(event){if(event.detail===0){setPreviewCoordinates(50,50);return}const point=coordinatesFromPoint(imagePreview.getBoundingClientRect(),event.clientX,event.clientY,timerMapValue());if(point)setPreviewCoordinates(point.lat,point.lng)}
+function movePreviewPin(event){const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};if(!directions[event.key])return;event.preventDefault();const [dy,dx]=directions[event.key],step=event.shiftKey?0.1:1,bounds=getMapBounds(timerMapValue());setPreviewCoordinates(Math.round(clamp((parseCoord(latInput.value)??50)+dy*step,0,bounds.height)*10)/10,Math.round(clamp((parseCoord(lngInput.value)??50)+dx*step,0,bounds.width)*10)/10)}
 function getPinPosition(mapName,lat,lng){
   const latNum=parseCoord(lat),lngNum=parseCoord(lng);
   if(latNum===null||lngNum===null)return null;
@@ -1578,10 +1616,11 @@ function refreshImagePreviewForCurrentForm(){const defaultImage=getDefaultImageF
 function openModal(editTarget=null){
   overlay.classList.remove('hidden');
   modal.classList.remove('hidden');
+  addBtn.classList.add('hidden');
   document.body.style.overflow='hidden';
   if(!editTarget){
     timerForm.reset();
-    refreshTimerMapChoices();
+    refreshTimerMapChoices('アイランド');
     $('customMapInput').value='';$('customMapInput').classList.add('hidden');$('customMapInput').required=false;
     editIdInput.value='';
     imageModeInput.value='default';
@@ -1590,7 +1629,7 @@ function openModal(editTarget=null){
     if(showPinInput)showPinInput.checked=true;
     const tek=document.querySelector('input[name="material"][value="TEK"]');
     if(tek)tek.checked=true;
-    daysInput.value='';hoursInput.value='';minutesInput.value='';memoInput.value='';timerNameInput.value='';latInput.value='';lngInput.value='';
+    daysInput.value='0';hoursInput.value='0';minutesInput.value='0';memoInput.value='';timerNameInput.value='';latInput.value='';lngInput.value='';
     modalTitle.textContent='タイマー追加';
     submitBtn.textContent='追加して開始';
     syncTypeUI();
@@ -1606,21 +1645,21 @@ function openModal(editTarget=null){
   $('timerServerNo').value=editTarget.serverNo||'';
   memoInput.value=editTarget.memo||'';
   timerNameInput.value=editTarget.timerName||'';
-  latInput.value=editTarget.lat||'';
-  lngInput.value=editTarget.lng||'';
+  latInput.value=editTarget.lat??'';
+  lngInput.value=editTarget.lng??'';
   if(showPinInput)showPinInput.checked=editTarget.showPin!==false;
   modalTitle.textContent='タイマー編集';
   submitBtn.textContent='保存';
   if(editTarget.type==='building'){
     const radio=document.querySelector(`input[name="material"][value="${editTarget.material}"]`);
     if(radio)radio.checked=true;
-    daysInput.value='';hoursInput.value='';minutesInput.value='';
+    daysInput.value='0';hoursInput.value='0';minutesInput.value='0';
   }else{
     const durationMs=Math.max(60000,editTarget.endsAt-editTarget.startedAt);
     const totalMinutes=Math.floor(durationMs/60000);
-    daysInput.value=Math.floor(totalMinutes/1440)||'';
-    hoursInput.value=Math.floor((totalMinutes%1440)/60)||'';
-    minutesInput.value=totalMinutes%60||'';
+    setDurationValue(daysInput,Math.floor(totalMinutes/1440),'日');
+    setDurationValue(hoursInput,Math.floor((totalMinutes%1440)/60),'時間');
+    setDurationValue(minutesInput,totalMinutes%60,'分');
   }
   if(editTarget.imageMode==='custom'&&editTarget.imageSrc){
     imageModeInput.value='custom';
@@ -1636,7 +1675,7 @@ function openModal(editTarget=null){
   syncTypeUI();
   refreshPreviewPin();
 }
-function closeModal(){overlay.classList.add('hidden');modal.classList.add('hidden');document.body.style.overflow=''}
+function closeModal(){overlay.classList.add('hidden');modal.classList.add('hidden');document.body.style.overflow='';addBtn.classList.toggle('hidden',$('timerTab').getAttribute('aria-selected')!=='true'||!!state.selectedTimerId)}
 function openConfirm(title,text){confirmTitle.textContent=title||'確認';confirmText.textContent=text||'実行しますか？';confirmOverlay.classList.remove('hidden');return new Promise(resolve=>{state.confirmResolver=resolve})}
 function closeConfirm(result){confirmOverlay.classList.add('hidden');if(state.confirmResolver){const resolver=state.confirmResolver;state.confirmResolver=null;resolver(!!result)}}
 function formatDateWithWeekday(timestamp){const date=new Date(timestamp);const w=['日','月','火','水','木','金','土'][date.getDay()];const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,'0');const d=String(date.getDate()).padStart(2,'0');const hh=String(date.getHours()).padStart(2,'0');const mm=String(date.getMinutes()).padStart(2,'0');return `${y}/${m}/${d}(${w}) ${hh}:${mm}`}
@@ -1698,40 +1737,53 @@ function openMapViewer(timer){
   viewer.addEventListener('click',event=>{if(event.target===viewer)close()});
   document.body.appendChild(viewer);
 }
+function decorateTimerMap(element,timer){
+  element.style.backgroundImage=`url("${getTimerImageSrc(timer)}")`;
+  const pin=document.createElement('span');pin.className='map-pin hidden';element.appendChild(pin);
+  setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false);
+  if(timer.type==='tribe_tower'||timer.type==='generator'){
+    const badge=document.createElement('img');badge.className='overlay-badge';
+    badge.src=timer.type==='tribe_tower'?TRIBE_TOWER_ICON:GENERATOR_ICON;badge.alt='';element.appendChild(badge);
+  }
+}
+function showTimerList(){
+  state.selectedTimerId=null;$('timerDetail').classList.add('hidden');$('timerListPage').classList.remove('hidden');
+  addBtn.classList.toggle('hidden',$('timerTab').getAttribute('aria-selected')!=='true');render();window.scrollTo(0,0);
+}
+function showTimerDetail(id){
+  if(!state.timers.some(timer=>timer.id===id))return;
+  state.selectedTimerId=id;$('timerListPage').classList.add('hidden');$('timerDetail').classList.remove('hidden');
+  addBtn.classList.add('hidden');renderTimerDetail();window.scrollTo(0,0);
+}
+function renderTimerDetail(){
+  const timer=state.timers.find(timer=>timer.id===state.selectedTimerId);if(!timer)return showTimerList();
+  const remain=getRemainingMs(timer),coords=buildCoordTag(timer);
+  const fields=[['マップ',timer.map+(timer.serverNo?'：'+timer.serverNo:'')],['種類',buildTypeLabel(timer)],
+    ['期限',formatDateWithWeekday(timer.endsAt)],['座標',coords?coords.replace('座標:',''):'未設定'],['メモ',timer.memo||'未設定']];
+  const detail=$('timerDetail');
+  detail.innerHTML=`<button class="character-back" data-timer-back type="button">‹ タイマ一覧</button><button class="timer-detail-map" data-open-timer-map type="button" aria-label="マップを拡大"></button><div class="section-heading"><h1>${escapeHtml(timer.timerName||'未設定')}</h1></div><div class="character-fields"><div class="character-field"><div class="character-field-label">残り時間</div><div class="timer-detail-value remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</div></div>${fields.map(([label,value])=>`<div class="character-field"><div class="character-field-label">${label}</div><div class="timer-detail-value">${escapeHtml(value)}</div></div>`).join('')}</div><div class="timer-detail-actions"><button class="manager-small-btn" data-action="reset" data-id="${escapeHtml(timer.id)}" type="button">リセット</button><button class="manager-small-btn" data-action="edit" data-id="${escapeHtml(timer.id)}" type="button">編集</button><button class="character-delete" data-action="delete" data-id="${escapeHtml(timer.id)}" type="button">タイマを削除</button></div>`;
+  decorateTimerMap(detail.querySelector('.timer-detail-map'),timer);
+}
 function render(){
-  const sorted=getSortedTimers();
-  list.innerHTML='';
-  let active=0;
-  const manualMode=state.sortMode==='manual';
-  for(let i=0;i<sorted.length;i++){
-    const timer=sorted[i];
-    const remainMs=getRemainingMs(timer);
-    if(remainMs>0)active+=1;
-    const remainClass=getRemainClass(remainMs),imageSrc=getTimerImageSrc(timer),timerName=(timer.timerName||'').trim()||'未設定',coordTag=buildCoordTag(timer);
-    const card=document.createElement('article');
-    card.className=`card${remainMs<=0?' expired':''}`;
-    card.innerHTML=`<div class="img" role="button" tabindex="0" aria-label="マップを拡大"></div><div class="info"><div class="name-row"><div class="timer-name">${escapeHtml(timerName)}</div></div><div class="tags-row"><span class="tag map-tag">${escapeHtml(timer.map)}${timer.serverNo?`：${escapeHtml(timer.serverNo)}`:''}</span><span class="tag type-tag">${escapeHtml(buildTypeLabel(timer))}</span>${coordTag?`<span class="tag coord-tag">${escapeHtml(coordTag)}</span>`:''}</div><div class="collapse-row"><div class="small"><span>崩壊</span><strong>${formatDateWithWeekday(timer.endsAt)}</strong></div></div><div class="remain"><span class="remain-label">残り</span><span class="remain-value ${remainClass}">${formatRemaining(remainMs)}</span></div><div class="actions">${manualMode?`<div class="move-actions"><button class="action-btn move-btn" type="button" data-action="move-up" data-id="${timer.id}" ${i===0?'disabled':''}>↑</button><button class="action-btn move-btn" type="button" data-action="move-down" data-id="${timer.id}" ${i===sorted.length-1?'disabled':''}>↓</button></div>`:''}<button class="action-btn reset-btn" type="button" data-action="reset" data-id="${timer.id}">リセット</button><button class="action-btn edit-btn" type="button" data-action="edit" data-id="${timer.id}">編集</button><button class="action-btn delete-btn" type="button" data-action="delete" data-id="${timer.id}">削除</button></div></div>`;
-    const imgEl=card.querySelector('.img');
-    if(imageSrc)imgEl.style.backgroundImage=`url("${imageSrc}")`;
-    imgEl.addEventListener('click',()=>openMapViewer(timer));
-    imgEl.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openMapViewer(timer)}});
-    const pin=document.createElement('div');
-    pin.className='map-pin card-pin hidden';
-    imgEl.appendChild(pin);
-    setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false);
-    if(timer.type==='tribe_tower'){const badge=document.createElement('img');badge.className='overlay-badge';badge.src=TRIBE_TOWER_ICON;badge.alt='トライブタワー';imgEl.appendChild(badge)}
-    if(timer.type==='generator'){const badge=document.createElement('img');badge.className='overlay-badge';badge.src=GENERATOR_ICON;badge.alt='ジェネレータ';imgEl.appendChild(badge)}
-    if(timer.memo&&timer.memo.trim()){const memo=document.createElement('div');memo.className='small';memo.style.gridColumn='1 / -1';memo.innerHTML=`<span>メモ</span><strong>${escapeHtml(timer.memo)}</strong>`;card.querySelector('.info').appendChild(memo)}
-    list.appendChild(card)
+  const sorted=getSortedTimers();list.innerHTML='';let active=0;
+  for(const timer of sorted){
+    const remain=getRemainingMs(timer);if(remain>0)active++;
+    const row=document.createElement('div');row.className='timer-list-item';row.dataset.id=timer.id;
+    row.innerHTML=`<button class="timer-select-card${remain<=0?' expired':''}" type="button" data-timer="${escapeHtml(timer.id)}"><span class="timer-map-thumbnail" aria-hidden="true"></span><span class="timer-summary"><span class="timer-name">${escapeHtml(timer.timerName||'未設定')}</span><span class="timer-meta">${escapeHtml(timer.map)}${timer.serverNo?'：'+escapeHtml(timer.serverNo):''}</span><span class="timer-meta">${escapeHtml(buildTypeLabel(timer))}</span><span class="remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</span></span><span class="character-chevron" aria-hidden="true">›</span></button><div class="character-drag-handle timer-reorder" data-timer-drag="${escapeHtml(timer.id)}" role="button" tabindex="0" aria-label="長押しでタイマを並び替え、矢印キーで上下へ移動">☰</div>`;
+    decorateTimerMap(row.querySelector('.timer-map-thumbnail'),timer);list.appendChild(row);
   }
   if(activeCount)activeCount.textContent=String(active);
-  emptyState.classList.toggle('hidden',sorted.length>0)
+  $('timerCount').textContent=sorted.length+'件';emptyState.classList.toggle('hidden',sorted.length>0);
+  if(state.selectedTimerId)renderTimerDetail();
 }
+
 function buildTimerPayload(now,keepId=null,existingSortOrder=null){
   const map=timerMapValue(),type=typeSelect.value,memo=memoInput.value.trim(),timerName=timerNameInput.value.trim()||'未設定',lat=normalizeCoord(latInput.value),lng=normalizeCoord(lngInput.value),durationMs=getDurationMsFromInput(type);
   if(!map){alert('マップを選択してください');return null}
   if(durationMs<=0){alert('タイマーは1分以上で入力してください');return null}
-  return {id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,showPin:showPinInput?showPinInput.checked:true,type,material:type==='building'?getSelectedMaterial():null,memo,startedAt:now,endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
+  const current=keepId?state.timers.find(timer=>timer.id===keepId):null;
+  const preserveDeadline=current&&Math.floor((current.endsAt-current.startedAt)/60000)*60000===durationMs;
+  return {...current,id:keepId||generateId(),timerName,map,serverNo:$('timerServerNo').value.trim(),lat,lng,showPin:showPinInput?showPinInput.checked:true,type,material:type==='building'?getSelectedMaterial():null,memo,startedAt:preserveDeadline?current.startedAt:now,endsAt:preserveDeadline?current.endsAt:now+durationMs,sortOrder:existingSortOrder??getNextSortOrder(),imageMode:imageModeInput.value==='custom'&&state.pendingCustomImage?'custom':'default',imageSrc:imageModeInput.value==='custom'&&state.pendingCustomImage?state.pendingCustomImage:''}
 }
 function addTimerFromForm(event){
   event.preventDefault();
@@ -1765,6 +1817,7 @@ function swapSortOrder(id,direction){
   save();render();
 }
 function bindListActions(event){
+  const selected=event.target.closest('[data-timer]');if(selected)return showTimerDetail(selected.dataset.timer);
   const button=event.target.closest('button[data-action]');
   if(!button)return;
   const action=button.dataset.action,id=button.dataset.id;
@@ -1777,7 +1830,7 @@ function bindListActions(event){
 function handleImageChange(event){const file=event.target.files&&event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{state.pendingCustomImage=String(reader.result||'');imageModeInput.value='custom';setPreviewImage(state.pendingCustomImage);refreshPreviewPin()};reader.readAsDataURL(file)}
 function handleSortChange(){state.sortMode=sortSelect&&sortSelect.value?sortSelect.value:'dueSoon';save();render()}
 function bindMaterialEvents(){document.querySelectorAll('input[name="material"]').forEach(r=>r.addEventListener('change',updateMaterialDays))}
-function startTicker(){render();setInterval(render,30000)}
+function startTicker(){render();setInterval(()=>{if(!list.querySelector('.dragging'))render()},30000)}
 function bindEvents(){
   if(addBtn)addBtn.addEventListener('click',()=>openModal());
   closeModalBtn.addEventListener('click',closeModal);
@@ -1785,13 +1838,18 @@ function bindEvents(){
   typeSelect.addEventListener('change',syncTypeUI);
   timerForm.addEventListener('submit',addTimerFromForm);
   list.addEventListener('click',bindListActions);
+  list.addEventListener('keydown',event=>{const handle=event.target.closest('[data-timer-drag]');if(!handle||!['ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();const id=handle.dataset.timerDrag,ordered=getSortedTimers(),index=ordered.findIndex(timer=>timer.id===id),direction=event.key==='ArrowUp'?-1:1;if(index+direction<0||index+direction>=ordered.length)return;ordered.forEach((timer,i)=>{timer.sortOrder=i});state.sortMode='manual';sortSelect.value='manual';swapSortOrder(id,direction);[...list.querySelectorAll('[data-timer-drag]')].find(item=>item.dataset.timerDrag===id)?.focus()});
+  $('timerDetail').addEventListener('click',event=>{if(event.target.closest('[data-timer-back]'))return showTimerList();if(event.target.closest('[data-open-timer-map]'))return openMapViewer(state.timers.find(timer=>timer.id===state.selectedTimerId));bindListActions(event)});
   mapSelect.addEventListener('change',syncTimerServerChoice);
   $('customMapInput').addEventListener('input',()=>{if(mapSelect.value==='__custom__')refreshPreviewPin()});
   latInput.addEventListener('input',refreshPreviewPin);
   lngInput.addEventListener('input',refreshPreviewPin);
   if(showPinInput)showPinInput.addEventListener('change',refreshPreviewPin);
   imageInput.addEventListener('change',handleImageChange);
-  imagePreviewButton.addEventListener('click',()=>imageInput.click());
+  imagePreviewButton.addEventListener('click',placePreviewPin);
+  imagePreviewButton.addEventListener('keydown',movePreviewPin);
+  $('changeMapImage').addEventListener('click',()=>imageInput.click());
+  $('clearMapPin').addEventListener('click',()=>{latInput.value='';lngInput.value='';showPinInput.checked=false;refreshPreviewPin()});
   confirmCancel.addEventListener('click',()=>closeConfirm(false));
   confirmOk.addEventListener('click',()=>closeConfirm(true));
   confirmOverlay.addEventListener('click',e=>{if(e.target===confirmOverlay)closeConfirm(false)});
@@ -1800,6 +1858,7 @@ function bindEvents(){
 }
 function init(){
   load();
+  setupDurationSelects();
   if(sortSelect)sortSelect.value=state.sortMode;
   bindEvents();
   timerPush=window.ARKPush?.init({getTimers:()=>JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')})||null;
@@ -1957,7 +2016,7 @@ init();
 
  function renderDetail(){
   const c=selected();if(!c)return showList();
-  $('characterDetail').innerHTML=`<button class="character-back" data-back type="button">‹ キャラ一覧</button>${imageBlock(c,'appearance','見た目画像')}<div class="section-heading"><h1>${esc(c.name)}</h1></div><div class="character-fields">${Object.entries(labels).map(([key,label])=>`<div class="character-field"><div class="character-field-label">${label}</div><div class="character-field-row"><span class="character-field-value">${key==='tribeMember'?(c.tribeMember?'所属':'未所属'):esc(c[key]||'未設定')}</span><div class="character-field-buttons">${key!=='map'&&key!=='tribeMember'?`<button type="button" class="manager-small-btn" data-copy="${key}" aria-label="${label}をコピー" ${c[key]?'':'disabled'}>コピー</button>`:''}<button type="button" class="manager-small-btn" data-edit="${key}" aria-label="${label}を編集">編集</button></div></div>${key==='eosId'?`<p class="eos-help">${help}</p>`:''}</div>`).join('')}</div>${tribeMembershipPanel(c)}${levelPanel(c)}${extNotesPanel(c)}<div class="implant-section"><h2>インプラント画像</h2>${imageBlock(c,'implant','インプラント画像')}</div><button class="character-delete" type="button" data-delete-character>キャラを削除</button>`;
+  $('characterDetail').innerHTML=`<button class="character-back" data-back type="button">‹ キャラ一覧</button>${imageBlock(c,'appearance','見た目画像')}<div class="section-heading"><h1>${esc(c.name)}</h1></div><div class="character-fields">${Object.entries(labels).map(([key,label])=>`<div class="character-field"><div class="character-field-label">${label}</div>${key==='eosId'?`<p class="eos-help">${help}</p>`:''}<div class="character-field-row"><span class="character-field-value">${key==='tribeMember'?(c.tribeMember?'所属':'未所属'):esc(c[key]||'未設定')}</span><div class="character-field-buttons">${key!=='map'&&key!=='tribeMember'?`<button type="button" class="manager-small-btn" data-copy="${key}" aria-label="${label}をコピー" ${c[key]?'':'disabled'}>コピー</button>`:''}<button type="button" class="manager-small-btn" data-edit="${key}" aria-label="${label}を編集">編集</button></div></div></div>`).join('')}</div>${tribeMembershipPanel(c)}${levelPanel(c)}${extNotesPanel(c)}<div class="implant-section"><h2>インプラント画像</h2>${imageBlock(c,'implant','インプラント画像')}</div><button class="character-delete" type="button" data-delete-character>キャラを削除</button>`;
  }
  function showList(){
   selectedId=null;
@@ -1972,12 +2031,12 @@ init();
   page.style.display='none';void page.offsetHeight;page.style.removeProperty('display');
  }
  function showDetail(id){selectedId=id;$('characterListPage').classList.add('hidden');$('characterDetail').classList.remove('hidden');$('addCharacter').classList.add('hidden');renderDetail();window.scrollTo(0,0)}
- function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
+ function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars||!!state.selectedTimerId);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
  function formField(key,value=''){
   const label=labels[key];
   if(key==='tribeMember')return `<label class="field tribe-check"><input name="tribeMember" type="checkbox" value="yes" ${value===true||value==='yes'?'checked':''}><span>トライブに所属している</span></label>`;
   if(key==='map')return `<label class="field"><span>在住マップ</span><select name="mapChoice" id="characterMapChoice">${serverChoiceOptions(value,selected()?.serverNo||'')}</select></label>`;
-  return `<label class="field"><span>${label}${key==='name'?'（必須）':''}</span><input name="${key}" type="${key==='level'?'number':'text'}" ${key==='level'?'min="1" step="1" inputmode="numeric"':''} ${key==='name'?'required maxlength="100"':''} value="${esc(value)}" autocomplete="off">${key==='eosId'?`<small class="eos-help">${help}</small>`:''}</label>`;
+  return `<label class="field"><span>${label}${key==='name'?'（必須）':''}</span>${key==='eosId'?`<small class="eos-help">${help}</small>`:''}<input name="${key}" type="${key==='level'?'number':'text'}" ${key==='level'?'min="1" step="1" inputmode="numeric"':''} ${key==='name'?'required maxlength="100"':''} value="${esc(value)}" autocomplete="off"></label>`;
  }
 
  function formImageInner(field,label){const src=pendingFormImages[field];return `<span class="form-image-label">${label}</span><button class="form-image-picker" data-form-upload="${field}" type="button">${src?`<img src="${esc(src)}" alt="${label}"><span>画像を変更</span>`:`<span class="form-image-placeholder">＋ 画像を選択</span>`}</button>${src?`<button class="form-image-remove" data-form-remove="${field}" type="button">画像を削除</button>`:''}`}
@@ -2086,7 +2145,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  function compressImage(file){return new Promise((resolve,reject)=>{if(!file.type.startsWith('image/'))return reject(Error('image'));const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{try{const scale=Math.min(1,1200/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.8))}catch(e){reject(e)}finally{URL.revokeObjectURL(url)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('decode'))};img.src=url})}
  $('characterImageInput').addEventListener('change',async e=>{const file=e.target.files[0],field=imageField;if(!file)return;try{const src=field==='appearance'?await clearOuterDarkBackground(await readAppearanceImage(file)):await compressImage(file);if(imageContext==='form'){pendingFormImages[field]=src;refreshFormImage(field);return}const c=selected();if(!c)return;const current=records.find(r=>r.id===c.id);if(current)await persistChange({...current,[field]:src})}catch(e){toast('画像を読み込めませんでした。JPEG・PNGなどで再選択してください')}});
  $('characterFormFields').addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;if(button.dataset.formUpload)return upload(button.dataset.formUpload,'form');if(button.dataset.formRemove){pendingFormImages[button.dataset.formRemove]='';refreshFormImage(button.dataset.formRemove)}});
- $('openLevelSettings').addEventListener('click',openLevelSettings);
+ $('openLevelSettings')?.addEventListener('click',openLevelSettings);
  $('closeLevelSettings').addEventListener('click',()=>closeDialog($('levelSettingsDialog')));
  $('levelRuleType').addEventListener('change',syncRuleForm);syncRuleForm();
  $('levelRuleCancel').addEventListener('click',()=>{$('levelRuleForm').reset();$('levelRuleEditId').value='';$('levelRuleCancel').classList.add('hidden');syncRuleForm()});
@@ -2134,6 +2193,11 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
    else localStorage.setItem(CHARACTER_STORAGE_KEY,JSON.stringify(next));
    records=next;renderCharacters();
   }catch(e){records=previous;renderCharacters();toast('並び順を保存できませんでした')}
+ });
+ installReorder(list,'[data-timer-drag]','.timer-list-item',elements=>{
+  const next=elements.map((element,index)=>({...state.timers.find(timer=>timer.id===element.dataset.id),sortOrder:index}));
+  if(next.length!==state.timers.length||next.some(timer=>!timer.id))return render();
+  state.timers=next;state.sortMode='manual';sortSelect.value='manual';save();render();
  });
  installReorder($('serverSettingsList'),'[data-server-drag]','.saved-server-row',elements=>{
   const next=elements.map(el=>savedServers[Number(el.dataset.serverIndex)]);
