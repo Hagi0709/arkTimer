@@ -77,6 +77,12 @@ test('任意日数と毎時通知をタイマー別に同期し、未対応サ�
   assert.equal(await old.controller.markChanged(),false);assert.equal(old.calls.length,0);assert.equal(old.storage.get(PENDING),'1');
 });
 
+test('任意指定がOFFの保存済み日数を通知へ混ぜず、7〜1日前の選択だけを同期',async()=>{
+  const h=harness();h.timersData[0].notificationSettings={enabled:true,days:[7,1],hours:[],hourlyWithinDay:true,customDays:[14,30]};
+  assert.equal(await h.controller.markChanged(),true);
+  assert.deepEqual(h.calls[0].body.timers[0].notificationSettings,{enabled:true,days:[7,1],hours:[],hourlyWithinDay:true});
+});
+
 test('日数なしの毎時通知を同期でき、不正な任意日数は未同期として保つ',async()=>{
   const h=harness();h.timersData[0].notificationSettings={enabled:true,days:[],hours:[],hourlyWithinDay:true};
   assert.equal(await h.controller.markChanged(),true);

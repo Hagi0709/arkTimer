@@ -71,6 +71,8 @@
           !Array.isArray(settings.hours) || settings.hours.some(n => !Number.isInteger(n) || n < 1 || n > 23) ||
           (settings.hourlyWithinDay !== undefined && typeof settings.hourlyWithinDay !== 'boolean')) fail();
         if (settings.enabled && !settings.days.length && !settings.hours.length && !settings.hourlyWithinDay) fail();
+        if (settings.customDays !== undefined && (!Array.isArray(settings.customDays) || settings.customDays.some(n =>
+          !Number.isSafeInteger(n) || n < 8 || !Number.isSafeInteger(n * 86400000)))) fail();
       }
     });
     list(data.servers, s => { string(s.map, 80); string(s.serverNo, 100); if (s.memo !== undefined) string(s.memo); },
