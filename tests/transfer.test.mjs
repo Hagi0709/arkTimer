@@ -58,6 +58,18 @@ test('任意指定をOFFにした日数も保持して引き継ぎ、通知対�
   }
 });
 
+test('1週間前以前の項目ごとのON/OFFと日数、標準チェックを保持して引き継ぐ',()=>{
+  const source=fixture();source.timers[0].notificationSettings={enabled:true,days:[1,7],hours:[],hourlyWithinDay:true,presetDays:[1],
+    customNotifications:{enabled:true,entries:[{days:7,enabled:true},{days:999,enabled:false}]}};
+  const backup=api.createBackup(source),next=api.plan(empty(),api.parse(JSON.stringify(backup)));
+  assert.deepEqual(plain(next.timers[0].notificationSettings),source.timers[0].notificationSettings);
+  for(const customNotifications of [null,{enabled:1,entries:[]},{enabled:true,entries:[{days:6,enabled:true}]},
+    {enabled:false,entries:[{days:14,enabled:'false'}]},{enabled:true,entries:[{days:Number.MAX_SAFE_INTEGER,enabled:true}]}]){
+    const bad=plain(backup);bad.data.timers[0].notificationSettings.customNotifications=customNotifications;assert.throws(()=>api.parse(JSON.stringify(bad)));
+  }
+  const bad=plain(backup);bad.data.timers[0].notificationSettings.presetDays=[8];assert.throws(()=>api.parse(JSON.stringify(bad)));
+});
+
 test('旧ファイルの通知時刻を追加タイマーへ移し、移行先の共通設定に左右されない',()=>{
   const source=fixture(),current=empty();current.notificationSettings={enabled:false,days:[7],hours:[]};current.hasNotificationSettings=true;
   const next=api.plan(current,api.createBackup(source));

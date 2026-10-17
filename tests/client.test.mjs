@@ -83,6 +83,15 @@ test('任意指定がOFFの保存済み日数を通知へ混ぜず、7〜1日前
   assert.deepEqual(h.calls[0].body.timers[0].notificationSettings,{enabled:true,days:[7,1],hours:[],hourlyWithinDay:true});
 });
 
+test('追加した日数ごとのチェック状態を同期用の有効な日数に分け、画面用設定は送らない',async()=>{
+  const h=harness();h.timersData[0].notificationSettings={enabled:true,days:[1,14],hours:[],hourlyWithinDay:true,presetDays:[1],
+    customNotifications:{enabled:true,entries:[{days:14,enabled:true},{days:999,enabled:false}]}};
+  assert.equal(await h.controller.markChanged(),true);
+  assert.deepEqual(h.calls[0].body.timers[0].notificationSettings,{enabled:true,days:[1,14],hours:[],hourlyWithinDay:true});
+  h.timersData[0].notificationSettings.days=[1];await h.controller.markChanged();
+  assert.deepEqual(h.calls[1].body.timers[0].notificationSettings.days,[1]);
+});
+
 test('日数なしの毎時通知を同期でき、不正な任意日数は未同期として保つ',async()=>{
   const h=harness();h.timersData[0].notificationSettings={enabled:true,days:[],hours:[],hourlyWithinDay:true};
   assert.equal(await h.controller.markChanged(),true);

@@ -1279,7 +1279,8 @@ body{
 .timer-specific-notifications .timer-notify-grid .timer-notify-choice{padding:9px 5px;gap:5px;white-space:nowrap}
 .timer-notify-days{display:grid;gap:8px}
 .timer-notify-day-row{display:flex;align-items:center;gap:10px;min-width:0}
-.timer-notify-day-row input{min-width:0;flex:1;width:0}
+.timer-notify-day-row select{min-width:0;flex:1;width:0}
+.timer-notify-day-row [data-notify-day-enabled]{flex:0 0 18px;width:18px;height:18px;min-width:18px;padding:0;margin:0;accent-color:#4e9dff}
 .timer-notify-day-row span{white-space:nowrap;font-size:13px}
 .timer-notify-day-row button{flex:none;width:32px;height:32px;padding:0;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.05);color:var(--muted);font-size:20px}
 .timer-notify-day-row button:disabled{visibility:hidden}
@@ -1593,7 +1594,7 @@ body{
           <div id="timerNotificationChoices">
             <div id="timerNotificationPresetDays" class="timer-notify-grid"></div>
             <label class="timer-notify-choice"><input id="timerNotificationHourly" type="checkbox">1時間おきに通知（1日前以降）</label>
-            <label class="timer-notify-choice"><input id="timerNotificationCustomEnabled" type="checkbox" aria-controls="timerNotificationCustomChoices">8日前以前の通知を指定</label>
+            <label class="timer-notify-choice"><input id="timerNotificationCustomEnabled" type="checkbox" aria-controls="timerNotificationCustomChoices">1週間前以前の通知</label>
             <div id="timerNotificationCustomChoices" class="hidden"><div id="timerNotificationDays" class="timer-notify-days"></div></div>
           </div>
           <p id="timerNotificationHint">端末の通知は、一覧の「通知設定」で許可・有効化してください。</p>
@@ -1698,18 +1699,24 @@ function legacyTimerNotificationSettings(){
   return {enabled:!!(days.length||hours.length),days,hours};
 }
 function validNotificationDay(value){return Number.isSafeInteger(value)&&value>=1&&Number.isSafeInteger(value*86400000)}
-function validCustomNotificationDay(value){return validNotificationDay(value)&&value>=8}
+function validCustomNotificationDay(value){return validNotificationDay(value)&&value>=7}
 function timerNotificationDayInputs(){return [...$('timerNotificationDays').querySelectorAll('[data-notify-day]')]}
 function timerNotificationPresetInputs(){return [...$('timerNotificationPresetDays').querySelectorAll('[data-notify-preset]')]}
-function appendTimerNotificationDay(value=''){
+function appendTimerNotificationDay(value='',enabled=true){
   const row=document.createElement('div');row.className='timer-notify-day-row';
-  row.innerHTML=`<input type="number" min="8" step="1" inputmode="numeric" data-notify-day placeholder="8以上の日数" value="${validCustomNotificationDay(Number(value))?Number(value):''}"><span>日前</span><button type="button" data-remove-notify-day aria-label="この通知日数を削除">×</button>`;
+  const day=validCustomNotificationDay(Number(value))?Number(value):null;
+  // Keep a previously saved larger value without offering it for new selections.
+  const legacyOption=day>999?`<option value="${day}" selected disabled>${day}（保存済み）</option>`:'';
+  row.innerHTML=`<input type="checkbox" data-notify-day-enabled${enabled?' checked':''}><select data-notify-day><option value="">選択</option>${Array.from({length:993},(_,index)=>index+7).map(n=>`<option value="${n}"${day===n?' selected':''}>${n}</option>`).join('')}${legacyOption}</select><span>日前</span><button type="button" data-remove-notify-day aria-label="この通知日数を削除">×</button>`;
+  row.querySelector('[data-notify-day]').dataset.savedDay=day??'';
   $('timerNotificationDays').appendChild(row);
 }
 function syncTimerNotificationDayInputs(){
   const inputs=timerNotificationDayInputs();if(!inputs.length||inputs.at(-1).value.trim()!=='')appendTimerNotificationDay();
   timerNotificationDayInputs().forEach((input,index,all)=>{
     input.setAttribute('aria-label',`${index+1}件目の通知日数`);input.disabled=!$('timerNotificationEnabled').checked||!$('timerNotificationCustomEnabled').checked;
+    const toggle=input.parentElement.querySelector('[data-notify-day-enabled]');
+    toggle.setAttribute('aria-label',`${index+1}件目の通知を有効にする`);toggle.disabled=input.disabled||input.value==='';toggle.style.visibility=input.value===''?'hidden':'';
     input.parentElement.querySelector('[data-remove-notify-day]').disabled=input===all.at(-1)&&input.value==='';
   });
 }
@@ -1721,25 +1728,29 @@ function syncTimerNotificationUI(){
   $('timerNotificationCustomChoices').classList.toggle('hidden',!enabled||!$('timerNotificationCustomEnabled').checked);
   timerNotificationPresetInputs().forEach(input=>input.disabled=!enabled);
   let deviceEnabled=false;try{deviceEnabled=!!(window.ARKPush?.getSettings?.()||JSON.parse(localStorage.getItem('arkTimer_notification_settings_v1')||'null'))?.enabled}catch(e){}
-  $('timerNotificationHint').classList.toggle('hidden',enabled||deviceEnabled);
+  $('timerNotificationHint').classList.toggle('hidden',deviceEnabled);
   syncTimerNotificationDayInputs();
 }
 function setTimerNotificationForm(timer=null){
   const settings=timer?(timer.notificationSettings??legacyTimerNotificationSettings()):{enabled:true,days:[1],hours:[]};
   $('timerNotificationEnabled').checked=settings.enabled;
-  $('timerNotificationPresetDays').innerHTML=Array.from({length:7},(_,index)=>7-index).map(day=>`<label class="timer-notify-choice"><input type="checkbox" data-notify-preset value="${day}"${settings.days.includes(day)?' checked':''}>${day}日前</label>`).join('');
+  const presetDays=settings.presetDays??settings.days.filter(day=>day<=7);
+  $('timerNotificationPresetDays').innerHTML=Array.from({length:7},(_,index)=>7-index).map(day=>`<label class="timer-notify-choice"><input type="checkbox" data-notify-preset value="${day}"${presetDays.includes(day)?' checked':''}>${day}日前</label>`).join('');
   $('timerNotificationHourly').checked=settings.hourlyWithinDay??!!settings.hours.length;
-  $('timerNotificationCustomEnabled').checked=settings.days.some(day=>day>=8);
+  const custom=settings.customNotifications??{enabled:settings.days.some(day=>day>=8),entries:[...new Set([...settings.days.filter(day=>day>=8),...(settings.customDays||[])])].map(days=>({days,enabled:true}))};
+  $('timerNotificationCustomEnabled').checked=custom.enabled;
   $('timerNotificationDays').innerHTML='';
-  [...new Set([...settings.days.filter(validCustomNotificationDay),...(settings.customDays||[])])].forEach(day=>appendTimerNotificationDay(day));appendTimerNotificationDay();
+  custom.entries.forEach(entry=>appendTimerNotificationDay(entry.days,entry.enabled));appendTimerNotificationDay();
   syncTimerNotificationUI();
 }
 function readTimerNotificationForm(){
-  const enabled=$('timerNotificationEnabled').checked,customEnabled=$('timerNotificationCustomEnabled').checked,values=timerNotificationDayInputs().map(input=>input.value.trim()).filter(Boolean);
-  if(enabled&&customEnabled&&(!values.length||values.some(value=>!validCustomNotificationDay(Number(value))))){alert('8日以上の通知日数を整数で入力してください');return null}
-  const customDays=[...new Set(values.map(Number).filter(validCustomNotificationDay))];
-  const days=timerNotificationPresetInputs().filter(input=>input.checked).map(input=>Number(input.value));
-  const settings={enabled,days:[...new Set([...days,...(customEnabled?customDays:[])])],hours:[],hourlyWithinDay:$('timerNotificationHourly').checked,...(customDays.length?{customDays}:{})};
+  const enabled=$('timerNotificationEnabled').checked,customEnabled=$('timerNotificationCustomEnabled').checked,inputs=timerNotificationDayInputs().filter(input=>input.value!=='');
+  const valid=input=>validCustomNotificationDay(Number(input.value))&&(Number(input.value)<=999||Number(input.dataset.savedDay)===Number(input.value));
+  if(enabled&&customEnabled&&(!inputs.length||inputs.some(input=>!valid(input)))){alert('通知日数を7〜999日から選択してください');return null}
+  const entries=inputs.filter(valid).map(input=>({days:Number(input.value),enabled:input.parentElement.querySelector('[data-notify-day-enabled]').checked}));
+  const presetDays=timerNotificationPresetInputs().filter(input=>input.checked).map(input=>Number(input.value));
+  const settings={enabled,days:[...new Set([...presetDays,...(customEnabled?entries.filter(entry=>entry.enabled).map(entry=>entry.days):[])])],hours:[],hourlyWithinDay:$('timerNotificationHourly').checked,
+    ...(entries.length||customEnabled?{presetDays,customNotifications:{enabled:customEnabled,entries}}:{})};
   if(enabled&&!settings.days.length&&!settings.hourlyWithinDay){alert('通知日数または1時間おきの通知を指定してください');return null}
   return settings;
 }
@@ -2006,6 +2017,7 @@ function bindEvents(){
   $('timerNotificationEnabled').addEventListener('change',syncTimerNotificationUI);
   $('timerNotificationCustomEnabled').addEventListener('change',syncTimerNotificationUI);
   $('timerNotificationDays').addEventListener('input',syncTimerNotificationDayInputs);
+  $('timerNotificationDays').addEventListener('change',syncTimerNotificationDayInputs);
   $('timerNotificationDays').addEventListener('click',event=>{const button=event.target.closest('[data-remove-notify-day]');if(!button||button.disabled)return;button.parentElement.remove();syncTimerNotificationDayInputs()});
   timerForm.addEventListener('submit',addTimerFromForm);
   list.addEventListener('click',bindListActions);

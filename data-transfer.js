@@ -73,6 +73,12 @@
         if (settings.enabled && !settings.days.length && !settings.hours.length && !settings.hourlyWithinDay) fail();
         if (settings.customDays !== undefined && (!Array.isArray(settings.customDays) || settings.customDays.some(n =>
           !Number.isSafeInteger(n) || n < 8 || !Number.isSafeInteger(n * 86400000)))) fail();
+        if (settings.presetDays !== undefined && (!Array.isArray(settings.presetDays) || settings.presetDays.some(n => !Number.isInteger(n) || n < 1 || n > 7))) fail();
+        if (settings.customNotifications !== undefined) {
+          const custom=settings.customNotifications;
+          if (!object(custom) || typeof custom.enabled !== 'boolean' || !Array.isArray(custom.entries) || custom.entries.some(entry=>
+            !object(entry) || typeof entry.enabled !== 'boolean' || !Number.isSafeInteger(entry.days) || entry.days < 7 || !Number.isSafeInteger(entry.days*86400000))) fail();
+        }
       }
     });
     list(data.servers, s => { string(s.map, 80); string(s.serverNo, 100); if (s.memo !== undefined) string(s.memo); },
