@@ -7,8 +7,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0c1e2d">
-  <link rel="apple-touch-icon" href="./ark-manager-app-icon.png">
-  <link rel="icon" href="./ark-manager-app-icon.png">
+  <link rel="apple-touch-icon" href="./ark-manager-app-icon-asa.png">
+  <link rel="icon" href="./ark-manager-app-icon-asa.png">
   <style>
 :root{
   --bg:#08111c;
@@ -1313,11 +1313,13 @@ body{
 .time-grid select{min-width:0;padding:12px 6px}
 @media(max-width:380px){.timer-list-heading{gap:6px}.timer-list-heading h1{font-size:20px}.timer-list-heading-actions{gap:4px}.timer-list-heading #sortSelect{width:112px;padding:7px 5px;font-size:10px}.timer-select-card{gap:8px;padding:8px}.timer-map-thumbnail{width:66px;height:78px;flex-basis:66px}.timer-summary .timer-name{font-size:15px}.timer-summary .remain-value{font-size:11px}.timer-meta{font-size:10px}}
 /* Keep both navigation tabs, and each detail's back button, above scrolling content. */
-:root{--app-header-height:calc(64px + env(safe-area-inset-top));--app-tabs-height:40px;--detail-back-height:48px}
+:root{--manager-control-height:32px;--app-header-height:calc(64px + env(safe-area-inset-top));--app-tabs-height:calc(var(--manager-control-height) + 12px);--detail-back-height:48px}
 .app-shell{padding-top:calc(var(--app-header-height) + var(--app-tabs-height))}
 .topbar{height:var(--app-header-height);padding-top:calc(4px + env(safe-area-inset-top));padding-bottom:4px}
 .manager-tabs{position:fixed;top:var(--app-header-height);left:0;right:0;margin:0 auto;width:100%;max-width:820px;height:var(--app-tabs-height);padding:6px 16px;z-index:19;border-bottom:1px solid rgba(113,211,224,.12);--chrome-y:calc(0px - var(--app-header-height))}
-.manager-tabs button{height:28px;padding:3px 12px;line-height:20px;font-size:13px;border-radius:10px}
+.manager-tabs button{padding:0 12px;line-height:1.2;font-size:13px;border-radius:10px}
+.manager-tabs button,.manager-settings-bottom .manager-small-btn,#recoveryRequest,#openUtcConverter{height:var(--manager-control-height);min-height:var(--manager-control-height);padding-top:0;padding-bottom:0;display:flex;align-items:center;justify-content:center;white-space:nowrap}
+@media(max-width:390px){:root{--manager-control-height:28px}}
 #characterDetail,#timerDetail{padding-top:var(--detail-back-height)}
 #characterDetail>.character-back,#timerDetail>.character-back{position:fixed;top:calc(var(--app-header-height) + var(--app-tabs-height));left:0;right:0;margin:0 auto;width:100%;max-width:820px;height:var(--detail-back-height);padding:0 16px;display:flex;align-items:center;z-index:18;background:linear-gradient(115deg,#0a1826,#0d2530);border-bottom:1px solid var(--line);text-align:left}
 /* Crop only the generated image's transparent padding in the layout. */
@@ -1338,10 +1340,10 @@ body{
     </header>
 
     <nav class="manager-tabs" aria-label="管理機能">
-      <button id="characterTab" class="selected" role="tab" aria-selected="true" aria-controls="characterPage">キャラ管理</button>
-      <button id="timerTab" role="tab" aria-selected="false" aria-controls="timerPage">タイマ管理</button>
+      <button id="timerTab" class="selected" role="tab" aria-selected="true" aria-controls="timerPage">タイマ管理</button>
+      <button id="characterTab" role="tab" aria-selected="false" aria-controls="characterPage">キャラ管理</button>
     </nav>
-    <main id="characterPage" class="content" role="tabpanel" aria-labelledby="characterTab">
+    <main id="characterPage" class="content hidden" role="tabpanel" aria-labelledby="characterTab">
       <div id="characterListPage">
         <div class="section-heading"><h1>キャラ一覧</h1><div class="character-heading-actions"><button id="recoveryRequest" type="button" class="manager-small-btn">復旧申請</button><button id="openUtcConverter" type="button" class="manager-small-btn">UTC時間</button><span id="characterCount">0人</span></div></div>
         <section id="characterEmpty" class="empty-state"><div class="empty-icon">◉</div><h2>キャラがありません</h2><p>右下の＋ボタンから追加してください</p></section>
@@ -1349,7 +1351,7 @@ body{
       </div>
       <section id="characterDetail" class="hidden"></section>
     </main>
-    <button id="addCharacter" class="fab" type="button" aria-label="キャラ追加"></button>
+    <button id="addCharacter" class="fab hidden" type="button" aria-label="キャラ追加"></button>
     <dialog id="characterDialog" class="character-dialog" aria-labelledby="characterDialogTitle">
       <div class="modal-header"><h2 id="characterDialogTitle">キャラ追加</h2><button id="closeCharacterDialog" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
       <form id="characterForm" class="form"><div id="characterFormFields"></div><button id="characterSubmit" class="submit-btn" type="submit">保存</button></form>
@@ -1365,7 +1367,7 @@ body{
     <input id="characterImageInput" class="hidden-input" type="file" accept="image/*">
     <dialog id="characterViewer" class="character-viewer" aria-label="画像を拡大"><button id="closeCharacterViewer" class="icon-btn" type="button" aria-label="閉じる">×</button><img id="characterViewerImage" alt=""></dialog>
     <div id="managerToast" class="manager-toast hidden" role="status"></div>
-    <main id="timerPage" class="content hidden" role="tabpanel" aria-labelledby="timerTab">
+    <main id="timerPage" class="content" role="tabpanel" aria-labelledby="timerTab">
       <div id="timerListPage">
       <div class="section-heading timer-list-heading"><h1>タイマ一覧</h1><div class="timer-list-heading-actions">
         <select id="sortSelect" aria-label="並び順">
@@ -1421,7 +1423,7 @@ body{
         <section id="transferNotificationHint" class="hidden"><p>通知を利用する場合は、この端末で通知を許可し、通知設定を保存してください。</p><button id="transferOpenNotifications" class="manager-small-btn" type="button">通知設定を開く</button></section>
       </div>
     </dialog>
-    <button id="add" class="fab hidden" type="button" aria-label="タイマー追加"></button>
+    <button id="add" class="fab" type="button" aria-label="タイマー追加"></button>
 
     <div id="overlay" class="overlay hidden"></div>
 
@@ -2259,7 +2261,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  });
  $('characterList').addEventListener('click',e=>{const btn=e.target.closest('[data-character]');if(btn)showDetail(btn.dataset.character)});
  $('addCharacter').addEventListener('click',()=>showEditor());$('characterTab').addEventListener('click',()=>switchTab('characters'));$('timerTab').addEventListener('click',()=>switchTab('timers'));
- document.querySelector('.manager-tabs').setAttribute('role','tablist');document.querySelector('.manager-tabs').addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const target=e.key==='Home'?$('characterTab'):e.key==='End'?$('timerTab'):document.activeElement===$('characterTab')?$('timerTab'):$('characterTab');target.click();target.focus()}});
+ document.querySelector('.manager-tabs').setAttribute('role','tablist');document.querySelector('.manager-tabs').addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const tabs=[...document.querySelectorAll('.manager-tabs [role="tab"]')],target=e.key==='Home'?tabs[0]:e.key==='End'?tabs[tabs.length-1]:document.activeElement===tabs[0]?tabs[1]:tabs[0];target.click();target.focus()}});
  $('closeCharacterDialog').addEventListener('click',()=>closeDialog($('characterDialog')));$('closeCharacterViewer').addEventListener('click',()=>closeDialog($('characterViewer')));
  for(const id of ['characterDialog','characterViewer'])$(id).addEventListener('click',e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog($(id))});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmOverlay.classList.contains('hidden'))closeConfirm(false);else if(!modal.classList.contains('hidden'))closeModal()}});
