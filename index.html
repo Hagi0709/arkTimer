@@ -7,8 +7,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0c1e2d">
-  <link rel="apple-touch-icon" href="./ark-manager-app-icon-asa.png">
-  <link rel="icon" href="./ark-manager-app-icon-asa.png">
+  <link rel="apple-touch-icon" href="./ark-manager-app-icon-pastel.png">
+  <link rel="icon" href="./ark-manager-app-icon-pastel.png">
   <style>
 :root{
   --bg:#08111c;
@@ -1303,7 +1303,6 @@ body{
 .timer-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
 .timer-detail-actions .character-delete{grid-column:1 / -1;margin:0}
 .timer-detail-value{font-size:17px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
-.map-edit-hint{font-size:12px;line-height:1.6;color:var(--muted);margin:0}
 .map-edit-actions{display:flex;justify-content:space-between;gap:10px}
 .map-preview,.map-viewer-image{background-size:100% 100%}
 #imagePreviewPin{width:26px;height:26px;touch-action:none;cursor:grab}
@@ -1468,12 +1467,11 @@ body{
         <div class="field">
           <span>マップ画像</span>
           <input id="imageInput" type="file" accept="image/*" class="hidden-input">
-          <button id="imagePreviewButton" class="map-preview-button" type="button" aria-label="地図をタップしてピンを配置" aria-describedby="mapPinHelp">
+          <button id="imagePreviewButton" class="map-preview-button" type="button" aria-label="地図をタップしてピンを配置">
             <div id="imagePreview" class="map-preview is-empty">
               <div id="imagePreviewPin" class="map-pin hidden" aria-hidden="true"></div>
             </div>
           </button>
-          <p id="mapPinHelp" class="map-edit-hint">地図をタップしてピンを配置できます。手動配置時は座標欄を空にします。</p>
           <div class="map-edit-actions"><button id="changeMapImage" class="manager-small-btn" type="button">マップ画像を変更</button><button id="clearMapPin" class="manager-small-btn" type="button">ピンを消す</button></div>
         </div>
 
@@ -1612,7 +1610,8 @@ function clamp(num,min,max){return Math.min(max,Math.max(min,num))}
 function parseCoord(value){const text=String(value??'').trim();if(!text)return null;const num=Number(text);return Number.isFinite(num)?num:null}
 function normalizeManualPin(value){return value&&Number.isFinite(value.left)&&Number.isFinite(value.top)&&value.left>=0&&value.left<=100&&value.top>=0&&value.top<=100?{left:value.left,top:value.top}:null}
 function pinPositionFromPoint(rect,x,y){if(!(rect.width>0&&rect.height>0))return null;return{left:Math.round(clamp((x-rect.left)/rect.width,0,1)*1000)/10,top:Math.round(clamp((y-rect.top)/rect.height,0,1)*1000)/10}}
-function setPreviewPin(point){state.manualPin=normalizeManualPin(point);latInput.value='';lngInput.value='';showPinInput.checked=true;refreshPreviewPin()}
+function coordinatesForPin(mapName,point){const pin=normalizeManualPin(point);if(!pin)return null;const bounds=getMapBounds(mapName);return{lat:Math.round(pin.top*bounds.height/100*10)/10,lng:Math.round(pin.left*bounds.width/100*10)/10}}
+function setPreviewPin(point){const pin=normalizeManualPin(point);if(!pin)return;state.manualPin=pin;showPinInput.checked=true;refreshPreviewPin()}
 function placePreviewPin(event){const point=event.detail===0?{left:50,top:50}:pinPositionFromPoint(imagePreview.getBoundingClientRect(),event.clientX,event.clientY);if(point)setPreviewPin(point)}
 function movePreviewPin(event){const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};if(!directions[event.key])return;event.preventDefault();const [dy,dx]=directions[event.key],step=event.shiftKey?0.1:1,point=getPinPosition(timerMapValue(),latInput.value,lngInput.value,state.manualPin)||{left:50,top:50};setPreviewPin({left:Math.round(clamp(point.left+dx*step,0,100)*10)/10,top:Math.round(clamp(point.top+dy*step,0,100)*10)/10})}
 function startPreviewPinDrag(event){if(event.button!==0||!event.target.closest('#imagePreviewPin'))return;event.preventDefault();state.pinDragPointer=event.pointerId;imagePreviewButton.setPointerCapture(event.pointerId)}
@@ -1656,7 +1655,7 @@ function timerMapValue(){const v=mapSelect.value;if(v.startsWith('__preset__')){
 function syncTimerServerChoice(){const v=mapSelect.value;if(v.startsWith('__preset__')){const s=timerSavedServers()[Number(v.slice(10))];if(s)$('timerServerNo').value=String(s.serverNo)}else{$('timerServerNo').value=''}syncCustomMapUI()}
 
 function syncCustomMapUI(){const custom=mapSelect.value==='__custom__';$('customMapInput').classList.toggle('hidden',!custom);$('customMapInput').required=custom;refreshImagePreviewForCurrentForm()}
-function refreshPreviewPin(){setPinElement(imagePreviewPin,timerMapValue(),latInput.value,lngInput.value,showPinInput.checked,state.manualPin)}
+function refreshPreviewPin(){const coords=coordinatesForPin(timerMapValue(),state.manualPin);if(coords){latInput.value=String(coords.lat);lngInput.value=String(coords.lng)}setPinElement(imagePreviewPin,timerMapValue(),latInput.value,lngInput.value,showPinInput.checked,state.manualPin)}
 function refreshImagePreviewForCurrentForm(){const defaultImage=getDefaultImageForMap(timerMapValue());imageModeInput.value='default';state.pendingCustomImage='';imageInput.value='';setPreviewImage(defaultImage||'');refreshPreviewPin()}
 
 function openModal(editTarget=null){
@@ -1695,8 +1694,8 @@ function openModal(editTarget=null){
   memoInput.value=editTarget.memo||'';
   timerNameInput.value=editTarget.timerName||'';
   state.manualPin=normalizeManualPin(editTarget.manualPin);state.pinDragPointer=null;
-  latInput.value=state.manualPin?'':editTarget.lat??'';
-  lngInput.value=state.manualPin?'':editTarget.lng??'';
+  latInput.value=editTarget.lat??'';
+  lngInput.value=editTarget.lng??'';
   if(showPinInput)showPinInput.checked=editTarget.showPin!==false;
   modalTitle.textContent='タイマー編集';
   submitBtn.textContent='保存';
@@ -1736,8 +1735,8 @@ function buildTypeLabel(timer){if(timer.type==='building')return `建材:${timer
 function getDurationMsFromInput(type){if(type==='building'){return BUILDING_DURATIONS[getSelectedMaterial()]*24*60*60*1000}const days=Number(daysInput.value||0),hours=Number(hoursInput.value||0),minutes=Number(minutesInput.value||0);return ((((days*24)+hours)*60)+minutes)*60*1000}
 function getTimerImageSrc(timer){if(timer.imageMode==='custom'&&timer.imageSrc)return timer.imageSrc;return getDefaultImageForMap(timer.map)}
 function escapeHtml(value){return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
-function normalizeCoord(value){return String(value||'').trim()}
-function buildCoordTag(timer){const lat=normalizeCoord(timer.lat),lng=normalizeCoord(timer.lng);if(!lat||!lng)return '';return `座標:${lat}/${lng}`}
+function normalizeCoord(value){return String(value??'').trim()}
+function buildCoordTag(timer){const coords=coordinatesForPin(timer.map,timer.manualPin),lat=normalizeCoord(coords?coords.lat:timer.lat),lng=normalizeCoord(coords?coords.lng:timer.lng);if(!lat||!lng)return '';return `座標:${lat}/${lng}`}
 function getNextSortOrder(){return state.timers.reduce((max,timer)=>Math.max(max,Number(timer.sortOrder)||0),-1)+1}
 function getSortedTimers(){
   const timers=[...state.timers];
