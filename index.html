@@ -1301,7 +1301,6 @@ body{
 .timer-map-surface{position:absolute;inset:0;display:block;background-size:100% 100%;background-position:center;background-repeat:no-repeat}
 .island-map-frame{overflow:hidden;border:0}
 .map-preview-button.island-map-frame{border-radius:18px}
-.island-map-surface{transform:scale(1.02);transform-origin:center;border:0}
 .timer-summary{display:grid;gap:5px;flex:1;min-width:0}
 .timer-summary.has-kind-icon{grid-template-columns:minmax(0,1fr) 50px;column-gap:8px}
 .timer-summary>span{grid-column:1;min-width:0}
@@ -1593,7 +1592,7 @@ window.ARKCopyText=async function(value){
 let timerPush=null;
 const STORAGE_KEY='arkTimer_store_v8';
 const MAPS=['ジェネシス1(Ocean)','ジェネシス1(Genesis)','アイランド','スコーチドアース','センター','アベレーション','エクスティンクション','アストレオス','ラグナロク','バルゲロ','ロストコロニー'];
-const DEFAULT_MAP_IMAGES={'ジェネシス1(Ocean)':'genesis1-ocean.jpg','ジェネシス1(Genesis)':'genesis1-genesis.jpg','アイランド':'IMG_3555.jpeg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'IMG_3558.jpeg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'12DB1A38-79FA-496C-9F06-F24C06567D9F.png','ラグナロク':'69640213-1F63-4F2F-8C97-1072ADA3AC83.jpeg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'EC5D5564-E4FE-431C-999B-4FAE6F4848D6.png','その他':'IMG_3570.jpeg'};
+const DEFAULT_MAP_IMAGES={'ジェネシス1(Ocean)':'genesis1-ocean.jpg','ジェネシス1(Genesis)':'genesis1-genesis.jpg','アイランド':'timer-map-island.jpg','スコーチドアース':'IMG_3556.jpeg','センター':'IMG_3557.webp','アベレーション':'timer-map-aberration.jpg','エクスティンクション':'IMG_3559.jpeg','アストレオス':'timer-map-astraeos.jpg','ラグナロク':'timer-map-ragnarok.jpg','バルゲロ':'5F4DEDA4-23E1-425C-9C92-C43A614C19B1.png','ロストコロニー':'timer-map-lost-colony.jpg','その他':'IMG_3570.jpeg'};
 const MAP_BOUNDS={'ジェネシス1(Ocean)':{width:100,height:100},'ジェネシス1(Genesis)':{width:100,height:100},'アイランド':{width:100,height:100},'スコーチドアース':{width:100,height:100},'センター':{width:100,height:100},'アベレーション':{width:100,height:100},'エクスティンクション':{width:100,height:100},'アストレオス':{width:100,height:100},'ラグナロク':{width:100,height:100},'バルゲロ':{width:100,height:100},'ロストコロニー':{width:100,height:100},'その他':{width:100,height:100}};
 const TRIBE_TOWER_ICON='timer-tribe-tower.png';
 const GENERATOR_ICON='timer-generator.png';
@@ -1641,7 +1640,7 @@ function setupDurationSelects(){for(const [select,max,label]of [[daysInput,9999,
 function setDurationValue(select,value,label){const n=Math.max(0,Math.floor(Number(value)||0));if(![...select.options].some(option=>option.value===String(n))){const option=document.createElement('option');option.value=String(n);option.textContent=n+label;select.appendChild(option)}select.value=String(n)}
 function getDefaultImageForMap(mapName){return DEFAULT_MAP_IMAGES[mapName]||DEFAULT_MAP_IMAGES['その他']}
 function isIslandMapImage(src){return src===DEFAULT_MAP_IMAGES['アイランド']}
-function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src}")`:'';imagePreview.classList.toggle('is-empty',!src);imagePreview.classList.toggle('island-map-surface',isIslandMapImage(src));imagePreviewButton.classList.toggle('island-map-frame',isIslandMapImage(src));state.previewImageSrc=src;imagePreview.style.aspectRatio='1';if(src){const image=new Image();image.onload=()=>{if(state.previewImageSrc===src&&image.naturalWidth&&image.naturalHeight)imagePreview.style.aspectRatio=image.naturalWidth+'/'+image.naturalHeight};image.src=src}}
+function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src}")`:'';imagePreview.classList.toggle('is-empty',!src);imagePreviewButton.classList.toggle('island-map-frame',isIslandMapImage(src));state.previewImageSrc=src;imagePreview.style.aspectRatio='1';if(src){const image=new Image();image.onload=()=>{if(state.previewImageSrc===src&&image.naturalWidth&&image.naturalHeight)imagePreview.style.aspectRatio=image.naturalWidth+'/'+image.naturalHeight};image.src=src}}
 function getMapBounds(mapName){return MAP_BOUNDS[mapName]||{width:100,height:100}}
 function clamp(num,min,max){return Math.min(max,Math.max(min,num))}
 function parseCoord(value){const text=String(value??'').trim();if(!text)return null;const num=Number(text);return Number.isFinite(num)?num:null}
@@ -1801,7 +1800,7 @@ function getSortedTimers(){
 }
 function decorateTimerMap(element,timer){
   const src=getTimerImageSrc(timer),surface=document.createElement('span');
-  surface.className='timer-map-surface'+(isIslandMapImage(src)?' island-map-surface':'');
+  surface.className='timer-map-surface';
   surface.style.backgroundImage=`url("${src}")`;element.appendChild(surface);
   const pin=document.createElement('span');pin.className='map-pin hidden';surface.appendChild(pin);
   setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false,timer.manualPin);

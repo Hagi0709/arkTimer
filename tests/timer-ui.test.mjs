@@ -61,13 +61,13 @@ test('編集画面からの削除は確認後だけ実行し、他のタイマ�
   assert.equal(h.node('add').classList.contains('hidden'),false);
 });
 
-test('アイランドの標準画像だけをトリミングし、座標と独自のマップ画像を維持',()=>{
+test('新版アイランドの標準画像を表示し、座標と独自のマップ画像を維持',()=>{
   const h=harness(),previous=timer();h.setTimers([previous]);h.run('setupDurationSelects();openModal(state.timers[0])');
-  assert.equal(h.node('imagePreview').classList.contains('island-map-surface'),true);
+  assert.match(h.node('imagePreview').style.backgroundImage,/timer-map-island\.jpg/);
   assert.equal(h.node('imagePreviewButton').classList.contains('island-map-frame'),true);
   assert.equal(h.node('latInput').value,'10');assert.equal(h.node('lngInput').value,'20');
   h.run("setPreviewImage('data:image/png;base64,aW1hZ2U=')");
-  assert.equal(h.node('imagePreview').classList.contains('island-map-surface'),false);
+  assert.equal(h.node('imagePreview').style.backgroundImage,'url("data:image/png;base64,aW1hZ2U=")');
   assert.equal(h.node('imagePreviewButton').classList.contains('island-map-frame'),false);
   assert.equal(h.run('state.timers[0].endsAt'),previous.endsAt);
 });
