@@ -1086,16 +1086,20 @@ body.manager-dialog-open dialog[open]{pointer-events:auto}
 #overlay.overlay{background:rgba(0,0,0,.72);backdrop-filter:none}
 
 .level-boss-row{display:grid;grid-template-columns:minmax(0,1fr) 56px;align-items:center;gap:8px;cursor:default}
-.level-boss-row.has-boss-image{grid-template-columns:minmax(0,1fr) 56px 56px}
-.level-boss-label{display:flex;align-items:center;gap:8px;min-width:0;cursor:pointer}
-.level-boss-label span{min-width:0;overflow-wrap:anywhere}
+.level-boss-label{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;gap:8px;min-width:0;cursor:pointer}
+.level-boss-label.has-level-image{grid-template-columns:22px 64px minmax(0,1fr)}
+.level-rule-name{min-width:0;overflow-wrap:anywhere}
 .level-boss-label input{width:22px;height:22px;flex:0 0 22px;accent-color:#67bbff}
-.level-boss-image{display:block;width:56px;height:64px;object-fit:contain;pointer-events:none}
+.level-rule-image{position:relative;display:block;width:64px;height:64px;overflow:hidden;pointer-events:none}
+.level-rule-artwork{position:absolute;display:block;max-width:none;pointer-events:none}
 .level-boss-controls{display:grid;justify-items:center;align-content:center;gap:6px;min-width:0}
 .level-boss-controls select{width:56px;min-width:0;max-width:100%;min-height:36px;padding:7px 8px;border-radius:12px;font-size:14px}
 .level-boss-controls strong{width:100%;text-align:center;color:#a9e3ff;white-space:nowrap}
-@media(max-width:380px){.level-boss-row{grid-template-columns:minmax(0,1fr) 54px;gap:7px;padding:9px 8px}.level-boss-row.has-boss-image{grid-template-columns:minmax(0,1fr) 42px 54px}.level-boss-label{gap:7px}.level-boss-label span{font-size:12px}.level-boss-label input{width:20px;height:20px;flex-basis:20px}.level-boss-image{width:42px;height:64px}.level-boss-controls select{width:54px;padding:7px 5px}.level-boss-controls strong{font-size:12px}}
-@media(max-width:600px){#characterDialog .level-summary{font-size:clamp(16px,4.8vw,21px)}#characterDialog .level-boss-row.has-boss-image{grid-template-columns:minmax(0,1fr) 56px}#characterDialog .has-boss-image .level-boss-label{grid-column:1 / -1}#characterDialog .level-boss-image{grid-column:1;grid-row:2;justify-self:center;width:76px;height:64px}#characterDialog .has-boss-image .level-boss-controls{grid-column:2;grid-row:2}}
+.level-extra-row{display:grid;grid-template-columns:22px minmax(0,1fr) 56px;gap:8px}
+.level-extra-row.has-level-image{grid-template-columns:22px 64px minmax(0,1fr) 56px}
+.level-extra-row strong{text-align:center;white-space:nowrap}
+@media(max-width:380px){.level-boss-row{grid-template-columns:minmax(0,1fr) 54px;gap:7px;padding:9px 8px}.level-boss-label{grid-template-columns:20px minmax(0,1fr);gap:7px}.level-boss-label.has-level-image{grid-template-columns:20px 56px minmax(0,1fr)}.level-rule-name{font-size:12px!important}.level-boss-label input{width:20px;height:20px;flex-basis:20px}.level-rule-image{width:56px;height:56px}.level-boss-controls select{width:54px;padding:7px 5px}.level-boss-controls strong,.level-extra-row strong{font-size:12px}.level-extra-row{grid-template-columns:20px minmax(0,1fr) 54px;gap:7px;padding:9px 8px}.level-extra-row.has-level-image{grid-template-columns:20px 56px minmax(0,1fr) 54px}}
+@media(max-width:600px){#characterDialog .level-summary{font-size:clamp(16px,4.8vw,21px)}#characterDialog .level-boss-label{grid-column:1 / -1}#characterDialog .level-boss-controls{grid-column:2;grid-row:2}#characterDialog .level-extra-row.has-level-image{grid-template-columns:22px 64px minmax(0,1fr)}#characterDialog .level-extra-row strong{grid-column:2 / -1;justify-self:end}@media(max-width:380px){#characterDialog .level-extra-row.has-level-image{grid-template-columns:20px 56px minmax(0,1fr)}}}
 
 /* Server settings: label-first layout, reorder handle on the right */
 .saved-server-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto 42px;gap:8px;align-items:center;padding:10px 12px}
@@ -1958,19 +1962,28 @@ init();
  }
  // Existing boss checkboxes are treated as alpha completions; old values remain readable.
  const BOSS_LEVELS={gamma:5,beta:10,alpha:15};
- const BOSS_IMAGES={overseer:'boss-overseer.webp',manticore:'boss-manticore.webp',rockwell:'boss-rockwell.webp',king_titan:'boss-king-titan.webp',lost_queen:'boss-lost-queen.webp',master_controller:'boss-master-controller.webp',abyssalus_shallocis:'boss-astraeos.webp'};
+ const LEVEL_RULE_IMAGES={overseer:'boss-overseer.webp',manticore:'boss-manticore.webp',rockwell:'boss-rockwell.webp',king_titan:'boss-king-titan.webp',lost_queen:'boss-lost-queen.webp',master_controller:'boss-master-controller.webp',abyssalus_shallocis:'boss-astraeos.webp',explorer_notes:'level-explorer-notes.webp',bobs_sc:'level-bobs-sc.webp',bobs_ab:'level-bobs-ab.webp',bobs_ex:'level-bobs-ex.webp',chibi:'level-chibi.webp',tides_of_fortune:'level-tides-of-fortune.webp'};
+ // Source dimensions, visible alpha bounds, and an optional optical zoom for wide art.
+ const LEVEL_IMAGE_FRAMING={overseer:[253,256,71,4,118,240],manticore:[256,144,6,0,245,144,1.45],rockwell:[256,179,0,0,256,179,1.15],king_titan:[256,178,0,0,256,178,1.05],lost_queen:[256,245,0,0,256,245],master_controller:[256,179,59,1,139,177],abyssalus_shallocis:[256,247,0,6,256,241],explorer_notes:[256,182,12,15,232,164],bobs_sc:[256,242,0,10,256,232],bobs_ab:[256,249,0,3,256,246],bobs_ex:[256,250,0,7,256,243],chibi:[256,243,16,22,223,201],tides_of_fortune:[256,256,0,0,256,256]};
+ function levelRuleImage(id){
+  const src=Object.hasOwn(LEVEL_RULE_IMAGES,id)?LEVEL_RULE_IMAGES[id]:'';if(!src)return '';
+  const [w,h,x,y,bw,bh,zoom=1]=LEVEL_IMAGE_FRAMING[id],scale=Math.min(1/bw,1/bh)*zoom;
+  const percent=value=>(value*100).toFixed(4)+'%';
+  const style=`width:${percent(w*scale)};height:${percent(h*scale)};left:${percent(.5-(x+bw/2)*scale)};top:${percent(.5-(y+bh/2)*scale)}`;
+  return `<picture class="level-rule-image" aria-hidden="true"><img class="level-rule-artwork" src="./${src}" style="${style}" alt="" decoding="async"></picture>`;
+ }
  const bossRule=r=>r.type==='boss'||['overseer','manticore','rockwell','king_titan','lost_queen','master_controller','abyssalus_shallocis'].includes(r.id);
  function saveLevelRules(){localStorage.setItem(LEVEL_RULES_KEY,JSON.stringify(levelRules))}
  function checkedLevelIds(c){const ids=Array.isArray(c.levelUnlocks)?c.levelUnlocks:[];const all=[...new Set(ids)];return all.includes('bobs_tall_tales')?[...new Set([...all,'bobs_sc','bobs_ab','bobs_ex'])]:all}
  function bossTier(c,id){const tiers=c.levelBossTiers||{};return ['gamma','beta','alpha'].includes(tiers[id])?tiers[id]:'alpha'}
  function getLevelTotal(c){return LEVEL_BASE+levelRules.reduce((sum,r)=>sum+(checkedLevelIds(c).includes(r.id)?(bossRule(r)?BOSS_LEVELS[bossTier(c,r.id)]:Number(r.points)):0),0)}
  function levelRuleMarkup(r,c,isNew=false){
-  const check=isNew?'data-new-level':'data-level-id',checked=checkedLevelIds(c).includes(r.id);
+  const check=isNew?'data-new-level':'data-level-id',checked=checkedLevelIds(c).includes(r.id),image=levelRuleImage(r.id);
   if(bossRule(r)){
-   const tier=bossTier(c,r.id),key=isNew?'data-new-boss':'data-level-boss',image=BOSS_IMAGES[r.id];
-   return `<div class="level-check-item level-boss-row${image?' has-boss-image':''}"><label class="level-boss-label"><input type="checkbox" ${check}="${esc(r.id)}" ${checked?'checked':''}><span>${esc(r.name).replace('：','：<br>')}</span></label>${image?`<img class="level-boss-image" src="./${image}" alt="" aria-hidden="true" decoding="async">`:''}<div class="level-boss-controls"><select ${key}="${esc(r.id)}" aria-label="${esc(r.name)}の難易度"><option value="gamma" ${tier==='gamma'?'selected':''}>γ</option><option value="beta" ${tier==='beta'?'selected':''}>β</option><option value="alpha" ${tier==='alpha'?'selected':''}>α</option></select><strong data-boss-points aria-label="上限レベルの加算数">+${BOSS_LEVELS[tier]} Lv</strong></div></div>`;
+   const tier=bossTier(c,r.id),key=isNew?'data-new-boss':'data-level-boss';
+   return `<div class="level-check-item level-boss-row"><label class="level-boss-label${image?' has-level-image':''}"><input type="checkbox" ${check}="${esc(r.id)}" ${checked?'checked':''}>${image}<span class="level-rule-name">${esc(r.name).replace('：','：<br>')}</span></label><div class="level-boss-controls"><select ${key}="${esc(r.id)}" aria-label="${esc(r.name)}の難易度"><option value="gamma" ${tier==='gamma'?'selected':''}>γ</option><option value="beta" ${tier==='beta'?'selected':''}>β</option><option value="alpha" ${tier==='alpha'?'selected':''}>α</option></select><strong data-boss-points aria-label="上限レベルの加算数">+${BOSS_LEVELS[tier]} Lv</strong></div></div>`;
   }
-  return `<label class="level-check-item"><input type="checkbox" ${check}="${esc(r.id)}" ${checked?'checked':''}><span>${esc(r.name).replace('：','：<br>')}</span><strong>+${Number(r.points)}</strong></label>`;
+  return `<label class="level-check-item level-extra-row${image?' has-level-image':''}"><input type="checkbox" ${check}="${esc(r.id)}" ${checked?'checked':''}>${image}<span class="level-rule-name">${esc(r.name).replace('：','：<br>')}</span><strong>+${Number(r.points)} Lv</strong></label>`;
  }
  function levelPanel(c){return `<section class="level-panel"><h2>レベル上限解放</h2><div class="level-summary">現在の上限：Lv ${getLevelTotal(c)}</div><div class="level-check-list">${levelRules.map(r=>levelRuleMarkup(r,c)).join('')}</div></section>`}
  function renderLevelSettings(){const list=$('levelSettingsList');list.innerHTML=levelRules.map(r=>`<div class="level-setting-row"><span>${esc(r.name)}（${bossRule(r)?'討伐：γ +5 / β +10 / α +15':'+'+Number(r.points)+' Lv'}）</span><button class="manager-small-btn" data-level-edit="${esc(r.id)}" type="button">編集</button><button class="manager-small-btn" data-level-delete="${esc(r.id)}" type="button">削除</button></div>`).join('')||'<p>登録条件はありません。</p>'}

@@ -207,6 +207,35 @@ Use case: background-extraction. Asset type: compact boss image for a dark ARK M
 
 `{subject}` は添付順に `the black and cyan futuristic diamond-shaped Overseer`、`the red winged lion Manticore`、`the black and red humanoid tentacled Rockwell`、`the purple crystalline King Titan`、`the red winged armored Lost Queen`、`the purple mechanical Master Controller mask`、`the green and red tentacled Astraeos boss head`。
 
+## レベル解放画像のサイズ・配置と収集項目の画像追加
+
+- 画像をチェックボックスの直後へ移し、「チェック・画像・項目名・難易度/加算数」の順に統一。ボス以外の加算数にも `Lv` を付ける。13項目で共通の正方形枠（390px幅では64px、320px幅では56px）を使う。
+- 支配者などの透明な外周余白を画像ごとのアルファ境界で補正し、同じ枠へ表示する。マンティコアは中央を1.45倍、ロックウェルは1.15倍、キングタイタンは1.05倍に表示して、横長の画像が小さく見える差を抑える。拡大した画像の両端は枠で切り取る。元のボス画像ファイルは変更しない。
+- 2枚目以降の添付を下表の収集・ペット項目へ順番に対応させた。元から透過の3点はそのまま縮小し、格子模様が焼き込まれていたボブのアベレーション/エクスティンクションと、白背景の船はbuilt-in image_genで背景を除去。すべてアルファ付きの最大256px WebPへ書き出して、リポジトリ直下へ保存した。
+
+| 添付 | 項目 | 保存先 |
+| --- | --- | --- |
+| 2 | 探検家の記録 | `level-explorer-notes.webp` |
+| 3 | スコーチドアース：ボブのほら話 | `level-bobs-sc.webp` |
+| 4 | アベレーション：ボブのほら話 | `level-bobs-ab.webp` |
+| 5 | エクスティンクション：ボブのほら話 | `level-bobs-ex.webp` |
+| 6 | ちびペット | `level-chibi.webp` |
+| 7 | ジェネシス1：Tides of Fortune | `level-tides-of-fortune.webp` |
+
+背景除去の最終共通プロンプト（添付4・5・7を個別に指定）：
+
+```text
+Use case: background-extraction. Asset type: small transparent ARK Manager UI image. Input image 1 is the edit target: {subject}. Make the removed background genuinely transparent alpha including interior gaps. Preserve the visible artwork, subject, style, orientation, colors, proportions and details. Do not redesign or complete cropped portions. Center it, large with minimal transparent margin, on a transparent canvas. No added objects, text, floor, frame or shadow. Output one transparent PNG.
+```
+
+`{subject}` は順に次を使用した。
+
+- `the colorful hand-drawn characters resting on the large mushrooms. Remove the baked-in gray/white transparency checkerboard ONLY; retain the turquoise ground/foreground and all mushrooms as part of the illustration`
+- `the colorful hand-drawn group of characters, ruined green buildings and gray/cyan machinery. Remove the baked-in gray/white transparency checkerboard ONLY; retain all colored illustrated ruins, machinery and foreground as part of the illustration`
+- `the purple and gold sailing ship and its visible splash of blue water. Remove the plain white backdrop ONLY. Preserve white sails, ropes, rigging and white foam as part of the ship image`
+
+- ブラウザーで13点すべての読み込み・共通枠・配置順・Lv表記を確認。320/390pxのキャラ詳細と320pxの新規設定で、行が横へはみ出さないことを確認した。新規設定でγ討伐・探検家の記録・ちびペットをチェックし、上限125（105+5+10+5）が表示されることを確認。保存形式やレベル計算式は変更していない。iPhone実機は未検証。
+
 ## 本番反映時の手順
 
 1. 上記の本番バージョン・ソース・Cron・D1のバインド先を反映直前にも確認する。push-developmentを参照する自動デプロイの有無も確認する。
