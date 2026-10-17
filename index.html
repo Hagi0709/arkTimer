@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>ARK Manager</title>
-  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="manifest" href="./manifest.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
   <link rel="icon" href="8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png">
@@ -85,13 +85,19 @@ input:focus,select:focus,textarea:focus{
   width:min(100%,820px);
   margin:0 auto;
   min-height:100dvh;
+  padding-top:calc(80px + env(safe-area-inset-top));
   padding-bottom:calc(96px + env(safe-area-inset-bottom));
   background:transparent;
 }
 
 .topbar{
-  position:sticky;
+  position:fixed;
   top:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  max-width:820px;
+  height:calc(80px + env(safe-area-inset-top));
   z-index:20;
   display:flex;
   align-items:center;
@@ -972,7 +978,7 @@ input:focus,select:focus,textarea:focus{
 }
 
 /* ARK Manager: characters */
-.brand-title{font-size:26px;letter-spacing:.025em}
+.brand-title{font-size:24px;letter-spacing:-.02em;line-height:1.1;white-space:nowrap}
 .manager-tabs{display:flex;gap:8px;padding:14px 16px 0}
 .manager-tabs button{flex:1;padding:13px;border-radius:14px;background:rgba(255,255,255,.05);color:var(--muted);font-weight:700;border:1px solid var(--line)}
 .manager-tabs .selected{background:rgba(103,187,255,.16);color:var(--blue);border-color:rgba(103,187,255,.4)}
@@ -1191,13 +1197,14 @@ body{
 .app-shell,#characterPage,#characterListPage{background:transparent!important;background-image:none!important}
 .manager-tabs{background:transparent!important;background-image:none!important;isolation:auto}
 .topbar{
-  padding-top:calc(12px + env(safe-area-inset-top));
-  padding-bottom:12px;
+  padding-top:calc(8px + env(safe-area-inset-top));
+  padding-bottom:7px;
   background:linear-gradient(115deg,rgba(10,24,38,.98),rgba(13,37,48,.97))!important;
   border-bottom-color:rgba(113,211,224,.12);
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+@media(max-width:560px){.topbar{height:calc(76px + env(safe-area-inset-top))}.app-shell{padding-top:calc(76px + env(safe-area-inset-top))}}
 
 
 /* Extinction explorer-note checklist */
@@ -1251,6 +1258,7 @@ body{
 .timer-install-guide strong{color:#d9efff}
 .timer-install-guide ol{margin:10px 0 0;padding-left:22px}
 .timer-install-guide li{margin:7px 0}
+.timer-install-guide a{display:inline-block;margin-top:8px;color:var(--cyan);font-weight:700}
 .timer-notify-settings .submit-btn:disabled{background:rgba(115,240,209,.09);border:1px solid rgba(115,240,209,.24);color:#9cceca;box-shadow:none;cursor:default}
 .data-transfer-entry{grid-column:1 / -1}
 .data-transfer-content{padding:18px;display:grid;gap:18px;min-width:0}
@@ -1326,6 +1334,7 @@ body{
         <div class="timer-notify-grid" id="timerNotifyDays"></div>
         <button id="timerNotifyPermission" class="submit-btn" type="button">iPhoneの通知を許可する</button>
         <div id="timerNotifyStatus" class="timer-notify-status" role="status"></div>
+        <div id="timerHostingGuide" class="timer-install-guide hidden"><strong>バックグラウンド通知を利用するには</strong><p>通知対応版でデータを読み込み、通知を設定してください。</p><a href="https://ark-manager.arktools.workers.dev" target="_blank" rel="noopener noreferrer">通知対応版を開く</a></div>
         <div id="timerInstallGuide" class="timer-install-guide hidden">
           <strong>iPhoneで通知を利用するには（iOS 16.4以降）</strong>
           <ol>
@@ -1464,8 +1473,8 @@ body{
       </div>
     </div>
   </div>
-  <script src="/push-client.js"></script>
-  <script src="/data-transfer.js"></script>
+  <script src="./push-client.js"></script>
+  <script src="./data-transfer.js"></script>
   <script>
 /* Shared copy action for all copy buttons */
 window.ARKCopyText=async function(value){

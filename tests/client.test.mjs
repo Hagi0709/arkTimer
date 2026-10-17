@@ -7,7 +7,8 @@ const source = readFileSync('push-client.js', 'utf8');
 const SETTINGS = 'arkTimer_notification_settings_v1', TOKEN = 'arkManager_push_device_token_v1';
 const PENDING = 'arkManager_push_pending_v2';
 const token = 'c'.repeat(64);
-function harness({ settings = { enabled: true, days: [], hours: [1, 2] }, storage, permission = 'granted', online = true } = {}) {
+function harness({ settings = { enabled: true, days: [], hours: [1, 2] }, storage, permission = 'granted', online = true,
+  hostname = 'ark-manager.arktools.workers.dev' } = {}) {
   storage ??= new Map([[SETTINGS, JSON.stringify(settings)], [TOKEN, token]]);
   const calls = [], traces = [], listeners = {}, nodes = new Map(), timers = new Map();
   let sequence = 0;
@@ -27,6 +28,7 @@ function harness({ settings = { enabled: true, days: [], hours: [1, 2] }, storag
   } };
   const Notification = { permission, async requestPermission() { traces.push('permission'); this.permission = 'granted'; return 'granted'; } };
   const window = { isSecureContext: true, Notification, PushManager() {}, matchMedia: () => ({ matches: true }),
+    location: { hostname },
     addEventListener(name, handler) { listeners[name] = handler; } };
   const document = { hidden: false, getElementById: node, querySelectorAll: () => [],
     addEventListener(name, handler) { listeners[name] = handler; } };
@@ -189,4 +191,35 @@ test('通知ストレージエラーがタイマー画面の初期化を中断�
   h.localStorage.getItem = () => { throw Error('Storage denied'); };
   assert.equal(h.window.ARKPush.init({ getTimers: () => [] }), null);
   assert.match(h.node('timerNotifyStatus').textContent, /ストレージ/);
+});
+
+test('GitHub Pagesでも通知設定が開き、使えない通知許可を要求せず案内を表示', async () => {
+  const h = harness({ hostname: 'hagi0709.github.io', permission: 'default' });
+  h.controller.init();
+  h.listeners['openTimerNotificationSettings:click']();
+  assert.equal(h.node('timerNotificationDialog').open, true);
+  assert.equal(h.node('timerNotifyEnabled').disabled, true);
+  assert.equal(h.node('timerNotifyEnabled').checked, false);
+  assert.equal(h.node('timerNotifyPermission').disabled, true);
+  assert.match(h.node('timerNotifyPermission').textContent, /通知対応版/);
+  assert.match(h.node('timerNotifyStatus').textContent, /データ引き継ぎ/);
+  await h.controller.allow();
+  await h.controller.resume();
+  h.controller.pending = true;
+  h.controller.subscription = { toJSON: () => ({}) };
+  h.controller.flushOnHide();
+  assert.equal(h.traces.length, 0);
+  assert.equal(h.calls.length, 0);
+});
+
+test('GitHub Pagesで通知タイミングを保存して閉じ、サーバーへ送信しない', async () => {
+  const h = harness({ hostname: 'hagi0709.github.io' });
+  h.controller.open();
+  h.document.querySelectorAll = selector => selector.includes('"hour"') ? [{ value: '1' }] : [];
+  await h.controller.saveSettings();
+  const settings = JSON.parse(h.storage.get(SETTINGS));
+  assert.deepEqual(settings, { enabled: false, days: [], hours: [1] });
+  assert.equal(h.node('timerNotificationDialog').open, false);
+  assert.equal(h.calls.length, 0);
+  assert.equal(h.storage.get(TOKEN), token);
 });

@@ -8,8 +8,8 @@ for (const path of ['worker.js', 'push-client.js', 'data-transfer.js', 'sw.js', 
 }
 const html = readFileSync('index.html', 'utf8');
 for (const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)) new Script(match[1]);
-assert.match(html, /src="\/push-client.js"/);
-assert.match(html, /src="\/data-transfer.js"/);
+assert.match(html, /src="\.\/push-client.js"/);
+assert.match(html, /src="\.\/data-transfer.js"/);
 assert.match(html, /rel="manifest"/);
 assert.doesNotMatch(html, /new Notification\(/);
 assert.doesNotMatch(html, /src=["']\/?app.js/);

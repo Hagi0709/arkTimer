@@ -27,6 +27,9 @@
     supported() {
       return window.isSecureContext && 'Notification' in window && 'PushManager' in window && 'serviceWorker' in navigator;
     }
+    isStaticPage() {
+      return /(^|\.)github\.io$/i.test(window.location?.hostname || '');
+    }
     isIOSBrowser() {
       const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -43,17 +46,22 @@
     refreshPermissionButton() {
       const button = $('timerNotifyPermission');
       if (!button) return;
-      const available = this.supported() && !this.isIOSBrowser();
+      const available = this.supported() && !this.isIOSBrowser() && !this.isStaticPage();
       const permission = available ? Notification.permission : 'unavailable';
       button.disabled = !available || permission !== 'default' || !!this.preparing || !!this.allowing;
       button.textContent = permission === 'granted' ? '✓ 通知は許可済みです' :
         permission === 'denied' ? '通知はブロックされています' :
+        this.isStaticPage() ? '通知対応版で設定してください' :
         !available ? (this.isIOSBrowser() ? 'ホーム画面のアプリで通知を設定してください' : 'この環境では通知を利用できません') :
         this.allowing ? '通知を設定しています…' : this.preparing ? '通知を準備しています…' : 'iPhoneの通知を許可する';
     }
     showStatus() {
-      $('timerInstallGuide')?.classList.toggle('hidden', this.supported() && !this.isIOSBrowser());
-      this.status(this.isIOSBrowser() ? 'ホーム画面に追加したARK Managerのアイコンから開いてください。' :
+      $('timerHostingGuide')?.classList.toggle('hidden', !this.isStaticPage());
+      $('timerNotifyEnabled').disabled = this.isStaticPage();
+      if (this.isStaticPage()) $('timerNotifyEnabled').checked = false;
+      $('timerInstallGuide')?.classList.toggle('hidden', this.isStaticPage() || (this.supported() && !this.isIOSBrowser()));
+      this.status(this.isStaticPage() ? 'このページではバックグラウンド通知を利用できません。データ引き継ぎから通知対応版へ移行できます。' :
+        this.isIOSBrowser() ? 'ホーム画面に追加したARK Managerのアイコンから開いてください。' :
         !this.supported() ? 'この環境ではWeb Pushを利用できません。' :
         Notification.permission === 'denied' ? '通知がブロックされています。端末の設定で許可してください。' :
         this.message || (Notification.permission === 'granted' ? '' :
@@ -84,6 +92,7 @@
       return this.registration;
     }
     async ensureSubscription() {
+      if (this.isStaticPage()) throw Error('通知対応版で通知を設定してください。');
       if (!this.supported() || this.isIOSBrowser()) throw Error('ホーム画面のWebアプリから通知を許可してください。');
       if (Notification.permission !== 'granted') throw Error('端末の通知許可が必要です。');
       const reg = this.readyRegistration || await this.prepare();
@@ -94,6 +103,7 @@
       return this.subscription;
     }
     markChanged() {
+      if (this.isStaticPage()) return Promise.resolve(false);
       try {
         this.settings = readSettings();
         if (!this.settings.enabled && !localStorage.getItem(TOKEN)) return;
@@ -171,7 +181,7 @@
       return true;
     }
     flushOnHide() {
-      if (!this.pending || (readSettings().enabled && !this.subscription)) return;
+      if (this.isStaticPage() || !this.pending || (readSettings().enabled && !this.subscription)) return;
       // Revision checks on the Worker make this safe alongside an older in-flight request.
       this.post(this.snapshot()).catch(() => {});
     }
@@ -203,7 +213,7 @@
     async allow() {
       if (this.allowing) return;
       try {
-        if (!this.supported() || this.isIOSBrowser()) { this.showStatus(); return; }
+        if (!this.supported() || this.isIOSBrowser() || this.isStaticPage()) { this.showStatus(); return; }
         this.allowing = true;
         this.refreshPermissionButton();
         const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
@@ -225,6 +235,13 @@
         hours: [...document.querySelectorAll('#timerNotifyDays input[data-unit="hour"]:checked')].map(el => Number(el.value)) };
       if (next.enabled && !next.days.length && !next.hours.length) { this.status('通知時刻を1つ以上選んでください。'); return; }
       try {
+        if (this.isStaticPage()) {
+          next.enabled = false;
+          localStorage.setItem(SETTINGS, JSON.stringify(next));
+          this.settings = next;
+          this.close();
+          return;
+        }
         if (next.enabled) {
           if (!this.supported() || this.isIOSBrowser()) { this.showStatus(); return; }
           const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
@@ -253,7 +270,7 @@
           this.markChanged();
         }
       });
-      if (this.supported()) {
+      if (this.supported() && !this.isStaticPage()) {
         this.preparing = true;
         this.prepare().catch(() => this.status('通知の準備に失敗しました。オンラインで再度開いてください。'))
           .finally(() => { this.preparing = false; this.refreshPermissionButton(); });

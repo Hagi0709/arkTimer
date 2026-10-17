@@ -1,1 +1,1 @@
-{"name":"ARK Manager","short_name":"ARK Manager","start_url":"/","scope":"/","display":"standalone","background_color":"#0b1725","theme_color":"#0b1725","icons":[{"src":"/8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png","sizes":"any","type":"image/png","purpose":"any"}]}
+{"name":"ARK Manager","short_name":"ARK Manager","start_url":"./","scope":"./","display":"standalone","background_color":"#0b1725","theme_color":"#0b1725","icons":[{"src":"./8D94F154-F237-47A5-AE6A-0C4CA1AF561D.png","sizes":"any","type":"image/png","purpose":"any"}]}
