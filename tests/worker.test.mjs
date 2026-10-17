@@ -42,6 +42,42 @@ test('タイマーごとの時刻・OFFを優先し、変更とリセットで�
   assert.deepEqual(alerts(env).filter(a=>a.cancelled_at===null).map(a=>a.due_at),[NOW+HOUR,NOW+5*HOUR]);
 });
 
+test('7日を超える任意の日数を複数予約し、同じ日数と毎時設定の重複を除く',async t=>{
+  const env=setup(t),days=[1,8,14,30,365,14],endsAt=NOW+400*DAY;
+  const body=snapshot({days:[],hours:[],timers:[{...timer,endsAt,notificationSettings:{enabled:true,days,hours:[1,2],hourlyWithinDay:true}}]});
+  const result=await call(env,'sync',body);assert.equal(result.status,200);assert.equal(result.body.scheduled,28);
+  assert.deepEqual(alerts(env).map(a=>a.due_at),[...new Set(days)].map(n=>endsAt-n*DAY).concat(Array.from({length:23},(_,i)=>endsAt-(i+1)*HOUR)).sort((a,b)=>a-b));
+  await call(env,'sync',{...body,revision:2});assert.equal(alerts(env).length,28);
+  assert.equal(alerts(env).some(a=>a.due_at===endsAt),false);
+});
+
+test('任意の日数の入力件数を7件や固定件数で制限しない',async t=>{
+  const env=setup(t),days=Array.from({length:150},(_,i)=>i+1);
+  const result=await call(env,'sync',snapshot({days:[],hours:[],timers:[{...timer,endsAt:NOW+200*DAY,notificationSettings:{enabled:true,days,hours:[],hourlyWithinDay:false}}]}));
+  assert.equal(result.status,200);assert.equal(result.body.scheduled,150);
+});
+
+test('残り1日未満の毎時通知は古い分を一斉配信せず、次の時間の通知を維持',async t=>{
+  const env=setup(t),endsAt=NOW+5.5*HOUR;
+  const body=snapshot({days:[],hours:[],timers:[{...timer,endsAt,notificationSettings:{enabled:true,days:[],hours:[],hourlyWithinDay:true}}]});
+  assert.equal((await call(env,'sync',body)).body.scheduled,6);
+  assert.deepEqual(alerts(env).map(a=>a.due_at),Array.from({length:6},(_,i)=>NOW+(i-.5)*HOUR));
+  assert.ok(alerts(env).every(a=>a.expires_at===a.due_at+HOUR));
+  let sends=0;await runScheduled(env,{send:async()=>{sends++;return 201}});assert.equal(sends,1);
+  await call(env,'sync',{...body,revision:2});
+  await runScheduled(env,{send:async()=>{sends++;return 201},clock:()=>NOW+HOUR});assert.equal(sends,2);
+  await call(env,'sync',{...body,revision:3,timers:[{...body.timers[0],notificationSettings:{enabled:false,days:[],hours:[],hourlyWithinDay:true}}]});
+  assert.equal(alerts(env).filter(a=>a.sent_at===null&&a.cancelled_at===null).length,0);
+});
+
+test('任意日数と毎時通知の不正設定で既存の予約を失わない',async t=>{
+  const env=setup(t);await call(env,'sync',snapshot());
+  for(const settings of [{days:[0],hourlyWithinDay:true},{days:[1.5],hourlyWithinDay:false},{days:[Number.MAX_SAFE_INTEGER],hourlyWithinDay:false},{days:[14],hourlyWithinDay:'true'}]){
+    const response=await call(env,'sync',snapshot({revision:2,timers:[{...timer,notificationSettings:{enabled:true,hours:[],...settings}}]}));
+    assert.equal(response.status,400);assert.equal(alerts(env).filter(a=>a.cancelled_at===null).length,2);
+  }
+});
+
 test('不正な個別設定は全体を保存前に拒否し、全OFFは予定を取消',async t=>{
   const env=setup(t);await call(env,'sync',snapshot());
   for(const notificationSettings of [null,[],{enabled:true,days:[],hours:[]},{enabled:'true',days:[1],hours:[]},

@@ -39,6 +39,16 @@ test('個別の通知時刻・OFFを引き継ぎ、端末全体の通知は自�
   }
 });
 
+test('任意日数と毎時通知をそのまま引き継ぎ、不正な型や数値は保存前に拒否',()=>{
+  const source=fixture();source.timers[0].notificationSettings={enabled:true,days:[14,30,365],hours:[],hourlyWithinDay:true};
+  const backup=api.parse(JSON.stringify(api.createBackup(source))),next=api.plan(empty(),backup);
+  assert.deepEqual(plain(next.timers[0].notificationSettings),source.timers[0].notificationSettings);
+  assert.equal(next.data.notificationSettings.enabled,false);
+  for(const settings of [{days:[1.5],hourlyWithinDay:true},{days:[Number.MAX_SAFE_INTEGER],hourlyWithinDay:true},{days:[14],hourlyWithinDay:1}]){
+    const bad=plain(backup);Object.assign(bad.data.timers[0].notificationSettings,settings);assert.throws(()=>api.parse(JSON.stringify(bad)));
+  }
+});
+
 test('旧ファイルの通知時刻を追加タイマーへ移し、移行先の共通設定に左右されない',()=>{
   const source=fixture(),current=empty();current.notificationSettings={enabled:false,days:[7],hours:[]};current.hasNotificationSettings=true;
   const next=api.plan(current,api.createBackup(source));

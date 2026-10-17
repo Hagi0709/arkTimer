@@ -67,9 +67,10 @@
       if (t.notificationSettings !== undefined) {
         const settings = t.notificationSettings;
         if (!object(settings) || typeof settings.enabled !== 'boolean') fail();
-        for (const [key, max] of [['days',7],['hours',23]]) if (!Array.isArray(settings[key]) ||
-          settings[key].some(n => !Number.isInteger(n) || n < 1 || n > max)) fail();
-        if (settings.enabled && !settings.days.length && !settings.hours.length) fail();
+        if (!Array.isArray(settings.days) || settings.days.some(n => !Number.isSafeInteger(n) || n < 1 || !Number.isSafeInteger(n * 86400000)) ||
+          !Array.isArray(settings.hours) || settings.hours.some(n => !Number.isInteger(n) || n < 1 || n > 23) ||
+          (settings.hourlyWithinDay !== undefined && typeof settings.hourlyWithinDay !== 'boolean')) fail();
+        if (settings.enabled && !settings.days.length && !settings.hours.length && !settings.hourlyWithinDay) fail();
       }
     });
     list(data.servers, s => { string(s.map, 80); string(s.serverNo, 100); if (s.memo !== undefined) string(s.memo); },

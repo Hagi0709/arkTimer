@@ -8,16 +8,22 @@ const source=html.match(/<script>\s*([\s\S]*?)<\/script>/)[1]
   .split('// Character records and images live separately')[0].replace(/init\(\);\s*$/,'');
 const plain=value=>JSON.parse(JSON.stringify(value));
 function harness(){
-  const nodes=new Map(),storage=new Map();
+  const nodes=new Map(),storage=new Map();let created=0;
   function node(id){
     if(!nodes.has(id)){
       const classes=new Set();
-      const item={value:'',checked:false,style:{},options:[],
+      const item={value:'',checked:false,style:{},options:[],children:[],
         classList:{add:n=>classes.add(n),remove:n=>classes.delete(n),contains:n=>classes.has(n),toggle:(n,on)=>on?classes.add(n):classes.delete(n)},
-        getAttribute:()=>id==='timerTab'?'true':null,removeAttribute(key){delete this[key]},querySelector:()=>null,appendChild(option){this.options.push(option)},
+        getAttribute:()=>id==='timerTab'?'true':null,removeAttribute(key){delete this[key]},setAttribute(key,value){this[key]=value},
+        querySelector(selector){if(selector==='[data-remove-notify-day]')return this.removeButton;return null},
+        querySelectorAll(selector){return selector==='[data-notify-day]'?this.children.flatMap(row=>row.dayInput?[row.dayInput]:[]):[]},
+        appendChild(option){this.options.push(option);this.children.push(option);option.parentElement=this},
+        remove(){if(this.parentElement)this.parentElement.children=this.parentElement.children.filter(child=>child!==this)},
         getBoundingClientRect:()=>({left:50,top:100,width:200,height:200}),reset(){},
         setPointerCapture(id){this.pointer=id},hasPointerCapture(id){return this.pointer===id},releasePointerCapture(){this.pointer=null},
-        set innerHTML(value){this.html=value;this.inputs=[...value.matchAll(/<input type="checkbox" data-unit="([^"]+)" value="([^"]+)"( checked)?>/g)].map(m=>({unit:m[1],value:m[2],checked:!!m[3]}));this.options=[...value.matchAll(/<option value="([^"]+)"/g)].map(m=>({value:m[1]}));if(this.options.length)this.value=this.options[0].value}
+        set innerHTML(value){this.html=value;this.children=[];
+          if(value.includes('data-notify-day')){this.dayInput={value:value.match(/ value="([^"]*)"/)[1],parentElement:this,setAttribute(key,value){this[key]=value}};this.removeButton={parentElement:this,disabled:false}}
+          this.options=[...value.matchAll(/<option value="([^"]+)"/g)].map(m=>({value:m[1]}));if(this.options.length)this.value=this.options[0].value}
       };nodes.set(id,item);
     }return nodes.get(id);
   }
@@ -26,8 +32,7 @@ function harness(){
   for(const id of ['daysInput','hoursInput','minutesInput'])node(id).value='0';
   node('imageMode').value='default';
   const context=createContext({window:{scrollTo(){}},document:{getElementById:node,body:node('body'),
-    querySelectorAll:selector=>(node('timerNotificationChoices').inputs||[]).filter(input=>input.checked&&selector.includes(`"${input.unit}"`)),
-    querySelector:()=>({value:'TEK',checked:true}),createElement:()=>({value:'',textContent:''})},
+    querySelectorAll:()=>[],querySelector:()=>({value:'TEK',checked:true}),createElement:()=>node('__created'+created++)},
     localStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value)},
     Image:class{naturalWidth=100;naturalHeight=100;set src(value){this.onload?.()}},alert:message=>{throw Error(message)}
   });
@@ -42,34 +47,61 @@ test('既存の通知時刻を各タイマーに複製し、ID・期限・画像
   h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:false,days:[0,2],hours:[3]}));
   h.storage.set('arkTimer_store_v8',JSON.stringify([original,{...timer(),id:'timer_2'}]));h.run('load()');
   const next=plain(h.run('state.timers'));
-  assert.deepEqual(next[0],{...original,notificationSettings:{enabled:true,days:[2],hours:[3]}});
+  assert.deepEqual(next[0],{...original,notificationSettings:{enabled:true,days:[2],hours:[],hourlyWithinDay:true}});
   assert.notEqual(h.run('state.timers[0].notificationSettings'),h.run('state.timers[1].notificationSettings'));
   h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({days:[7],hours:[]}));h.run('load()');
-  assert.deepEqual(plain(h.run('state.timers[0].notificationSettings')),{enabled:true,days:[2],hours:[3]});
+  assert.deepEqual(plain(h.run('state.timers[0].notificationSettings')),{enabled:true,days:[2],hours:[],hourlyWithinDay:true});
 });
 
 test('通知時刻だけの変更は期限を維持し、別タイマーへ影響しない',()=>{
   const h=harness(),a={...timer(),notificationSettings:{enabled:true,days:[2],hours:[3]}},b={...timer(),id:'timer_2',notificationSettings:{enabled:false,days:[],hours:[1]}};
   h.setTimers([a,b]);h.run('setupDurationSelects();openModal(state.timers[0]);render=()=>{}');
-  for(const input of h.node('timerNotificationChoices').inputs)input.checked=input.unit==='hour'&&input.value==='2';
+  h.run("timerNotificationDayInputs()[0].value='30';syncTimerNotificationDayInputs()");h.node('timerNotificationHourly').checked=false;
   h.run('addTimerFromForm({preventDefault(){}})');
   const saved=JSON.parse(h.storage.get('arkTimer_store_v8'));
-  assert.deepEqual(saved[0].notificationSettings,{enabled:true,days:[],hours:[2]});
+  assert.deepEqual(saved[0].notificationSettings,{enabled:true,days:[30],hours:[],hourlyWithinDay:false});
   assert.equal(saved[0].endsAt,a.endsAt);assert.equal(saved[0].startedAt,a.startedAt);assert.deepEqual(saved[1],b);
   h.run('openModal(state.timers[1])');assert.equal(h.node('timerNotificationEnabled').checked,false);
   assert.equal(h.node('timerNotificationChoices').classList.contains('hidden'),true);
   h.run('openModal()');assert.equal(h.node('timerNotificationEnabled').checked,true);
-  assert.deepEqual(plain(h.run('readTimerNotificationForm()')),{enabled:true,days:[1],hours:[]});
+  assert.deepEqual(plain(h.run('readTimerNotificationForm()')),{enabled:true,days:[1],hours:[],hourlyWithinDay:false});
 });
 
-test('通知ONには時刻が必要で、OFFでも選んだ時刻を保持',()=>{
+test('通知ONには日数または毎時通知が必要で、OFFでも選んだ内容を保持',()=>{
   const h=harness();h.run('openModal()');
-  for(const input of h.node('timerNotificationChoices').inputs)input.checked=false;
-  assert.throws(()=>h.run('readTimerNotificationForm()'),/通知時刻/);
+  h.run("timerNotificationDayInputs()[0].value=''");
+  assert.throws(()=>h.run('readTimerNotificationForm()'),/通知日数/);
   h.node('timerNotificationEnabled').checked=false;
-  assert.deepEqual(plain(h.run('readTimerNotificationForm()')),{enabled:false,days:[],hours:[]});
-  h.node('timerNotificationChoices').inputs.find(i=>i.unit==='hour'&&i.value==='5').checked=true;
-  assert.deepEqual(plain(h.run('readTimerNotificationForm()')),{enabled:false,days:[],hours:[5]});
+  assert.deepEqual(plain(h.run('readTimerNotificationForm()')),{enabled:false,days:[],hours:[],hourlyWithinDay:false});
+  h.node('timerNotificationHourly').checked=true;
+  assert.deepEqual(plain(h.run('readTimerNotificationForm()')),{enabled:false,days:[],hours:[],hourlyWithinDay:true});
+  h.node('timerNotificationEnabled').checked=true;
+  assert.deepEqual(plain(h.run('readTimerNotificationForm()')),{enabled:true,days:[],hours:[],hourlyWithinDay:true});
+});
+
+test('入力ごとに空欄を追加し、件数を制限せず重複日数をまとめ、日数の削除も可能',()=>{
+  const h=harness();h.run('openModal()');
+  assert.equal(h.run('timerNotificationDayInputs().length'),2);
+  for(let n=2;n<=102;n++)h.run(`timerNotificationDayInputs().at(-1).value='${n}';syncTimerNotificationDayInputs()`);
+  assert.equal(h.run('timerNotificationDayInputs().length'),103);
+  h.run("timerNotificationDayInputs().at(-1).value='30';syncTimerNotificationDayInputs()");
+  assert.equal(h.run('readTimerNotificationForm().days.length'),102);
+  h.run('timerNotificationDayInputs()[0].parentElement.remove();syncTimerNotificationDayInputs()');
+  assert.equal(h.run('readTimerNotificationForm().days.includes(1)'),false);
+  for(const value of ['0','-1','1.5','9007199254740991']){
+    h.run(`timerNotificationDayInputs()[0].value='${value}'`);
+    assert.throws(()=>h.run('readTimerNotificationForm()'),/1以上の整数/);
+  }
+});
+
+test('端末の通知がONのときだけ下の注意書きを隠す',()=>{
+  const h=harness();h.run('openModal()');assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
+  h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:true}));h.run('syncTimerNotificationUI()');
+  assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
+  h.node('timerNotificationEnabled').checked=false;h.run('syncTimerNotificationUI()');
+  assert.equal(h.run('timerNotificationDayInputs()[0].disabled'),true);
+  h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:false}));h.run('syncTimerNotificationUI()');
+  assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
 });
 
 test('一覧のタップで直接編集を開き、新規作成には削除ボタンを表示しない',()=>{

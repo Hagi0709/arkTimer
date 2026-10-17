@@ -16,10 +16,12 @@
   function timerNotificationSettings(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value) || typeof value.enabled !== 'boolean' ||
         !Array.isArray(value.days) || !Array.isArray(value.hours) ||
-        value.days.some(n => !Number.isInteger(n) || n < 1 || n > 7) ||
+        value.days.some(n => !Number.isSafeInteger(n) || n < 1 || !Number.isSafeInteger(n * 86400000)) ||
         value.hours.some(n => !Number.isInteger(n) || n < 1 || n > 23) ||
-        (value.enabled && !value.days.length && !value.hours.length)) throw Error('タイマーの通知時刻を確認してください。');
-    return { enabled: value.enabled, days: [...new Set(value.days)], hours: [...new Set(value.hours)] };
+        (value.hourlyWithinDay !== undefined && typeof value.hourlyWithinDay !== 'boolean') ||
+        (value.enabled && !value.days.length && !value.hours.length && !value.hourlyWithinDay)) throw Error('タイマーの通知時刻を確認してください。');
+    return { enabled: value.enabled, days: [...new Set(value.days)], hours: [...new Set(value.hours)],
+      ...(value.hourlyWithinDay !== undefined ? {hourlyWithinDay:value.hourlyWithinDay} : {}) };
   }
   const applicationKey = key => Uint8Array.from(atob(key.replace(/-/g, '+').replace(/_/g, '/') +
     '='.repeat((4 - key.length % 4) % 4)), c => c.charCodeAt(0));
@@ -95,6 +97,7 @@
         const key = await response.json();
         if (key.protocol !== 2) throw Error('サーバーの通知機能の更新が必要です。');
         this.supportsTimerNotifications = key.timerNotifications === true;
+        this.supportsFlexibleTimerNotifications = key.flexibleTimerNotifications === true;
         this.publicKey = applicationKey(key.publicKey);
         this.subscription = await reg.pushManager.getSubscription();
         this.readyRegistration = reg;
@@ -134,7 +137,7 @@
       this.settings = this.readSettings();
       this.revision = Math.max(this.revision, Number(localStorage.getItem(REVISION)) || 0);
       const body = { token: this.deviceToken(), revision: this.revision };
-      if (this.settings.enabled && !this.supportsTimerNotifications) throw Error('通知サーバーを更新してから、通知設定を保存してください。');
+      if (this.settings.enabled && (!this.supportsTimerNotifications || !this.supportsFlexibleTimerNotifications)) throw Error('通知サーバーを更新してから、通知設定を保存してください。');
       if (this.settings.enabled) Object.assign(body, {
         subscription: this.subscription.toJSON(), days: [], hours: [],
         timers: this.getTimers().map(timer => {

@@ -22,13 +22,17 @@ function validSubscription(s) {
     typeof s.keys[k] === 'string' && /^[A-Za-z0-9_-]{16,200}={0,2}$/.test(s.keys[k]));
 }
 
-function notificationOffsets(body) {
+function notificationOffsets(body, individual = false) {
   const days = body.days ?? [], hours = body.hours ?? [];
   if (!Array.isArray(days) || !Array.isArray(hours) ||
-      days.some(n => !Number.isInteger(n) || n < 0 || n > 7) ||
-      hours.some(n => !Number.isInteger(n) || n < 1 || n > 23)) return null;
+      days.some(n => !Number.isSafeInteger(n) || n < (individual ? 1 : 0) ||
+        (individual ? !Number.isSafeInteger(n * DAY) : n > 7)) ||
+      hours.some(n => !Number.isInteger(n) || n < 1 || n > 23) ||
+      (individual && body.hourlyWithinDay !== undefined && typeof body.hourlyWithinDay !== 'boolean')) return null;
+  const hourly = individual && body.hourlyWithinDay === true;
+  const selectedHours = hourly ? [...hours,...Array.from({length:23},(_,i)=>i+1)] : hours;
   return [...new Set(days)].map(n => ({ unit: 'day', amount: n, ms: n * DAY }))
-    .concat([...new Set(hours)].map(n => ({ unit: 'hour', amount: n, ms: n * 3600000 })));
+    .concat([...new Set(selectedHours)].map(n => ({ unit: 'hour', amount: n, ms: n * 3600000, hourly })));
 }
 
 async function sync(body, env) {
@@ -55,11 +59,10 @@ async function sync(body, env) {
     if (timer.notificationSettings !== undefined) {
       const settings = timer.notificationSettings;
       if (!settings || typeof settings !== 'object' || Array.isArray(settings) ||
-          typeof settings.enabled !== 'boolean' || !Array.isArray(settings.days) || !Array.isArray(settings.hours) ||
-          settings.days.some(n => !Number.isInteger(n) || n < 1 || n > 7)) {
+          typeof settings.enabled !== 'boolean' || !Array.isArray(settings.days) || !Array.isArray(settings.hours)) {
         return json({ error: 'invalid timer notification settings' }, 400);
       }
-      const customOffsets = notificationOffsets(settings);
+      const customOffsets = notificationOffsets(settings,true);
       if (customOffsets === null || (settings.enabled && !customOffsets.length)) {
         return json({ error: 'invalid timer notification settings' }, 400);
       }
@@ -67,7 +70,7 @@ async function sync(body, env) {
     }
     for (const offset of offsets) {
       const due = timer.endsAt - offset.ms;
-      const expires = offset.amount === 0 ? due + DAY : Math.min(timer.endsAt, due + DAY);
+      const expires = offset.amount === 0 ? due + DAY : Math.min(timer.endsAt, due + (offset.hourly ? 3600000 : DAY));
       if (expires <= now || (timer.startedAt !== undefined && due < timer.startedAt)) continue;
       // Keep legacy day IDs so previously accepted day alerts are not resent.
       const suffix = offset.unit === 'day' ? String(offset.amount) : 'hour|' + offset.amount;
@@ -91,7 +94,7 @@ async function sync(body, env) {
       SELECT json_extract(value,'$.id'),?,json_extract(value,'$.due'),
         json_extract(value,'$.title'),json_extract(value,'$.body'),json_extract(value,'$.expires')
       FROM json_each(?) WHERE EXISTS (SELECT 1 FROM subscribers WHERE id=? AND sync_revision=? AND invalidated_at IS NULL)
-      ON CONFLICT(id) DO UPDATE SET title=excluded.title,body=excluded.body,cancelled_at=NULL,
+      ON CONFLICT(id) DO UPDATE SET title=excluded.title,body=excluded.body,expires_at=excluded.expires_at,cancelled_at=NULL,
       failed_at=CASE WHEN ?=1 THEN NULL ELSE alerts.failed_at END,
       attempts=CASE WHEN ?=1 THEN 0 ELSE alerts.attempts END,
       next_attempt_at=CASE WHEN ?=1 THEN 0 ELSE alerts.next_attempt_at END,
@@ -114,7 +117,7 @@ async function api(req, env) {
   if (!configured(env)) return json({ error: '通知サーバーの設定が不足しています' }, 503);
   const path = new URL(req.url).pathname;
   if (req.method === 'GET' && path === '/api/push/key') {
-    return json({ publicKey: env.VAPID_PUBLIC_KEY, protocol: 2, timerNotifications: true, workerVersion: env.CF_VERSION_METADATA?.id ?? null });
+    return json({ publicKey: env.VAPID_PUBLIC_KEY, protocol: 2, timerNotifications: true, flexibleTimerNotifications: true, workerVersion: env.CF_VERSION_METADATA?.id ?? null });
   }
   if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
   const text = await req.text();

@@ -8,7 +8,7 @@ const SETTINGS = 'arkTimer_notification_settings_v1', TOKEN = 'arkManager_push_d
 const PENDING = 'arkManager_push_pending_v2';
 const token = 'c'.repeat(64);
 function harness({ settings = { enabled: true, days: [], hours: [1, 2] }, storage, permission = 'granted', online = true,
-  hostname = 'ark-manager.arktools.workers.dev', timerNotifications = true } = {}) {
+  hostname = 'ark-manager.arktools.workers.dev', timerNotifications = true, flexibleTimerNotifications = true } = {}) {
   storage ??= new Map([[SETTINGS, JSON.stringify(settings)], [TOKEN, token]]);
   const calls = [], traces = [], listeners = {}, nodes = new Map(), timers = new Map();
   let sequence = 0;
@@ -40,7 +40,7 @@ function harness({ settings = { enabled: true, days: [], hours: [1, 2] }, storag
     setTimeout(fn) { const id = ++sequence; timers.set(id, fn); return id; }, clearTimeout(id) { timers.delete(id); },
     async fetch(path, options) {
       traces.push(path);
-      if (path.endsWith('/key')) return new Response(JSON.stringify({ publicKey: 'AQ', protocol: 2, timerNotifications }));
+      if (path.endsWith('/key')) return new Response(JSON.stringify({ publicKey: 'AQ', protocol: 2, timerNotifications, flexibleTimerNotifications }));
       const call = { path, options, body: JSON.parse(options.body) };
       calls.push(call);
       return h.response(call);
@@ -67,6 +67,21 @@ test('各タイマーの時刻とOFFを別々に同期し、画像や余分な�
   assert.doesNotMatch(JSON.stringify(h.calls[0].body),/private-image|secret/);
   h.timersData[0].notificationSettings.hours=[4];await h.controller.markChanged();
   assert.deepEqual(h.calls[1].body.timers[0].notificationSettings.hours,[4]);
+});
+
+test('任意日数と毎時通知をタイマー別に同期し、未対応サーバーへ送らない',async()=>{
+  const h=harness();h.timersData[0].notificationSettings={enabled:true,days:[14,30,30],hours:[],hourlyWithinDay:true};
+  assert.equal(await h.controller.markChanged(),true);
+  assert.deepEqual(h.calls[0].body.timers[0].notificationSettings,{enabled:true,days:[14,30],hours:[],hourlyWithinDay:true});
+  const old=harness({flexibleTimerNotifications:false});old.timersData=h.timersData;
+  assert.equal(await old.controller.markChanged(),false);assert.equal(old.calls.length,0);assert.equal(old.storage.get(PENDING),'1');
+});
+
+test('日数なしの毎時通知を同期でき、不正な任意日数は未同期として保つ',async()=>{
+  const h=harness();h.timersData[0].notificationSettings={enabled:true,days:[],hours:[],hourlyWithinDay:true};
+  assert.equal(await h.controller.markChanged(),true);
+  h.timersData[0].notificationSettings.days=[Number.MAX_SAFE_INTEGER];
+  assert.equal(await h.controller.markChanged(),false);assert.equal(h.calls.length,1);assert.equal(h.storage.get(PENDING),'1');
 });
 
 test('個別設定に未対応のサーバーや不正な時刻へ同期せず、未同期として保持',async()=>{
