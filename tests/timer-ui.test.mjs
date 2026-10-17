@@ -36,6 +36,42 @@ function harness(){
 const timer=()=>({id:'timer_1',type:'other',map:'アイランド',timerName:'拠点',serverNo:'5041',memo:'旧メモ',
   startedAt:1800000000123,endsAt:1800007320123,sortOrder:3,lat:'10',lng:'20',showPin:true,imageMode:'default',imageSrc:''});
 
+test('一覧のタップで直接編集を開き、新規作成には削除ボタンを表示しない',()=>{
+  const h=harness();h.setTimers([timer()]);h.node('modal').scrollTop=400;h.run("setupDurationSelects();bindListActions({target:{closest:selector=>selector==='[data-timer]'?{dataset:{timer:'timer_1'}}:null}})");
+  assert.equal(h.node('editId').value,'timer_1');assert.equal(h.node('modalTitle').textContent,'タイマー編集');
+  assert.equal(h.node('modal').scrollTop,0);
+  assert.equal(h.node('deleteTimerFromForm').classList.contains('hidden'),false);assert.equal(h.node('modal').classList.contains('hidden'),false);
+  h.run('closeModal();openModal()');assert.equal(h.node('deleteTimerFromForm').classList.contains('hidden'),true);
+});
+
+test('一覧には期限と登録済みメモを表示し、メモのHTMLを実行可能な形で挿入しない',()=>{
+  const h=harness();h.setTimers([{...timer(),memo:'<img src=x onerror=alert(1)>\n補充を確認'}]);
+  const summary=h.run('buildTimerSummary(state.timers[0],60000)');
+  assert.ok(summary.includes(h.run('formatDateWithWeekday(state.timers[0].endsAt)')));assert.match(summary,/timer-deadline/);
+  assert.match(summary,/&lt;img src=x onerror=alert\(1\)&gt;\n補充を確認/);assert.doesNotMatch(summary,/<img src=x/);
+  h.run("state.timers[0].memo='   '");assert.doesNotMatch(h.run('buildTimerSummary(state.timers[0],60000)'),/timer-memo/);
+});
+
+test('編集画面からの削除は確認後だけ実行し、他のタイマーを維持して一覧へ戻る',async()=>{
+  const h=harness(),other={...timer(),id:'timer_2'};h.setTimers([timer(),other]);
+  h.run('setupDurationSelects();openModal(state.timers[0]);render=()=>{};openConfirm=async()=>false');
+  await h.run('deleteTimer("timer_1")');assert.equal(h.run('state.timers.length'),2);assert.equal(h.node('modal').classList.contains('hidden'),false);
+  h.run('openConfirm=async()=>true');await h.run('deleteTimer("timer_1")');
+  assert.deepEqual(plain(h.run('state.timers')),[other]);assert.equal(h.node('modal').classList.contains('hidden'),true);
+  assert.equal(h.node('add').classList.contains('hidden'),false);
+});
+
+test('アイランドの標準画像だけをトリミングし、座標と独自のマップ画像を維持',()=>{
+  const h=harness(),previous=timer();h.setTimers([previous]);h.run('setupDurationSelects();openModal(state.timers[0])');
+  assert.equal(h.node('imagePreview').classList.contains('island-map-surface'),true);
+  assert.equal(h.node('imagePreviewButton').classList.contains('island-map-frame'),true);
+  assert.equal(h.node('latInput').value,'10');assert.equal(h.node('lngInput').value,'20');
+  h.run("setPreviewImage('data:image/png;base64,aW1hZ2U=')");
+  assert.equal(h.node('imagePreview').classList.contains('island-map-surface'),false);
+  assert.equal(h.node('imagePreviewButton').classList.contains('island-map-frame'),false);
+  assert.equal(h.run('state.timers[0].endsAt'),previous.endsAt);
+});
+
 test('空欄や不正座標ではピンを表示せず、0座標は正しく表示',()=>{
   const h=harness();
   assert.equal(h.run("getPinPosition('アイランド','','')"),null);

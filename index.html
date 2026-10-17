@@ -1293,17 +1293,24 @@ body{
 .timer-list-heading-actions{display:flex;align-items:center;gap:8px;min-width:0}
 .timer-list-heading #sortSelect{width:140px;max-width:40vw;min-width:0;min-height:36px;padding:8px;font-size:11px;border-radius:10px}
 #timerCount{font-size:16px;white-space:nowrap}
-.timer-list-item{display:flex;gap:8px;min-width:0;height:112px}
+.timer-list-item{display:flex;gap:8px;min-width:0;min-height:124px}
 .timer-list-item.dragging{opacity:.65;outline:2px solid var(--blue);border-radius:20px}
 .timer-select-card{display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:10px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.045);color:var(--text);text-align:left}
 .timer-select-card.expired{border-color:rgba(255,117,117,.4)}
 .timer-map-thumbnail{position:relative;display:block;flex:0 0 82px;width:82px;height:82px;border-radius:12px;background-size:100% 100%;background-position:center;overflow:hidden}
-.timer-summary{display:grid;gap:6px;flex:1;min-width:0}
+.timer-map-surface{position:absolute;inset:0;display:block;background-size:100% 100%;background-position:center;background-repeat:no-repeat}
+.island-map-frame{overflow:hidden;border:0}
+.map-preview-button.island-map-frame{border-radius:18px}
+.island-map-surface{transform:scale(1.02);transform-origin:center;border:0}
+.timer-summary{display:grid;gap:5px;flex:1;min-width:0}
 .timer-summary.has-kind-icon{grid-template-columns:minmax(0,1fr) 50px;column-gap:8px}
 .timer-summary>span{grid-column:1;min-width:0}
 .timer-summary .timer-name{grid-column:1 / -1;display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .timer-meta{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .timer-summary .remain-value{font-size:13px;line-height:1.3;overflow-wrap:anywhere;font-weight:800}
+.timer-summary .timer-deadline,.timer-summary .timer-memo{grid-column:1 / -1;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4}
+.timer-deadline{font-size:10px;color:#bdd0df;font-variant-numeric:tabular-nums}
+.timer-memo{font-size:11px;color:var(--muted)}
 .timer-kind-icon{grid-column:2;grid-row:2 / 5;align-self:center;display:block;width:50px;height:54px;object-fit:contain;pointer-events:none}
 .timer-reorder{flex:0 0 40px}
 .timer-row-tools{display:grid;grid-template-rows:minmax(0,1fr) 44px;gap:6px;flex:0 0 40px;width:40px;min-width:0}
@@ -1311,12 +1318,8 @@ body{
 .timer-list-reset{display:grid;place-content:center;padding:2px;border:1px solid rgba(103,187,255,.25);border-radius:12px;background:rgba(103,187,255,.08);color:var(--blue)}
 .timer-list-reset .reset-symbol{font-size:20px;line-height:20px}
 .timer-list-reset .reset-label{font-size:9px;line-height:12px;white-space:nowrap}
-.timer-detail-map{position:relative;width:100%;aspect-ratio:1;background-size:100% 100%;background-position:center;background-repeat:no-repeat;border:1px solid var(--line);border-radius:20px;overflow:hidden}
-.timer-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
-.timer-detail-actions .character-delete{grid-column:1 / -1;margin:0}
-.timer-detail-value{font-size:17px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
 .map-edit-actions{display:flex;justify-content:space-between;gap:10px}
-.map-preview,.map-viewer-image{background-size:100% 100%}
+.map-preview{background-size:100% 100%}
 #imagePreviewPin{width:26px;height:26px;touch-action:none;cursor:grab}
 #imagePreviewPin::before{content:"";position:absolute;inset:-12px}
 .field>.eos-help{margin:0}
@@ -1331,13 +1334,13 @@ body{
 .manager-tabs button{padding:0 12px;line-height:1.2;font-size:13px;border-radius:10px}
 .manager-tabs button,.manager-settings-bottom .manager-small-btn,#recoveryRequest,#openUtcConverter{height:var(--manager-control-height);min-height:var(--manager-control-height);padding-top:0;padding-bottom:0;display:flex;align-items:center;justify-content:center;white-space:nowrap}
 @media(max-width:390px){:root{--manager-control-height:28px}}
-#characterDetail,#timerDetail{padding-top:var(--detail-back-height)}
-#characterDetail>.character-back,#timerDetail>.character-back{position:fixed;top:calc(var(--app-header-height) + var(--app-tabs-height));left:0;right:0;margin:0 auto;width:100%;max-width:820px;height:var(--detail-back-height);padding:0 16px;display:flex;align-items:center;z-index:18;background:linear-gradient(115deg,#0a1826,#0d2530);border-bottom:1px solid var(--line);text-align:left}
+#characterDetail{padding-top:var(--detail-back-height)}
+#characterDetail>.character-back{position:fixed;top:calc(var(--app-header-height) + var(--app-tabs-height));left:0;right:0;margin:0 auto;width:100%;max-width:820px;height:var(--detail-back-height);padding:0 16px;display:flex;align-items:center;z-index:18;background:linear-gradient(115deg,#0a1826,#0d2530);border-bottom:1px solid var(--line);text-align:left}
 /* Crop only the generated image's transparent padding in the layout. */
 .brand-title{position:relative;width:150px;max-width:100%;aspect-ratio:1890 / 705;flex:0 1 150px;overflow:hidden}
 .brand-wordmark{position:absolute;display:block;width:104.445%;max-width:none;height:auto;left:-3.281%;top:-3.263%}
-.topbar,.manager-tabs,#characterDetail>.character-back,#timerDetail>.character-back{background-color:#0c1e2d!important;background-image:linear-gradient(rgba(139,199,218,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(139,199,218,.025) 1px,transparent 1px),linear-gradient(90deg,#0c1e2d,#10303a)!important;background-size:52px 52px,52px 52px,auto!important;background-position:0 var(--chrome-y,0px),0 0,0 0}
-#characterDetail>.character-back,#timerDetail>.character-back{--chrome-y:calc(0px - var(--app-header-height) - var(--app-tabs-height))}
+.topbar,.manager-tabs,#characterDetail>.character-back{background-color:#0c1e2d!important;background-image:linear-gradient(rgba(139,199,218,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(139,199,218,.025) 1px,transparent 1px),linear-gradient(90deg,#0c1e2d,#10303a)!important;background-size:52px 52px,52px 52px,auto!important;background-position:0 var(--chrome-y,0px),0 0,0 0}
+#characterDetail>.character-back{--chrome-y:calc(0px - var(--app-header-height) - var(--app-tabs-height))}
 #characterCount,#timerCount{font-size:16px;font-weight:400;line-height:1.4}
 .timer-list-heading{padding-right:48px}
 .timer-list-heading-actions{position:relative;flex:0 0 auto}
@@ -1397,7 +1400,6 @@ body{
       <section id="list" class="timer-list"></section>
       <div class="manager-settings-bottom"><button type="button" id="openTimerNotificationSettings" class="manager-small-btn">⚙ 通知設定</button><button type="button" data-open-transfer class="manager-small-btn">データ引き継ぎ</button></div>
       </div>
-      <section id="timerDetail" class="hidden"></section>
     </main>
 
     <dialog id="timerNotificationDialog" class="character-dialog" aria-label="タイマー通知設定">
@@ -1547,6 +1549,7 @@ body{
         </label>
 
         <button id="submitBtn" class="submit-btn" type="submit">追加して開始</button>
+        <button id="deleteTimerFromForm" class="character-delete hidden" type="button">タイマーを削除</button>
       </form>
     </section>
 
@@ -1599,7 +1602,7 @@ const BUILDING_DURATIONS={'わら':4,'木':8,'石':12,'金属':16,'TEK':20};
 const SORT_KEY='arkTimer_sort_mode';
 const $=id=>document.getElementById(id);
 const list=$('list'),addBtn=$('add'),sortSelect=$('sortSelect'),activeCount=$('activeCount'),emptyState=$('emptyState'),overlay=$('overlay'),modal=$('modal'),closeModalBtn=$('closeModal'),modalTitle=$('modalTitle'),submitBtn=$('submitBtn'),timerForm=$('timerForm'),editIdInput=$('editId'),imageModeInput=$('imageMode'),mapSelect=$('mapSelect'),typeSelect=$('typeSelect'),materialField=$('materialField'),customTimerField=$('customTimerField'),memoInput=$('memoInput'),timerNameInput=$('timerNameInput'),latInput=$('latInput'),lngInput=$('lngInput'),daysInput=$('daysInput'),hoursInput=$('hoursInput'),minutesInput=$('minutesInput'),imageInput=$('imageInput'),imagePreview=$('imagePreview'),imagePreviewButton=$('imagePreviewButton'),imagePreviewPin=$('imagePreviewPin'),showPinInput=$('showPinInput'),confirmOverlay=$('confirmOverlay'),confirmTitle=$('confirmTitle'),confirmText=$('confirmText'),confirmCancel=$('confirmCancel'),confirmOk=$('confirmOk'),materialDays=$('materialDays');
-const state={timers:[],pendingCustomImage:'',pendingTypeImage:'',typeImageRequest:0,typeImageLoading:false,confirmResolver:null,sortMode:'dueSoon',selectedTimerId:null,previewImageSrc:'',manualPin:null,pinDragPointer:null};
+const state={timers:[],pendingCustomImage:'',pendingTypeImage:'',typeImageRequest:0,typeImageLoading:false,confirmResolver:null,sortMode:'dueSoon',previewImageSrc:'',manualPin:null,pinDragPointer:null};
 
 function load(){
   try{
@@ -1637,7 +1640,8 @@ function syncTypeUI(){const type=typeSelect.value;materialField.classList.toggle
 function setupDurationSelects(){for(const [select,max,label]of [[daysInput,9999,'日'],[hoursInput,23,'時間'],[minutesInput,59,'分']])select.innerHTML=Array.from({length:max+1},(_,n)=>`<option value="${n}">${n}${label}</option>`).join('')}
 function setDurationValue(select,value,label){const n=Math.max(0,Math.floor(Number(value)||0));if(![...select.options].some(option=>option.value===String(n))){const option=document.createElement('option');option.value=String(n);option.textContent=n+label;select.appendChild(option)}select.value=String(n)}
 function getDefaultImageForMap(mapName){return DEFAULT_MAP_IMAGES[mapName]||DEFAULT_MAP_IMAGES['その他']}
-function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src}")`:'';imagePreview.classList.toggle('is-empty',!src);state.previewImageSrc=src;imagePreview.style.aspectRatio='1';if(src){const image=new Image();image.onload=()=>{if(state.previewImageSrc===src&&image.naturalWidth&&image.naturalHeight)imagePreview.style.aspectRatio=image.naturalWidth+'/'+image.naturalHeight};image.src=src}}
+function isIslandMapImage(src){return src===DEFAULT_MAP_IMAGES['アイランド']}
+function setPreviewImage(src){imagePreview.style.backgroundImage=src?`url("${src}")`:'';imagePreview.classList.toggle('is-empty',!src);imagePreview.classList.toggle('island-map-surface',isIslandMapImage(src));imagePreviewButton.classList.toggle('island-map-frame',isIslandMapImage(src));state.previewImageSrc=src;imagePreview.style.aspectRatio='1';if(src){const image=new Image();image.onload=()=>{if(state.previewImageSrc===src&&image.naturalWidth&&image.naturalHeight)imagePreview.style.aspectRatio=image.naturalWidth+'/'+image.naturalHeight};image.src=src}}
 function getMapBounds(mapName){return MAP_BOUNDS[mapName]||{width:100,height:100}}
 function clamp(num,min,max){return Math.min(max,Math.max(min,num))}
 function parseCoord(value){const text=String(value??'').trim();if(!text)return null;const num=Number(text);return Number.isFinite(num)?num:null}
@@ -1694,8 +1698,10 @@ function refreshImagePreviewForCurrentForm(){const defaultImage=getDefaultImageF
 function openModal(editTarget=null){
   overlay.classList.remove('hidden');
   modal.classList.remove('hidden');
+  modal.scrollTop=0;
   addBtn.classList.add('hidden');
   document.body.style.overflow='hidden';
+  $('deleteTimerFromForm').classList.toggle('hidden',!editTarget);
   state.typeImageRequest++;state.typeImageLoading=false;
   state.pendingTypeImage=customTypeImageSource(editTarget?.customTypeImage);
   $('customTypeImageInput').value='';updateTypeImagePreview();
@@ -1760,7 +1766,7 @@ function openModal(editTarget=null){
   syncTypeUI();
   refreshPreviewPin();
 }
-function closeModal(){state.typeImageRequest++;state.typeImageLoading=false;submitBtn.disabled=false;overlay.classList.add('hidden');modal.classList.add('hidden');document.body.style.overflow='';addBtn.classList.toggle('hidden',$('timerTab').getAttribute('aria-selected')!=='true'||!!state.selectedTimerId)}
+function closeModal(){state.typeImageRequest++;state.typeImageLoading=false;submitBtn.disabled=false;overlay.classList.add('hidden');modal.classList.add('hidden');document.body.style.overflow='';addBtn.classList.toggle('hidden',$('timerTab').getAttribute('aria-selected')!=='true')}
 function openConfirm(title,text){confirmTitle.textContent=title||'確認';confirmText.textContent=text||'実行しますか？';confirmOverlay.classList.remove('hidden');return new Promise(resolve=>{state.confirmResolver=resolve})}
 function closeConfirm(result){confirmOverlay.classList.add('hidden');if(state.confirmResolver){const resolver=state.confirmResolver;state.confirmResolver=null;resolver(!!result)}}
 function formatDateWithWeekday(timestamp){const date=new Date(timestamp);const w=['日','月','火','水','木','金','土'][date.getDay()];const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,'0');const d=String(date.getDate()).padStart(2,'0');const hh=String(date.getHours()).padStart(2,'0');const mm=String(date.getMinutes()).padStart(2,'0');return `${y}/${m}/${d}(${w}) ${hh}:${mm}`}
@@ -1793,58 +1799,24 @@ function getSortedTimers(){
       return timers.sort((a,b)=>a.endsAt-b.endsAt||a.sortOrder-b.sortOrder);
   }
 }
-function openMapViewer(timer){
-  const imageSrc=getTimerImageSrc(timer);
-  if(!imageSrc)return;
-  const viewer=document.createElement('div');
-  viewer.className='map-viewer';
-  viewer.innerHTML='<div class="map-viewer-backdrop"></div><div class="map-viewer-panel"><button type="button" class="map-viewer-close" aria-label="閉じる">×</button><div class="map-viewer-image"></div></div>';
-  const imageEl=viewer.querySelector('.map-viewer-image');
-  imageEl.style.backgroundImage=`url("${imageSrc}")`;
-  const pin=document.createElement('div');
-  pin.className='map-pin viewer-pin hidden';
-  imageEl.appendChild(pin);
-  setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false,timer.manualPin);
-  const close=()=>viewer.remove();
-  viewer.querySelector('.map-viewer-close').addEventListener('click',close);
-  viewer.querySelector('.map-viewer-backdrop').addEventListener('click',close);
-  viewer.addEventListener('click',event=>{if(event.target===viewer)close()});
-  document.body.appendChild(viewer);
-}
 function decorateTimerMap(element,timer){
-  element.style.backgroundImage=`url("${getTimerImageSrc(timer)}")`;
-  const pin=document.createElement('span');pin.className='map-pin hidden';element.appendChild(pin);
+  const src=getTimerImageSrc(timer),surface=document.createElement('span');
+  surface.className='timer-map-surface'+(isIslandMapImage(src)?' island-map-surface':'');
+  surface.style.backgroundImage=`url("${src}")`;element.appendChild(surface);
+  const pin=document.createElement('span');pin.className='map-pin hidden';surface.appendChild(pin);
   setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false,timer.manualPin);
 }
-function showTimerList(){
-  state.selectedTimerId=null;$('timerDetail').classList.add('hidden');$('timerListPage').classList.remove('hidden');
-  addBtn.classList.toggle('hidden',$('timerTab').getAttribute('aria-selected')!=='true');render();window.scrollTo(0,0);
-}
-function showTimerDetail(id){
-  if(!state.timers.some(timer=>timer.id===id))return;
-  state.selectedTimerId=id;$('timerListPage').classList.add('hidden');$('timerDetail').classList.remove('hidden');
-  addBtn.classList.add('hidden');renderTimerDetail();window.scrollTo(0,0);
-}
-function renderTimerDetail(){
-  const timer=state.timers.find(timer=>timer.id===state.selectedTimerId);if(!timer)return showTimerList();
-  const remain=getRemainingMs(timer),coords=buildCoordTag(timer);
-  const fields=[['マップ',timer.map+(timer.serverNo?'：'+timer.serverNo:'')],['種類',buildTypeLabel(timer)],
-    ['期限',formatDateWithWeekday(timer.endsAt)],['座標',coords?coords.replace('座標:',''):'未設定'],['メモ',timer.memo||'未設定']];
-  const detail=$('timerDetail');
-  detail.innerHTML=`<button class="character-back" data-timer-back type="button">‹ タイマ一覧</button><button class="timer-detail-map" data-open-timer-map type="button" aria-label="マップを拡大"></button><div class="section-heading"><h1>${escapeHtml(timer.timerName||'未設定')}</h1></div><div class="character-fields"><div class="character-field"><div class="character-field-label">残り時間</div><div class="timer-detail-value remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</div></div>${fields.map(([label,value])=>`<div class="character-field"><div class="character-field-label">${label}</div><div class="timer-detail-value">${escapeHtml(value)}</div></div>`).join('')}</div><div class="timer-detail-actions"><button class="manager-small-btn" data-action="reset" data-id="${escapeHtml(timer.id)}" type="button">リセット</button><button class="manager-small-btn" data-action="edit" data-id="${escapeHtml(timer.id)}" type="button">編集</button><button class="character-delete" data-action="delete" data-id="${escapeHtml(timer.id)}" type="button">タイマを削除</button></div>`;
-  decorateTimerMap(detail.querySelector('.timer-detail-map'),timer);
-}
+function buildTimerSummary(timer,remain){const kindImage=buildTimerKindImage(timer),memo=String(timer.memo||'').trim();return `<span class="timer-summary${kindImage?' has-kind-icon':''}"><span class="timer-name">${escapeHtml(timer.timerName||'未設定')}</span><span class="timer-meta">${escapeHtml(timer.map)}${timer.serverNo?'：'+escapeHtml(timer.serverNo):''}</span><span class="timer-meta">${escapeHtml(buildTypeLabel(timer))}</span><span class="remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</span>${kindImage}<span class="timer-deadline">期限 ${formatDateWithWeekday(timer.endsAt)}</span>${memo?`<span class="timer-memo">メモ：${escapeHtml(memo)}</span>`:''}</span>`}
 function render(){
   const sorted=getSortedTimers();list.innerHTML='';let active=0;
   for(const timer of sorted){
-    const remain=getRemainingMs(timer),kindImage=buildTimerKindImage(timer);if(remain>0)active++;
+    const remain=getRemainingMs(timer);if(remain>0)active++;
     const row=document.createElement('div');row.className='timer-list-item';row.dataset.id=timer.id;
-    row.innerHTML=`<button class="timer-select-card${remain<=0?' expired':''}" type="button" data-timer="${escapeHtml(timer.id)}"><span class="timer-map-thumbnail" aria-hidden="true"></span><span class="timer-summary${kindImage?' has-kind-icon':''}"><span class="timer-name">${escapeHtml(timer.timerName||'未設定')}</span><span class="timer-meta">${escapeHtml(timer.map)}${timer.serverNo?'：'+escapeHtml(timer.serverNo):''}</span><span class="timer-meta">${escapeHtml(buildTypeLabel(timer))}</span><span class="remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</span>${kindImage}</span><span class="character-chevron" aria-hidden="true">›</span></button><div class="timer-row-tools"><div class="character-drag-handle timer-reorder" data-timer-drag="${escapeHtml(timer.id)}" role="button" tabindex="0" aria-label="長押しでタイマを並び替え、矢印キーで上下へ移動">☰</div><button class="timer-list-reset" type="button" data-action="reset" data-id="${escapeHtml(timer.id)}" aria-label="${escapeHtml(timer.timerName||'未設定')}をリセット"><span class="reset-symbol" aria-hidden="true">↻</span><span class="reset-label" aria-hidden="true">リセット</span></button></div>`;
+    row.innerHTML=`<button class="timer-select-card${remain<=0?' expired':''}" type="button" data-timer="${escapeHtml(timer.id)}"><span class="timer-map-thumbnail" aria-hidden="true"></span>${buildTimerSummary(timer,remain)}<span class="character-chevron" aria-hidden="true">›</span></button><div class="timer-row-tools"><div class="character-drag-handle timer-reorder" data-timer-drag="${escapeHtml(timer.id)}" role="button" tabindex="0" aria-label="長押しでタイマを並び替え、矢印キーで上下へ移動">☰</div><button class="timer-list-reset" type="button" data-action="reset" data-id="${escapeHtml(timer.id)}" aria-label="${escapeHtml(timer.timerName||'未設定')}をリセット"><span class="reset-symbol" aria-hidden="true">↻</span><span class="reset-label" aria-hidden="true">リセット</span></button></div>`;
     decorateTimerMap(row.querySelector('.timer-map-thumbnail'),timer);list.appendChild(row);
   }
   if(activeCount)activeCount.textContent=String(active);
   $('timerCount').textContent=sorted.length+'件';emptyState.classList.toggle('hidden',sorted.length>0);
-  if(state.selectedTimerId)renderTimerDetail();
 }
 
 function buildTimerPayload(now,keepId=null,existingSortOrder=null){
@@ -1874,7 +1846,7 @@ function addTimerFromForm(event){
 }
 async function resetTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;const ok=await openConfirm('リセット確認','このタイマーを現在時刻から再スタートしますか？');if(!ok)return;const durationMs=target.type==='building'?BUILDING_DURATIONS[target.material]*24*60*60*1000:Math.max(60000,target.endsAt-target.startedAt);const now=Date.now();target.startedAt=now;target.endsAt=now+durationMs;save();render()}
 function editTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;openModal(target)}
-async function deleteTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;const name=(target.timerName||'').trim()||'未設定';const ok=await openConfirm('削除確認',`「${name}」を削除しますか？`);if(!ok)return;state.timers=state.timers.filter(timer=>timer.id!==id);save();render()}
+async function deleteTimer(id){const target=state.timers.find(timer=>timer.id===id);if(!target)return;const name=(target.timerName||'').trim()||'未設定';const ok=await openConfirm('削除確認',`「${name}」を削除しますか？`);if(!ok)return;state.timers=state.timers.filter(timer=>timer.id!==id);save();render();if(editIdInput.value===id)closeModal()}
 function swapSortOrder(id,direction){
   const manual=state.timers.slice().sort((a,b)=>a.sortOrder-b.sortOrder);
   const index=manual.findIndex(timer=>timer.id===id);
@@ -1888,7 +1860,7 @@ function swapSortOrder(id,direction){
   save();render();
 }
 function bindListActions(event){
-  const selected=event.target.closest('[data-timer]');if(selected)return showTimerDetail(selected.dataset.timer);
+  const selected=event.target.closest('[data-timer]');if(selected)return editTimer(selected.dataset.timer);
   const button=event.target.closest('button[data-action]');
   if(!button)return;
   const action=button.dataset.action,id=button.dataset.id;
@@ -1914,7 +1886,7 @@ function bindEvents(){
   timerForm.addEventListener('submit',addTimerFromForm);
   list.addEventListener('click',bindListActions);
   list.addEventListener('keydown',event=>{const handle=event.target.closest('[data-timer-drag]');if(!handle||!['ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();const id=handle.dataset.timerDrag,ordered=getSortedTimers(),index=ordered.findIndex(timer=>timer.id===id),direction=event.key==='ArrowUp'?-1:1;if(index+direction<0||index+direction>=ordered.length)return;ordered.forEach((timer,i)=>{timer.sortOrder=i});state.sortMode='manual';sortSelect.value='manual';swapSortOrder(id,direction);[...list.querySelectorAll('[data-timer-drag]')].find(item=>item.dataset.timerDrag===id)?.focus()});
-  $('timerDetail').addEventListener('click',event=>{if(event.target.closest('[data-timer-back]'))return showTimerList();if(event.target.closest('[data-open-timer-map]'))return openMapViewer(state.timers.find(timer=>timer.id===state.selectedTimerId));bindListActions(event)});
+  $('deleteTimerFromForm').addEventListener('click',()=>{if(editIdInput.value)deleteTimer(editIdInput.value)});
   mapSelect.addEventListener('change',syncTimerServerChoice);
   $('customMapInput').addEventListener('input',()=>{if(mapSelect.value==='__custom__')refreshPreviewPin()});
   latInput.addEventListener('input',usePreviewCoordinates);
@@ -2113,7 +2085,7 @@ init();
   page.style.display='none';void page.offsetHeight;page.style.removeProperty('display');
  }
  function showDetail(id){selectedId=id;$('characterListPage').classList.add('hidden');$('characterDetail').classList.remove('hidden');$('addCharacter').classList.add('hidden');renderDetail();window.scrollTo(0,0)}
- function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars||!!state.selectedTimerId);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
+ function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
  function formField(key,value=''){
   const label=labels[key];
   if(key==='tribeMember')return `<label class="field tribe-check"><input name="tribeMember" type="checkbox" value="yes" ${value===true||value==='yes'?'checked':''}><span>トライブに所属している</span></label>`;
