@@ -1085,21 +1085,41 @@ body.manager-dialog-open dialog[open]{pointer-events:auto}
 #modal .form{gap:20px;padding:0}
 #overlay.overlay{background:rgba(0,0,0,.72);backdrop-filter:none}
 
-.level-boss-row{display:grid;grid-template-columns:minmax(0,1fr) 56px;align-items:center;gap:8px;cursor:default}
-.level-boss-label{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;gap:8px;min-width:0;cursor:pointer}
-.level-boss-label.has-level-image{grid-template-columns:22px 64px minmax(0,1fr)}
-.level-rule-name{min-width:0;overflow-wrap:anywhere}
-.level-boss-label input{width:22px;height:22px;flex:0 0 22px;accent-color:#67bbff}
-.level-rule-image{position:relative;display:block;width:64px;height:64px;overflow:hidden;pointer-events:none}
+.level-panel{
+  container-name:level-unlocks;
+  container-type:inline-size;
+  min-width:0;
+  --level-image-size:48px;
+  --level-check-size:20px;
+  --level-controls-width:54px;
+  --level-gap:8px;
+  --level-text-size:13px;
+  --level-row-padding:10px;
+}
+.level-boss-row,.level-extra-row{gap:var(--level-gap);padding:var(--level-row-padding);min-width:0}
+.level-boss-row{display:grid;grid-template-columns:minmax(0,1fr) var(--level-controls-width);align-items:center;cursor:default}
+.level-boss-label{display:grid;grid-column:1;grid-row:1;grid-template-columns:var(--level-check-size) minmax(0,1fr);align-items:center;gap:var(--level-gap);min-width:0;cursor:pointer}
+.level-boss-label.has-level-image{grid-template-columns:var(--level-check-size) var(--level-image-size) minmax(0,1fr)}
+.level-check-item .level-rule-name{min-width:0;font-size:var(--level-text-size);overflow-wrap:anywhere}
+/* Native checkboxes must not inherit the padding of ordinary text fields. */
+.level-boss-label input,.level-extra-row input{width:var(--level-check-size);height:var(--level-check-size);min-width:0;margin:0;padding:0;accent-color:#67bbff}
+.level-rule-image{position:relative;display:block;width:var(--level-image-size);height:var(--level-image-size);overflow:hidden;pointer-events:none}
 .level-rule-artwork{position:absolute;display:block;max-width:none;pointer-events:none}
-.level-boss-controls{display:grid;justify-items:center;align-content:center;gap:6px;min-width:0}
-.level-boss-controls select{width:56px;min-width:0;max-width:100%;min-height:36px;padding:7px 8px;border-radius:12px;font-size:14px}
-.level-boss-controls strong{width:100%;text-align:center;color:#a9e3ff;white-space:nowrap}
-.level-extra-row{display:grid;grid-template-columns:22px minmax(0,1fr) 56px;gap:8px}
-.level-extra-row.has-level-image{grid-template-columns:22px 64px minmax(0,1fr) 56px}
-.level-extra-row strong{text-align:center;white-space:nowrap}
-@media(max-width:380px){.level-boss-row{grid-template-columns:minmax(0,1fr) 54px;gap:7px;padding:9px 8px}.level-boss-label{grid-template-columns:20px minmax(0,1fr);gap:7px}.level-boss-label.has-level-image{grid-template-columns:20px 56px minmax(0,1fr)}.level-rule-name{font-size:12px!important}.level-boss-label input{width:20px;height:20px;flex-basis:20px}.level-rule-image{width:56px;height:56px}.level-boss-controls select{width:54px;padding:7px 5px}.level-boss-controls strong,.level-extra-row strong{font-size:12px}.level-extra-row{grid-template-columns:20px minmax(0,1fr) 54px;gap:7px;padding:9px 8px}.level-extra-row.has-level-image{grid-template-columns:20px 56px minmax(0,1fr) 54px}}
-@media(max-width:600px){#characterDialog .level-summary{font-size:clamp(16px,4.8vw,21px)}#characterDialog .level-boss-label{grid-column:1 / -1}#characterDialog .level-boss-controls{grid-column:2;grid-row:2}#characterDialog .level-extra-row.has-level-image{grid-template-columns:22px 64px minmax(0,1fr)}#characterDialog .level-extra-row strong{grid-column:2 / -1;justify-self:end}@media(max-width:380px){#characterDialog .level-extra-row.has-level-image{grid-template-columns:20px 56px minmax(0,1fr)}}}
+.level-boss-controls{display:grid;grid-column:2;grid-row:1;align-self:center;justify-items:center;align-content:center;gap:4px;min-width:0}
+.level-boss-controls select{width:100%;min-width:0;max-width:100%;min-height:34px;padding:6px 5px;border-radius:10px;font-size:14px}
+.level-boss-controls strong,.level-extra-row strong{width:100%;text-align:center;color:#a9e3ff;white-space:nowrap;font-size:var(--level-text-size)}
+.level-extra-row{display:grid;grid-template-columns:var(--level-check-size) minmax(0,1fr) var(--level-controls-width)}
+.level-extra-row.has-level-image{grid-template-columns:var(--level-check-size) var(--level-image-size) minmax(0,1fr) var(--level-controls-width)}
+.level-extra-row strong{grid-column:-2 / -1;grid-row:1;align-self:center}
+#characterDialog .level-panel{margin-inline:-10px;padding:10px}
+#characterDialog .level-summary{font-size:clamp(16px,4.8vw,21px)}
+/* Respond to the available panel width, including the narrower editor dialog. */
+@container level-unlocks (max-width:300px){
+  .level-boss-row,.level-extra-row{--level-image-size:40px;--level-check-size:19px;--level-controls-width:50px;--level-gap:7px;--level-text-size:12px;--level-row-padding:8px}
+}
+@container level-unlocks (max-width:240px){
+  .level-boss-row,.level-extra-row{--level-image-size:32px;--level-check-size:18px;--level-controls-width:46px;--level-gap:6px;--level-text-size:11px;--level-row-padding:6px}
+}
 
 /* Server settings: label-first layout, reorder handle on the right */
 .saved-server-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto 42px;gap:8px;align-items:center;padding:10px 12px}
