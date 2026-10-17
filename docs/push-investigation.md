@@ -182,6 +182,31 @@ pnpm deploy:dry
 - 新しいアイランドには白い縁がないため、前回の2%拡大を外して画像全体を表示する。座標系と保存値は変更しない。既存タイマーは標準画像だけ切り替わり、期限・メモ・ピン座標・独自にアップロードした画像を維持する。旧画像ファイルも残す。
 - 自動テスト85件、静的検証、ビルドを通過。ローカルブラウザーの390px幅で5枚すべての選択・表示、既存のアイランドの一覧表示、編集を保存せず閉じた後の期限・マップ・件数の保持を確認。ローカルWorkersの画像配信検証に5枚のHTTP 200応答を追加した。iPhone実機は未検証。
 
+## ボス画像と難易度・レベル加算数の配置
+
+- キャラ詳細のボス討伐項目に添付順の7画像を追加し、難易度を右端へ、その下に `+5 Lv` / `+10 Lv` / `+15 Lv` を表示する。討伐チェック、難易度の保存形式、上限レベルの計算式は維持する。画像のない独自のボス条件も表示できる。
+- 320/390px幅で画像と文字がはみ出さないこと、7点の画像読み込み、γ/β/α選択時の加算数と上限レベルの更新をローカルブラウザーで確認。狭い新規キャラ設定ダイアログでは、項目名を上段、画像と難易度を下段にして読みやすさを保つ。新規設定のβ討伐で `+10 Lv` と上限115が表示されることも確認した。iPhone実機は未検証。
+- 背景除去はimagegenスキルのbuilt-in image_genを使用。生成画像を確認後、アスペクト比と透過アルファを保持して最大256pxへ縮小し、WebPの可逆圧縮で書き出した。7ファイルすべてのアルファ値に0と255が含まれることを確認。1枚あたり約33〜109KB。元の添付画像や生成PNGは変更しない。
+- 保存先はリポジトリ直下。対応は次のとおり。
+
+| 添付 | 対象 | 保存先 |
+| --- | --- | --- |
+| 2 | アイランド | `boss-overseer.webp` |
+| 3 | スコーチドアース | `boss-manticore.webp` |
+| 4 | アベレーション | `boss-rockwell.webp` |
+| 5 | エクスティンクション | `boss-king-titan.webp` |
+| 6 | ロストコロニー | `boss-lost-queen.webp` |
+| 7 | ジェネシス1 | `boss-master-controller.webp` |
+| 8 | アストレオス | `boss-astraeos.webp` |
+
+背景除去の最終共通プロンプト（各添付を個別の編集対象とし、`{subject}` だけ下記へ置換）：
+
+```text
+Use case: background-extraction. Asset type: compact boss image for a dark ARK Manager UI. Input image 1 is the edit target: {subject}. Remove ONLY the white background and replace it with genuine transparent alpha, including gaps between limbs and any interior white background gaps. Preserve the existing subject, colors, texture, face, pose, orientation, proportions and visible details exactly; do not redesign or complete portions already cropped in the original. Keep the whole visible object comfortably within the canvas, centered and large with a small transparent margin. No background, no floor, no cast shadow, no extra glow, no text, no frame. Output one transparent PNG cutout.
+```
+
+`{subject}` は添付順に `the black and cyan futuristic diamond-shaped Overseer`、`the red winged lion Manticore`、`the black and red humanoid tentacled Rockwell`、`the purple crystalline King Titan`、`the red winged armored Lost Queen`、`the purple mechanical Master Controller mask`、`the green and red tentacled Astraeos boss head`。
+
 ## 本番反映時の手順
 
 1. 上記の本番バージョン・ソース・Cron・D1のバインド先を反映直前にも確認する。push-developmentを参照する自動デプロイの有無も確認する。

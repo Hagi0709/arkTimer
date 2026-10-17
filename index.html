@@ -1085,15 +1085,17 @@ body.manager-dialog-open dialog[open]{pointer-events:auto}
 #modal .form{gap:20px;padding:0}
 #overlay.overlay{background:rgba(0,0,0,.72);backdrop-filter:none}
 
-.level-boss-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.level-boss-row>span{flex:1 1 160px;min-width:0}
-.level-boss-row select{width:auto;max-width:100%;min-width:132px;padding:9px 10px;border-radius:12px;font-size:14px}
-
-.level-boss-label{display:flex;align-items:center;gap:10px;flex:1 1 160px;min-width:0}
+.level-boss-row{display:grid;grid-template-columns:minmax(0,1fr) 56px;align-items:center;gap:8px;cursor:default}
+.level-boss-row.has-boss-image{grid-template-columns:minmax(0,1fr) 56px 56px}
+.level-boss-label{display:flex;align-items:center;gap:8px;min-width:0;cursor:pointer}
+.level-boss-label span{min-width:0;overflow-wrap:anywhere}
 .level-boss-label input{width:22px;height:22px;flex:0 0 22px;accent-color:#67bbff}
-.level-boss-controls{display:flex;align-items:center;gap:10px;margin-left:auto}
-.level-boss-controls select{min-width:64px;width:70px}
-.level-boss-controls strong{min-width:35px;text-align:right;color:#a9e3ff}
+.level-boss-image{display:block;width:56px;height:64px;object-fit:contain;pointer-events:none}
+.level-boss-controls{display:grid;justify-items:center;align-content:center;gap:6px;min-width:0}
+.level-boss-controls select{width:56px;min-width:0;max-width:100%;min-height:36px;padding:7px 8px;border-radius:12px;font-size:14px}
+.level-boss-controls strong{width:100%;text-align:center;color:#a9e3ff;white-space:nowrap}
+@media(max-width:380px){.level-boss-row{grid-template-columns:minmax(0,1fr) 54px;gap:7px;padding:9px 8px}.level-boss-row.has-boss-image{grid-template-columns:minmax(0,1fr) 42px 54px}.level-boss-label{gap:7px}.level-boss-label span{font-size:12px}.level-boss-label input{width:20px;height:20px;flex-basis:20px}.level-boss-image{width:42px;height:64px}.level-boss-controls select{width:54px;padding:7px 5px}.level-boss-controls strong{font-size:12px}}
+@media(max-width:600px){#characterDialog .level-summary{font-size:clamp(16px,4.8vw,21px)}#characterDialog .level-boss-row.has-boss-image{grid-template-columns:minmax(0,1fr) 56px}#characterDialog .has-boss-image .level-boss-label{grid-column:1 / -1}#characterDialog .level-boss-image{grid-column:1;grid-row:2;justify-self:center;width:76px;height:64px}#characterDialog .has-boss-image .level-boss-controls{grid-column:2;grid-row:2}}
 
 /* Server settings: label-first layout, reorder handle on the right */
 .saved-server-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto 42px;gap:8px;align-items:center;padding:10px 12px}
@@ -1956,12 +1958,20 @@ init();
  }
  // Existing boss checkboxes are treated as alpha completions; old values remain readable.
  const BOSS_LEVELS={gamma:5,beta:10,alpha:15};
+ const BOSS_IMAGES={overseer:'boss-overseer.webp',manticore:'boss-manticore.webp',rockwell:'boss-rockwell.webp',king_titan:'boss-king-titan.webp',lost_queen:'boss-lost-queen.webp',master_controller:'boss-master-controller.webp',abyssalus_shallocis:'boss-astraeos.webp'};
  const bossRule=r=>r.type==='boss'||['overseer','manticore','rockwell','king_titan','lost_queen','master_controller','abyssalus_shallocis'].includes(r.id);
  function saveLevelRules(){localStorage.setItem(LEVEL_RULES_KEY,JSON.stringify(levelRules))}
  function checkedLevelIds(c){const ids=Array.isArray(c.levelUnlocks)?c.levelUnlocks:[];const all=[...new Set(ids)];return all.includes('bobs_tall_tales')?[...new Set([...all,'bobs_sc','bobs_ab','bobs_ex'])]:all}
  function bossTier(c,id){const tiers=c.levelBossTiers||{};return ['gamma','beta','alpha'].includes(tiers[id])?tiers[id]:'alpha'}
  function getLevelTotal(c){return LEVEL_BASE+levelRules.reduce((sum,r)=>sum+(checkedLevelIds(c).includes(r.id)?(bossRule(r)?BOSS_LEVELS[bossTier(c,r.id)]:Number(r.points)):0),0)}
- function levelRuleMarkup(r,c,isNew=false){const check=isNew?'data-new-level':'data-level-id';const checked=checkedLevelIds(c).includes(r.id);if(bossRule(r)){const tier=bossTier(c,r.id),key=isNew?'data-new-boss':'data-level-boss';return `<div class="level-check-item level-boss-row"><label class="level-boss-label"><input type="checkbox" ${check}="${esc(r.id)}" ${checked?'checked':''}><span>${esc(r.name).replace('：','：<br>')}</span></label><div class="level-boss-controls"><select ${key}="${esc(r.id)}" aria-label="${esc(r.name)}の難易度"><option value="gamma" ${tier==='gamma'?'selected':''}>γ</option><option value="beta" ${tier==='beta'?'selected':''}>β</option><option value="alpha" ${tier==='alpha'?'selected':''}>α</option></select><strong data-boss-points>+${BOSS_LEVELS[tier]}</strong></div></div>`}return `<label class="level-check-item"><input type="checkbox" ${check}="${esc(r.id)}" ${checked?'checked':''}><span>${esc(r.name).replace('：','：<br>')}</span><strong>+${Number(r.points)}</strong></label>`}
+ function levelRuleMarkup(r,c,isNew=false){
+  const check=isNew?'data-new-level':'data-level-id',checked=checkedLevelIds(c).includes(r.id);
+  if(bossRule(r)){
+   const tier=bossTier(c,r.id),key=isNew?'data-new-boss':'data-level-boss',image=BOSS_IMAGES[r.id];
+   return `<div class="level-check-item level-boss-row${image?' has-boss-image':''}"><label class="level-boss-label"><input type="checkbox" ${check}="${esc(r.id)}" ${checked?'checked':''}><span>${esc(r.name).replace('：','：<br>')}</span></label>${image?`<img class="level-boss-image" src="./${image}" alt="" aria-hidden="true" decoding="async">`:''}<div class="level-boss-controls"><select ${key}="${esc(r.id)}" aria-label="${esc(r.name)}の難易度"><option value="gamma" ${tier==='gamma'?'selected':''}>γ</option><option value="beta" ${tier==='beta'?'selected':''}>β</option><option value="alpha" ${tier==='alpha'?'selected':''}>α</option></select><strong data-boss-points aria-label="上限レベルの加算数">+${BOSS_LEVELS[tier]} Lv</strong></div></div>`;
+  }
+  return `<label class="level-check-item"><input type="checkbox" ${check}="${esc(r.id)}" ${checked?'checked':''}><span>${esc(r.name).replace('：','：<br>')}</span><strong>+${Number(r.points)}</strong></label>`;
+ }
  function levelPanel(c){return `<section class="level-panel"><h2>レベル上限解放</h2><div class="level-summary">現在の上限：Lv ${getLevelTotal(c)}</div><div class="level-check-list">${levelRules.map(r=>levelRuleMarkup(r,c)).join('')}</div></section>`}
  function renderLevelSettings(){const list=$('levelSettingsList');list.innerHTML=levelRules.map(r=>`<div class="level-setting-row"><span>${esc(r.name)}（${bossRule(r)?'討伐：γ +5 / β +10 / α +15':'+'+Number(r.points)+' Lv'}）</span><button class="manager-small-btn" data-level-edit="${esc(r.id)}" type="button">編集</button><button class="manager-small-btn" data-level-delete="${esc(r.id)}" type="button">削除</button></div>`).join('')||'<p>登録条件はありません。</p>'}
  function updateNewLevelSummary(){const panel=$('characterFormFields');const c={levelUnlocks:[...panel.querySelectorAll('[data-new-level]:checked')].map(x=>x.dataset.newLevel),levelBossTiers:Object.fromEntries([...panel.querySelectorAll('[data-new-boss]')].map(x=>[x.dataset.newBoss,x.value]))};const label=$('newCharacterLevelSummary');if(label)label.textContent=`現在の上限：Lv ${getLevelTotal(c)}`}
@@ -2099,7 +2109,7 @@ init();
  $('characterDialog').addEventListener('close',()=>returnFocus?.isConnected&&returnFocus.focus());
  async function persistChange(next){try{await writeRecord(next);records=records.map(c=>c.id===next.id?next:c);renderCharacters();renderDetail();return true}catch(e){toast('保存できませんでした。端末の空き容量・ブラウザ設定を確認してください');return false}}
  $('characterFormFields').addEventListener('change',e=>{
-  if(e.target.matches('[data-new-boss]')){e.target.closest('.level-boss-row')?.querySelector('[data-boss-points]')?.replaceChildren(document.createTextNode('+'+BOSS_LEVELS[e.target.value]));updateNewLevelSummary();return}
+  if(e.target.matches('[data-new-boss]')){e.target.closest('.level-boss-row')?.querySelector('[data-boss-points]')?.replaceChildren(document.createTextNode('+'+BOSS_LEVELS[e.target.value]+' Lv'));updateNewLevelSummary();return}
 
   if(e.target.matches('[data-new-level],[data-new-tribe]')&&!e.target.checked){
    const label=e.target.closest('label')?.querySelector('span')?.textContent||'この項目';
