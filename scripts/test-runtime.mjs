@@ -57,6 +57,9 @@ try {
   assert.deepEqual(flexibleAlerts.map(a=>a.due_at).sort(),[8,14,30].map(n=>now+(40-n)*86400000).concat(Array.from({length:23},(_,i)=>now+40*86400000-(i+1)*3600000)).sort());
   await post('unsubscribe', { token, revision: now + 5 });
   assert.ok((await post('status', { token })).alerts.every(a => a.cancelled_at !== null));
+  flexible.revision=now+6;
+  assert.equal((await post('sync',flexible)).scheduled,26);
+  assert.deepEqual((await post('status',{token})).alerts.filter(a=>a.cancelled_at===null).map(a=>a.due_at).sort(),flexibleAlerts.map(a=>a.due_at).sort());
   const cron = await app.fetch('http://localhost/cdn-cgi/local/scheduled');
   assert.equal(cron.status, 200);
   for (const path of ['/', '/push-client.js', '/install-guide.js', '/sw.js', '/manifest.webmanifest', '/build-info.json']) {

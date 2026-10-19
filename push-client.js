@@ -27,8 +27,9 @@
     '='.repeat((4 - key.length % 4) % 4)), c => c.charCodeAt(0));
 
   class PushController {
-    constructor({ getTimers }) {
+    constructor({ getTimers, onSettingsChange = () => {} }) {
       this.getTimers = getTimers;
+      this.onSettingsChange = onSettingsChange;
       this.settings = this.readSettings();
       this.revision = Number(localStorage.getItem(REVISION)) || 0;
       this.pending = localStorage.getItem(PENDING) === '1';
@@ -36,6 +37,11 @@
       this.retryDelay = 1000;
     }
     readSettings() { return readSettings(); }
+    storeSettings(settings) {
+      localStorage.setItem(SETTINGS, JSON.stringify(settings));
+      this.settings = settings;
+      this.onSettingsChange();
+    }
     supported() {
       return window.isSecureContext && 'Notification' in window && 'PushManager' in window && 'serviceWorker' in navigator;
     }
@@ -235,7 +241,7 @@
         await this.ensureSubscription();
         this.settings = this.readSettings();
         this.settings.enabled = true;
-        localStorage.setItem(SETTINGS, JSON.stringify(this.settings));
+        this.storeSettings(this.settings);
         $('timerNotifyEnabled').checked = true;
         await this.markChanged();
       } catch (error) { this.status(error.message); }
@@ -246,8 +252,7 @@
       try {
         if (this.isStaticPage()) {
           next.enabled = false;
-          localStorage.setItem(SETTINGS, JSON.stringify(next));
-          this.settings = next;
+          this.storeSettings(next);
           this.close();
           return;
         }
@@ -257,7 +262,7 @@
           if (permission !== 'granted') throw Error('通知を許可してください。');
           await this.ensureSubscription();
         }
-        localStorage.setItem(SETTINGS, JSON.stringify(next));
+        this.storeSettings(next);
         if (await this.markChanged()) this.close();
       } catch (error) { this.status(error.message); }
       finally { this.refreshPermissionButton(); }

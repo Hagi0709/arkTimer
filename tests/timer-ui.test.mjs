@@ -8,7 +8,7 @@ const source=html.match(/<script>\s*([\s\S]*?)<\/script>/)[1]
   .split('// Character records and images live separately')[0].replace(/init\(\);\s*$/,'');
 const plain=value=>JSON.parse(JSON.stringify(value));
 function harness(){
-  const nodes=new Map(),storage=new Map(),listeners={};let created=0;
+  const nodes=new Map(),storage=new Map([['arkTimer_notification_settings_v1',JSON.stringify({enabled:true})]]),listeners={};let created=0;
   function node(id){
     if(!nodes.has(id)){
       const classes=new Set();
@@ -101,8 +101,8 @@ test('選択ごとに空欄を追加し、件数を制限せず重複日数を�
   }
 });
 
-test('注意書きはタイマーのチェックによらず、端末全体の通知がOFFのときだけ表示する',()=>{
-  const h=harness();h.run('openModal()');assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
+test('停止中の説明はタイマーのチェックによらず、通知設定がOFFのときだけ表示する',()=>{
+  const h=harness();h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:false}));h.run('openModal()');assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
   h.node('timerNotificationEnabled').checked=false;h.run('syncTimerNotificationUI()');assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
   h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:true}));h.run('syncTimerNotificationUI()');
   assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
@@ -113,28 +113,44 @@ test('注意書きはタイマーのチェックによらず、端末全体の�
   assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
 });
 
-test('アプリへの通知が許可済みなら保存設定がOFFでも注意書きを表示しない',()=>{
-  const h=harness();h.context.window.Notification={permission:'granted'};h.run('openModal()');
-  assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
-  h.node('timerNotificationEnabled').checked=false;h.run('syncTimerNotificationUI()');
-  assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
-  h.context.window.Notification.permission='denied';h.run('syncTimerNotificationHint()');
-  assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
+test('通知許可済みでも全体OFFなら個別設定を固定し、ONで元の選択と操作を復元する',()=>{
+  for(const enabled of [true,false]){
+    const h=harness(),settings={enabled,days:[7,1,14],hours:[],hourlyWithinDay:true,presetDays:[7,1],customNotifications:{enabled:true,entries:[{days:14,enabled:true},{days:30,enabled:false}]}};
+    h.context.window.Notification={permission:'granted'};
+    h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:false}));
+    h.setTimers([{...timer(),notificationSettings:settings}]);h.run('openModal(state.timers[0])');
+    assert.equal(h.node('timerNotificationEnabled').checked,enabled);
+    assert.equal(h.node('timerNotificationEnabled').disabled,true);
+    assert.equal(h.node('timerNotificationToggle').classList.contains('timer-notify-unavailable'),true);
+    assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
+    assert.equal(h.run('timerNotificationPresetInputs().every(input=>input.disabled)'),true);
+    assert.equal(h.node('timerNotificationHourly').disabled,true);
+    assert.equal(h.run('timerNotificationDayInputs().every(input=>input.disabled&&input.parentElement.dayToggle.disabled&&input.parentElement.removeButton.disabled)'),true);
+    assert.deepEqual(plain(h.run('readTimerNotificationForm()')),settings);
+    h.node('memoInput').value='全体OFF中の編集';h.run('render=()=>{};addTimerFromForm({preventDefault(){}})');
+    const saved=JSON.parse(h.storage.get('arkTimer_store_v8'))[0];
+    assert.deepEqual(saved.notificationSettings,settings);assert.equal(saved.endsAt,timer().endsAt);
+    h.run('openModal(state.timers[0])');
+    h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:true}));h.run('syncTimerNotificationUI()');
+    assert.equal(h.node('timerNotificationEnabled').disabled,false);
+    assert.equal(h.node('timerNotificationEnabled').checked,enabled);
+    assert.equal(h.node('timerNotificationToggle').classList.contains('timer-notify-unavailable'),false);
+    assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
+    assert.equal(h.node('timerNotificationHourly').disabled,!enabled);
+    assert.equal(h.run('timerNotificationDayInputs()[0].parentElement.dayToggle.disabled'),!enabled);
+    assert.deepEqual(plain(h.run('readTimerNotificationForm()')),settings);
+  }
 });
 
-test('アプリ復帰・通知許可の変更・共通設定を閉じた時も説明文を更新する',async()=>{
-  const h=harness();h.context.window.Notification={permission:'default'};h.run('openModal();bindTimerNotificationHintEvents()');
-  await Promise.resolve();
-  h.context.window.Notification.permission='granted';h.listeners['permission:change']();
-  assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
-  h.context.window.Notification.permission='default';h.listeners['window:pageshow']();
-  assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
-  h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:true}));h.listeners['timerNotificationDialog:close']();
-  assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
-  h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:false}));h.listeners['window:storage']({key:'arkTimer_notification_settings_v1'});
-  assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
-  h.context.window.Notification.permission='granted';h.listeners['document:visibilitychange']();
-  assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
+test('アプリ復帰・別タブの全体設定変更・共通設定を閉じた時に操作可否を更新する',()=>{
+  const h=harness();h.run('openModal();bindTimerNotificationHintEvents()');
+  for(const event of ['window:pageshow','window:focus','window:storage','document:visibilitychange','timerNotificationDialog:close']){
+    h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:false}));h.listeners[event]({key:'arkTimer_notification_settings_v1'});
+    assert.equal(h.node('timerNotificationEnabled').disabled,true);assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
+    h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:true}));h.listeners[event]({key:'arkTimer_notification_settings_v1'});
+    assert.equal(h.node('timerNotificationEnabled').disabled,false);assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
+    assert.equal(h.node('timerNotificationEnabled').checked,true);
+  }
 });
 
 test('追加通知の旧全体OFFを各項目のOFFへ引き継ぎ、標準7〜1日前は維持する',()=>{

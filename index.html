@@ -1270,6 +1270,8 @@ body{
 .timer-notify-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .timer-notify-choice{display:flex;align-items:center;gap:9px;padding:11px 10px;border:1px solid rgba(145,160,180,.24);border-radius:10px;font-size:13px}
 .timer-notify-choice input{accent-color:#4e9dff;width:17px;height:17px;min-width:17px;padding:0;margin:0;flex:none}
+.timer-notify-unavailable{opacity:.45;cursor:not-allowed}
+.timer-notify-unavailable input,.timer-notify-unavailable select,.timer-notify-unavailable button{cursor:not-allowed}
 .timer-notify-status{font-size:13px;color:#a6b3c4}
 .timer-specific-notifications{display:grid;gap:12px;min-width:0;margin:0;padding:14px;border:1px solid var(--line);border-radius:14px}
 .timer-specific-notifications legend{padding:0 5px;font-weight:700}
@@ -1450,7 +1452,8 @@ body{
     <dialog id="timerNotificationDialog" class="character-dialog" aria-label="タイマー通知設定">
       <div class="modal-header"><h2>タイマー通知設定</h2><button id="closeTimerNotificationSettings" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
       <div class="timer-notify-settings">
-        <label class="timer-notify-choice"><input type="checkbox" id="timerNotifyEnabled">この端末の通知を有効にする</label>
+        <label class="timer-notify-choice"><input type="checkbox" id="timerNotifyEnabled">この端末のすべてのタイマー通知を有効にする</label>
+        <p>OFFの間も、各タイマーの通知ON/OFFとタイミングは保持されます。</p>
         <p>通知タイミングは、各タイマーの編集画面で設定します。</p>
         <p>iPhoneで通知を受け取るには、ホーム画面にアプリとして追加する必要があります。</p>
         <button id="timerNotifyPermission" class="submit-btn" type="button">iPhoneの通知を許可する</button>
@@ -1590,13 +1593,13 @@ body{
 
         <fieldset class="timer-specific-notifications">
           <legend>通知タイミング</legend>
-          <label class="timer-notify-choice"><input id="timerNotificationEnabled" type="checkbox" checked>このタイマーを通知する</label>
+          <label id="timerNotificationToggle" class="timer-notify-choice"><input id="timerNotificationEnabled" type="checkbox" aria-describedby="timerNotificationHint" checked>このタイマーを通知する</label>
           <div id="timerNotificationChoices">
             <div id="timerNotificationPresetDays" class="timer-notify-grid"></div>
             <label class="timer-notify-choice"><input id="timerNotificationHourly" type="checkbox">1時間おきに通知（1日前以降）</label>
             <div class="timer-notify-unit"><strong>1週間以前の通知</strong><div id="timerNotificationDays" class="timer-notify-days"></div></div>
           </div>
-          <p id="timerNotificationHint">端末の通知は、一覧の「通知設定」で許可・有効化してください。</p>
+          <p id="timerNotificationHint" role="status">通知設定がOFFのため、すべてのタイマー通知を停止中です。ONに戻すと、各タイマーの通知設定が再び有効になります。</p>
         </fieldset>
 
         <label class="field">
@@ -1713,31 +1716,31 @@ function appendTimerNotificationDay(value='',enabled=true){
 function syncTimerNotificationDayInputs(){
   const inputs=timerNotificationDayInputs();if(!inputs.length||inputs.at(-1).value.trim()!=='')appendTimerNotificationDay();
   timerNotificationDayInputs().forEach((input,index,all)=>{
-    input.setAttribute('aria-label',`${index+1}件目の通知日数`);input.disabled=!$('timerNotificationEnabled').checked;
+    input.setAttribute('aria-label',`${index+1}件目の通知日数`);input.disabled=$('timerNotificationEnabled').disabled||!$('timerNotificationEnabled').checked;
     const row=input.closest('.timer-notify-day-row'),toggle=row.querySelector('[data-notify-day-enabled]');
     toggle.setAttribute('aria-label',`${index+1}件目の通知を有効にする`);toggle.disabled=input.disabled||input.value==='';toggle.style.visibility=input.value===''?'hidden':'';
-    row.querySelector('[data-remove-notify-day]').disabled=input===all.at(-1)&&input.value==='';
+    row.querySelector('[data-remove-notify-day]').disabled=input.disabled||(input===all.at(-1)&&input.value==='');
   });
 }
-function syncTimerNotificationHint(){
-  let appEnabled=false;
-  try{appEnabled=!!(window.ARKPush?.getSettings?.()||JSON.parse(localStorage.getItem('arkTimer_notification_settings_v1')||'null'))?.enabled}catch(e){}
-  $('timerNotificationHint').classList.toggle('hidden',appEnabled||window.Notification?.permission==='granted');
+function appTimerNotificationsEnabled(){
+  try{return !!(window.ARKPush?.getSettings?.()||JSON.parse(localStorage.getItem('arkTimer_notification_settings_v1')||'null'))?.enabled}catch(e){return false}
 }
 function bindTimerNotificationHintEvents(){
-  window.addEventListener('pageshow',syncTimerNotificationHint);
-  window.addEventListener('focus',syncTimerNotificationHint);
-  window.addEventListener('storage',event=>{if(event.key==='arkTimer_notification_settings_v1'||event.key===null)syncTimerNotificationHint()});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncTimerNotificationHint()});
-  $('timerNotificationDialog').addEventListener('close',syncTimerNotificationHint);
-  navigator.permissions?.query({name:'notifications'}).then(permission=>permission.addEventListener('change',syncTimerNotificationHint)).catch(()=>{});
+  window.addEventListener('pageshow',syncTimerNotificationUI);
+  window.addEventListener('focus',syncTimerNotificationUI);
+  window.addEventListener('storage',event=>{if(event.key==='arkTimer_notification_settings_v1'||event.key===null)syncTimerNotificationUI()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncTimerNotificationUI()});
+  $('timerNotificationDialog').addEventListener('close',syncTimerNotificationUI);
 }
 function syncTimerNotificationUI(){
-  const enabled=$('timerNotificationEnabled').checked;
+  const appEnabled=appTimerNotificationsEnabled(),enabled=$('timerNotificationEnabled').checked;
+  $('timerNotificationEnabled').disabled=!appEnabled;
+  $('timerNotificationToggle').classList.toggle('timer-notify-unavailable',!appEnabled);
+  $('timerNotificationChoices').classList.toggle('timer-notify-unavailable',!appEnabled);
+  $('timerNotificationHint').classList.toggle('hidden',appEnabled);
   $('timerNotificationChoices').classList.toggle('hidden',!enabled);
-  $('timerNotificationHourly').disabled=!enabled;
-  timerNotificationPresetInputs().forEach(input=>input.disabled=!enabled);
-  syncTimerNotificationHint();
+  $('timerNotificationHourly').disabled=!appEnabled||!enabled;
+  timerNotificationPresetInputs().forEach(input=>input.disabled=!appEnabled||!enabled);
   syncTimerNotificationDayInputs();
 }
 function setTimerNotificationForm(timer=null){
@@ -2059,7 +2062,7 @@ function init(){
   setupDurationSelects();
   if(sortSelect)sortSelect.value=state.sortMode;
   bindEvents();
-  timerPush=window.ARKPush?.init({getTimers:()=>JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')})||null;
+  timerPush=window.ARKPush?.init({getTimers:()=>JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'),onSettingsChange:syncTimerNotificationUI})||null;
   syncTypeUI();
   refreshImagePreviewForCurrentForm();
   render();

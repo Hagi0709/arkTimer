@@ -32,7 +32,7 @@ function harness({ settings = { enabled: true, days: [], hours: [1, 2] }, storag
     addEventListener(name, handler) { listeners[name] = handler; } };
   const document = { hidden: false, getElementById: node, querySelectorAll: () => [],
     addEventListener(name, handler) { listeners[name] = handler; } };
-  const h = { storage, calls, traces, node, navigator, window, document, listeners, Notification, localStorage, timers,
+  const h = { storage, calls, traces, node, navigator, window, document, listeners, Notification, localStorage, timers, settingsChanges: [],
     timersData: [{ id: 'timer1', timerName: '拠点', map: 'アイランド', startedAt: 1800000000000, endsAt: 1800007200000, imageSrc: 'private-image' }],
     async response() { return new Response(JSON.stringify({ ok: true, scheduled: 2 }), { status: 200 }); }
   };
@@ -46,7 +46,7 @@ function harness({ settings = { enabled: true, days: [], hours: [1, 2] }, storag
       return h.response(call);
     }
   });
-  h.controller = window.ARKPush.create({ getTimers: () => h.timersData });
+  h.controller = window.ARKPush.create({ getTimers: () => h.timersData, onSettingsChange: () => h.settingsChanges.push(JSON.parse(storage.get(SETTINGS))) });
   return h;
 }
 async function until(condition) {
@@ -231,6 +231,28 @@ test('端末全体の有効無効だけを保存し、各タイマーの時刻�
   assert.deepEqual(h.calls[0].body.hours, []);
   assert.deepEqual(h.calls[0].body.timers[0].notificationSettings.hours, [1,2]);
   assert.equal(h.node('timerNotificationDialog').open, false);
+});
+
+test('全体OFFは全予定を停止し、ONで個別ON/OFFと通知時刻を保ったまま再同期する',async()=>{
+  const h=harness();
+  h.timersData=[{...h.timersData[0],notificationSettings:{enabled:true,days:[7,1,14],hours:[],hourlyWithinDay:true}},
+    {...h.timersData[0],id:'timer2',notificationSettings:{enabled:false,days:[3],hours:[],hourlyWithinDay:false}}];
+  const original=structuredClone(h.timersData);
+  h.node('timerNotifyEnabled').checked=false;await h.controller.saveSettings();
+  assert.equal(h.calls[0].path,'/api/push/unsubscribe');assert.equal(h.calls[0].body.timers,undefined);
+  assert.deepEqual(h.timersData,original);assert.equal(h.settingsChanges.at(-1).enabled,false);
+  h.node('timerNotifyEnabled').checked=true;await h.controller.saveSettings();
+  assert.equal(h.calls[1].path,'/api/push/sync');
+  assert.deepEqual(h.calls[1].body.timers.map(t=>t.notificationSettings),original.map(t=>t.notificationSettings));
+  assert.deepEqual(h.timersData,original);assert.equal(h.settingsChanges.at(-1).enabled,true);
+});
+
+test('全体OFFの保存後はサーバーの応答を待たず個別画面へ変更を知らせる',async()=>{
+  const h=harness();let release;
+  h.response=()=>new Promise(resolve=>{release=()=>resolve(new Response('{"ok":true}'))});
+  h.node('timerNotifyEnabled').checked=false;const saving=h.controller.saveSettings();
+  assert.equal(h.settingsChanges.at(-1).enabled,false);assert.equal(h.window.ARKPush.getSettings().enabled,false);
+  await until(()=>h.calls.length===1);release();await saving;
 });
 test('旧設定の期限当日を除外して各タイマーに引き継ぐ', async () => {
   const h = harness({ settings: { enabled: true, days: [0, 1], hours: [] } });
