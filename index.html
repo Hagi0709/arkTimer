@@ -1350,15 +1350,16 @@ body{
 .island-map-frame{overflow:hidden;border:0}
 .map-preview-button.island-map-frame{border-radius:18px}
 .timer-summary{display:grid;gap:5px;flex:1;min-width:0}
-.timer-summary.has-kind-icon{grid-template-columns:minmax(0,1fr) 50px;column-gap:8px}
+.timer-summary.has-kind-icon{grid-template-columns:minmax(0,1fr) 40px;column-gap:8px}
 .timer-summary>span{grid-column:1;min-width:0}
 .timer-summary .timer-name{grid-column:1 / -1;display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .timer-meta{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timer-summary .timer-map-label{grid-column:1 / -1;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.35}
 .timer-summary .remain-value{font-size:13px;line-height:1.3;overflow-wrap:anywhere;font-weight:800}
 .timer-summary .timer-deadline,.timer-summary .timer-memo{grid-column:1 / -1;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4}
 .timer-deadline{font-size:10px;color:#bdd0df;font-variant-numeric:tabular-nums}
 .timer-memo{font-size:11px;color:var(--muted)}
-.timer-kind-icon{grid-column:2;grid-row:2 / 5;align-self:center;display:block;width:50px;height:54px;object-fit:contain;pointer-events:none}
+.timer-kind-icon{grid-column:2;grid-row:3 / 5;align-self:end;display:block;width:40px;height:44px;object-fit:contain;pointer-events:none}
 .timer-reorder{flex:0 0 40px}
 .timer-row-tools{display:grid;grid-template-rows:minmax(0,1fr) 44px;gap:6px;flex:0 0 40px;width:40px;min-width:0}
 .timer-row-tools .timer-reorder{min-height:0;min-width:0;width:100%;padding:0}
@@ -1372,7 +1373,7 @@ body{
 .field>.eos-help{margin:0}
 .character-field>.eos-help{margin:0 0 8px}
 .time-grid select{min-width:0;padding:12px 6px}
-@media(max-width:380px){.timer-list-heading{gap:6px}.timer-list-heading h1{font-size:20px}.timer-list-heading-actions{gap:4px}.timer-list-heading #sortSelect{width:112px;padding:7px 5px;font-size:10px}.timer-select-card{gap:8px;padding:8px}.timer-map-thumbnail{width:66px;height:78px;flex-basis:66px}.timer-summary.has-kind-icon{grid-template-columns:minmax(0,1fr) 42px;column-gap:6px}.timer-kind-icon{width:42px;height:48px}.timer-summary .timer-name{font-size:15px}.timer-summary .remain-value{font-size:11px}.timer-meta{font-size:10px}}
+@media(max-width:380px){.timer-list-heading{gap:6px}.timer-list-heading h1{font-size:20px}.timer-list-heading-actions{gap:4px}.timer-list-heading #sortSelect{width:112px;padding:7px 5px;font-size:10px}.timer-select-card{gap:8px;padding:8px}.timer-map-thumbnail{width:66px;height:78px;flex-basis:66px}.timer-summary.has-kind-icon{grid-template-columns:minmax(0,1fr) 32px;column-gap:6px}.timer-kind-icon{width:32px;height:36px}.timer-summary .timer-name{font-size:15px}.timer-summary .remain-value{font-size:11px}.timer-meta{font-size:10px}}
 /* Keep both navigation tabs, and each detail's back button, above scrolling content. */
 :root{--manager-control-height:32px;--app-header-height:calc(64px + env(safe-area-inset-top));--app-tabs-height:calc(var(--manager-control-height) + 12px);--detail-back-height:48px}
 .app-shell{padding-top:calc(var(--app-header-height) + var(--app-tabs-height))}
@@ -1947,7 +1948,7 @@ function decorateTimerMap(element,timer){
   const pin=document.createElement('span');pin.className='map-pin hidden';surface.appendChild(pin);
   setPinElement(pin,timer.map,timer.lat,timer.lng,timer.showPin!==false,timer.manualPin);
 }
-function buildTimerSummary(timer,remain){const kindImage=buildTimerKindImage(timer),memo=String(timer.memo||'').trim();return `<span class="timer-summary${kindImage?' has-kind-icon':''}"><span class="timer-name">${escapeHtml(timer.timerName||'未設定')}</span><span class="timer-meta">${escapeHtml(timer.map)}${timer.serverNo?'：'+escapeHtml(timer.serverNo):''}</span><span class="timer-meta">${escapeHtml(buildTypeLabel(timer))}</span><span class="remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</span>${kindImage}<span class="timer-deadline">期限 ${formatDateWithWeekday(timer.endsAt)}</span>${memo?`<span class="timer-memo">メモ：${escapeHtml(memo)}</span>`:''}</span>`}
+function buildTimerSummary(timer,remain){const kindImage=buildTimerKindImage(timer),memo=String(timer.memo||'').trim();return `<span class="timer-summary${kindImage?' has-kind-icon':''}"><span class="timer-name">${escapeHtml(timer.timerName||'未設定')}</span><span class="timer-meta timer-map-label">${escapeHtml(timer.map)}${timer.serverNo?'：'+escapeHtml(timer.serverNo):''}</span><span class="timer-meta">${escapeHtml(buildTypeLabel(timer))}</span><span class="remain-value ${getRemainClass(remain)}">${formatRemaining(remain)}</span>${kindImage}<span class="timer-deadline">期限 ${formatDateWithWeekday(timer.endsAt)}</span>${memo?`<span class="timer-memo">メモ：${escapeHtml(memo)}</span>`:''}</span>`}
 function render(){
   const sorted=getSortedTimers();list.innerHTML='';let active=0;
   for(const timer of sorted){
