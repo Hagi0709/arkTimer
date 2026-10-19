@@ -1735,6 +1735,8 @@ function bindTimerNotificationHintEvents(){
 function syncTimerNotificationUI(){
   const appEnabled=appTimerNotificationsEnabled(),enabled=$('timerNotificationEnabled').checked;
   $('timerNotificationEnabled').disabled=!appEnabled;
+  if(appEnabled)$('timerNotificationEnabled').removeAttribute('aria-describedby');
+  else $('timerNotificationEnabled').setAttribute('aria-describedby','timerNotificationHint');
   $('timerNotificationToggle').classList.toggle('timer-notify-unavailable',!appEnabled);
   $('timerNotificationChoices').classList.toggle('timer-notify-unavailable',!appEnabled);
   $('timerNotificationHint').classList.toggle('hidden',appEnabled);

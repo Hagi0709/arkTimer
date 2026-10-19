@@ -121,6 +121,7 @@ test('通知許可済みでも全体OFFなら個別設定を固定し、ONで元
     h.setTimers([{...timer(),notificationSettings:settings}]);h.run('openModal(state.timers[0])');
     assert.equal(h.node('timerNotificationEnabled').checked,enabled);
     assert.equal(h.node('timerNotificationEnabled').disabled,true);
+    assert.equal(h.node('timerNotificationEnabled')['aria-describedby'],'timerNotificationHint');
     assert.equal(h.node('timerNotificationToggle').classList.contains('timer-notify-unavailable'),true);
     assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),false);
     assert.equal(h.run('timerNotificationPresetInputs().every(input=>input.disabled)'),true);
@@ -133,6 +134,7 @@ test('通知許可済みでも全体OFFなら個別設定を固定し、ONで元
     h.run('openModal(state.timers[0])');
     h.storage.set('arkTimer_notification_settings_v1',JSON.stringify({enabled:true}));h.run('syncTimerNotificationUI()');
     assert.equal(h.node('timerNotificationEnabled').disabled,false);
+    assert.equal(h.node('timerNotificationEnabled')['aria-describedby'],undefined);
     assert.equal(h.node('timerNotificationEnabled').checked,enabled);
     assert.equal(h.node('timerNotificationToggle').classList.contains('timer-notify-unavailable'),false);
     assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
