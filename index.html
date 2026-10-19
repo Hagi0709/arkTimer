@@ -1453,7 +1453,6 @@ body{
       <div class="modal-header"><h2>タイマー通知設定</h2><button id="closeTimerNotificationSettings" class="icon-btn" type="button" aria-label="閉じる">×</button></div>
       <div class="timer-notify-settings">
         <label class="timer-notify-choice"><input type="checkbox" id="timerNotifyEnabled">この端末のすべてのタイマー通知を有効にする</label>
-        <p>OFFの間も、各タイマーの通知ON/OFFとタイミングは保持されます。</p>
         <p>通知タイミングは、各タイマーの編集画面で設定します。</p>
         <p>iPhoneで通知を受け取るには、ホーム画面にアプリとして追加する必要があります。</p>
         <button id="timerNotifyPermission" class="submit-btn" type="button">iPhoneの通知を許可する</button>
@@ -1738,9 +1737,8 @@ function syncTimerNotificationUI(){
   if(appEnabled)$('timerNotificationEnabled').removeAttribute('aria-describedby');
   else $('timerNotificationEnabled').setAttribute('aria-describedby','timerNotificationHint');
   $('timerNotificationToggle').classList.toggle('timer-notify-unavailable',!appEnabled);
-  $('timerNotificationChoices').classList.toggle('timer-notify-unavailable',!appEnabled);
+  $('timerNotificationChoices').classList.toggle('timer-notify-unavailable',!appEnabled||!enabled);
   $('timerNotificationHint').classList.toggle('hidden',appEnabled);
-  $('timerNotificationChoices').classList.toggle('hidden',!enabled);
   $('timerNotificationHourly').disabled=!appEnabled||!enabled;
   timerNotificationPresetInputs().forEach(input=>input.disabled=!appEnabled||!enabled);
   syncTimerNotificationDayInputs();

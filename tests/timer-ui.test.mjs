@@ -68,7 +68,8 @@ test('通知時刻だけの変更は期限を維持し、別タイマーへ影�
   assert.deepEqual(saved[0].notificationSettings,{enabled:true,days:[30],hours:[],hourlyWithinDay:false,presetDays:[],customNotifications:{enabled:true,entries:[{days:30,enabled:true}]}});
   assert.equal(saved[0].endsAt,a.endsAt);assert.equal(saved[0].startedAt,a.startedAt);assert.deepEqual(saved[1],b);
   h.run('openModal(state.timers[1])');assert.equal(h.node('timerNotificationEnabled').checked,false);
-  assert.equal(h.node('timerNotificationChoices').classList.contains('hidden'),true);
+  assert.equal(h.node('timerNotificationChoices').classList.contains('hidden'),false);
+  assert.equal(h.node('timerNotificationChoices').classList.contains('timer-notify-unavailable'),true);
   h.run('openModal()');assert.equal(h.node('timerNotificationEnabled').checked,true);
   assert.deepEqual(plain(h.run('readTimerNotificationForm()')),{enabled:true,days:[1],hours:[],hourlyWithinDay:false});
 });
@@ -137,6 +138,8 @@ test('通知許可済みでも全体OFFなら個別設定を固定し、ONで元
     assert.equal(h.node('timerNotificationEnabled')['aria-describedby'],undefined);
     assert.equal(h.node('timerNotificationEnabled').checked,enabled);
     assert.equal(h.node('timerNotificationToggle').classList.contains('timer-notify-unavailable'),false);
+    assert.equal(h.node('timerNotificationChoices').classList.contains('hidden'),false);
+    assert.equal(h.node('timerNotificationChoices').classList.contains('timer-notify-unavailable'),!enabled);
     assert.equal(h.node('timerNotificationHint').classList.contains('hidden'),true);
     assert.equal(h.node('timerNotificationHourly').disabled,!enabled);
     assert.equal(h.run('timerNotificationDayInputs()[0].parentElement.dayToggle.disabled'),!enabled);
@@ -184,6 +187,15 @@ test('日数は7〜999日の選択式で、各項目のOFFを保存し標準7日
   assert.deepEqual(plain(h.run('readTimerNotificationForm().days')),[]);
   h.node('timerNotificationEnabled').checked=false;h.run('syncTimerNotificationUI()');
   assert.equal(h.run('timerNotificationDayInputs()[0].parentElement.dayToggle.disabled'),true);
+  assert.equal(h.node('timerNotificationEnabled').disabled,false);
+  assert.equal(h.node('timerNotificationChoices').classList.contains('hidden'),false);
+  assert.equal(h.node('timerNotificationChoices').classList.contains('timer-notify-unavailable'),true);
+  assert.equal(h.node('timerNotificationHourly').disabled,true);
+  h.node('timerNotificationEnabled').checked=true;h.run('syncTimerNotificationUI()');
+  assert.equal(h.node('timerNotificationChoices').classList.contains('timer-notify-unavailable'),false);
+  assert.equal(h.node('timerNotificationHourly').checked,true);
+  assert.equal(h.run('timerNotificationDayInputs()[1].value'),'999');
+  assert.equal(h.run('timerNotificationDayInputs()[1].parentElement.dayToggle.checked'),false);
 });
 
 test('以前に保存した999日超の通知は勝手に切り捨てず、変更先は7〜999日だけを提示する',()=>{
