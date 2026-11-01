@@ -1438,7 +1438,7 @@ body{
         <button id="backToTools" type="button" class="manager-small-btn tool-back">‹ ツール一覧</button>
         <div class="xp-tool-heading"><img src="./tool-survivor-xp.png?v=exp" width="58" height="58" alt=""><h1 id="survivorXpTitle" tabindex="-1">サバイバー経験値計算</h1></div>
         <form id="survivorXpForm" class="xp-form" novalidate>
-          <div class="xp-levels"><label>開始レベル<input id="survivorXpStart" type="number" inputmode="numeric" min="1" max="245" step="1" value="1" required aria-describedby="survivorXpError"></label><label>目標レベル<input id="survivorXpTarget" type="number" inputmode="numeric" min="1" max="245" step="1" value="105" required aria-describedby="survivorXpError"></label></div>
+          <div class="xp-levels"><label>開始レベル<input id="survivorXpStart" type="number" inputmode="numeric" min="0" max="245" step="1" value="1" required aria-describedby="survivorXpError"></label><label>目標レベル<input id="survivorXpTarget" type="number" inputmode="numeric" min="0" max="245" step="1" value="105" required aria-describedby="survivorXpError"></label></div>
           <p id="survivorXpError" class="xp-error hidden" role="status"></p>
         </form>
         <section class="xp-result" aria-label="計算結果" aria-live="polite" aria-atomic="true"><p class="xp-result-label">目標までに必要な経験値</p><div class="xp-result-amount"><output id="survivorXpNeeded" for="survivorXpStart survivorXpTarget">—</output><span>XP</span></div><p id="survivorXpRange" class="xp-result-range">—</p><dl class="xp-totals"><div><dt>開始レベルの累計XP</dt><dd id="survivorXpStartTotal">—</dd></div><div><dt>目標レベルの累計XP</dt><dd id="survivorXpTargetTotal">—</dd></div></dl></section>

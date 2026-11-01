@@ -33,10 +33,20 @@ test('全範囲で単調な累計値を使い、レベルごとの内訳も結�
  assert.equal(result.rows.reduce((total,row)=>total+row.xp,0),7975037952);
  for(const row of result.rows)assert.equal(row.total,h.calculate(1,row.level).needed);
 });
-test('未入力・小数レベル・範囲外・目標が開始未満の場合に結果を出さない',()=>{
- const h=harness();for(const [start,target] of [[NaN,105],[0,105],[1.5,105],[1,246],[105,100],[1,Infinity]])assert.throws(()=>h.calculate(start,target));
+test('未入力・小数レベル・目標が開始未満の場合に結果を出さない',()=>{
+ const h=harness();for(const [start,target] of [[NaN,105],[1.5,105],[105,100],[1,Infinity]])assert.throws(()=>h.calculate(start,target));
  h.node('survivorXpStart').value='';h.node('survivorXpForm').emit('input');assert.equal(h.node('survivorXpNeeded').textContent,'—');assert.equal(h.node('survivorXpError').classList.contains('hidden'),false);assert.equal(h.node('survivorXpStart')['aria-invalid'],'true');
  h.node('survivorXpStart').value='100';h.node('survivorXpForm').emit('input');assert.equal(h.node('survivorXpNeeded').textContent,'2,300,000');assert.equal(h.node('survivorXpError').classList.contains('hidden'),true);assert.equal(h.node('survivorXpStart')['aria-invalid'],undefined);
+});
+test('開始・目標の0以下を0、246以上を245へ補正し、0からの内訳も計算できる',()=>{
+ const h=harness(),result=h.calculate(-10,999);
+ assert.equal(result.start,0);assert.equal(result.target,245);assert.equal(result.needed,7975037952);assert.equal(result.startXP,0);assert.equal(result.rows[0].level,1);assert.equal(result.rows[0].xp,0);
+ assert.equal(result.rows.reduce((sum,row)=>sum+row.xp,0),result.needed);assert.equal(h.calculate(0,0).needed,0);assert.equal(h.calculate(-2,-1).needed,0);
+ assert.equal(h.calculate(0,1).needed,0);assert.equal(h.calculate(246,999).needed,0);
+ h.node('survivorXpStart').value='-10';h.node('survivorXpTarget').value='246';h.node('survivorXpForm').emit('input');
+ assert.equal(h.node('survivorXpStart').value,'0');assert.equal(h.node('survivorXpTarget').value,'245');assert.equal(h.node('survivorXpNeeded').textContent,'7,975,037,952');assert.equal(h.node('survivorXpError').classList.contains('hidden'),true);
+ h.node('survivorXpTarget').value='-1';h.node('survivorXpForm').emit('change');assert.equal(h.node('survivorXpTarget').value,'0');assert.equal(h.node('survivorXpNeeded').textContent,'0');
+ h.node('survivorXpStart').value='999';h.node('survivorXpTarget').value='245';h.node('survivorXpForm').emit('change');assert.equal(h.node('survivorXpStart').value,'245');assert.equal(h.node('survivorXpNeeded').textContent,'0');
 });
 test('入力の変更で再計算し、ツール一覧と詳細を往復しても入力値を維持する',()=>{
  const h=harness();h.node('openSurvivorXp').emit('click');assert.equal(h.node('toolsListView').classList.contains('hidden'),true);assert.equal(h.node('survivorXpView').classList.contains('hidden'),false);
