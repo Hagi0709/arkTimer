@@ -11,8 +11,8 @@ function harness(){
    addEventListener(name,fn){events[name]=fn},emit(name,event={}){events[name]?.(event)},focus(){this.focused=true}
   })}return nodes.get(id);
  };
- const context={window,document:{getElementById:node,createElement:()=>node('new-'+nodes.size)}};
- runInNewContext(dataSource+clientSource,context);return{window,node,calculate:window.ARKSurvivorXP.calculate};
+ let resize;const context={window,document:{getElementById:node,createElement:()=>node('new-'+nodes.size),createElementNS:(_,tag)=>{const element=node('new-'+nodes.size);element.tagName=tag;return element}},ResizeObserver:class{constructor(fn){resize=fn}observe(){}}};
+ runInNewContext(dataSource+clientSource,context);return{window,node,calculate:window.ARKSurvivorXP.calculate,resize:()=>resize()};
 }
 test('開始レベルから目標レベルの必要経験値を累計値の差で算出する',()=>{
  const h=harness();assert.equal(h.calculate(1,2).needed,5);assert.equal(h.calculate(1,105).needed,4098538);assert.equal(h.calculate(100,105).needed,2300000);
@@ -53,6 +53,32 @@ test('入力の変更で再計算し、ツール一覧と詳細を往復して�
  h.node('survivorXpStart').value='220';h.node('survivorXpTarget').value='245';h.node('survivorXpForm').emit('change');assert.equal(h.node('survivorXpNeeded').textContent,'3,021,372,928');
  h.node('backToTools').emit('click');assert.equal(h.node('survivorXpView').classList.contains('hidden'),true);assert.equal(h.node('toolsListView').classList.contains('hidden'),false);
  h.node('openSurvivorXp').emit('click');assert.equal(h.node('survivorXpStart').value,'220');assert.equal(h.node('survivorXpNeeded').textContent,'3,021,372,928');
+});
+const chartNode=(h,id)=>{
+ function find(node){if(node.id===id)return node;for(const child of node.children){const found=find(child);if(found)return found}}
+ return find(h.node('survivorXpChart'));
+};
+test('全246点の曲線上で指定範囲と端点のレベル・累計XPを強調し、0と245も範囲内に描く',()=>{
+ const h=harness(),full=chartNode(h,'xpChartFullCurve').d;assert.equal(full.split(' ').length,246);
+ h.node('survivorXpStart').value='220';h.node('survivorXpTarget').value='245';h.node('survivorXpForm').emit('input');
+ const selection=chartNode(h,'xpChartSelection'),target=chartNode(h,'xpChartTargetMarker');
+ assert.equal(selection['data-start'],'220');assert.equal(selection['data-target'],'245');assert.equal(target['data-xp'],'7975037952');assert.equal(target['data-level'],'245');
+ assert.equal(chartNode(h,'xpChartFullCurve').d,full);assert.equal(h.node('survivorXpChartTarget').textContent,'Lv 245');
+ const endCircle=target.children.find(child=>child.tagName==='circle');assert.equal(Number(endCircle.cx),586);assert.ok(Number(endCircle.cy)>=24&&Number(endCircle.cy)<25);
+ h.node('survivorXpStart').value='-5';h.node('survivorXpTarget').value='999';h.node('survivorXpForm').emit('change');
+ assert.equal(chartNode(h,'xpChartSelection')['data-start'],'0');assert.equal(chartNode(h,'xpChartSelection')['data-target'],'245');assert.equal(chartNode(h,'xpChartStartMarker')['data-xp'],'0');
+ h.node('survivorXpTarget').value='0';h.node('survivorXpForm').emit('input');assert.equal(chartNode(h,'xpChartSelection')['data-target'],'0');assert.doesNotMatch(chartNode(h,'xpChartSelectedCurve').d,/NaN|undefined|Infinity/);
+});
+test('不正入力では古い指定範囲を消し、全体曲線を表示し続ける',()=>{
+ const h=harness(),full=chartNode(h,'xpChartFullCurve').d;h.node('survivorXpStart').value='';h.node('survivorXpForm').emit('input');
+ assert.equal(chartNode(h,'xpChartSelection'),undefined);assert.equal(chartNode(h,'xpChartStartMarker'),undefined);assert.equal(chartNode(h,'xpChartFullCurve').d,full);assert.equal(h.node('survivorXpChartStart').textContent,'—');
+ h.node('survivorXpStart').value='100';h.node('survivorXpTarget').value='50';h.node('survivorXpForm').emit('input');assert.equal(chartNode(h,'xpChartSelection'),undefined);
+});
+test('画面幅の変更に合わせてグラフを再描画し、指定範囲と固定の全体スケールを維持する',()=>{
+ const h=harness(),svg=h.node('survivorXpChart');h.node('survivorXpStart').value='100';h.node('survivorXpTarget').value='220';h.node('survivorXpForm').emit('input');
+ svg.clientWidth=280;h.resize();assert.equal(svg.viewBox,'0 0 280 230');assert.equal(chartNode(h,'xpChartSelection')['data-start'],'100');assert.equal(chartNode(h,'xpChartSelection')['data-target'],'220');
+ const point=chartNode(h,'xpChartTargetMarker').children.find(child=>child.tagName==='circle');assert.ok(Number(point.cx)>=42&&Number(point.cx)<=266);assert.ok(Number(point.cy)>=24&&Number(point.cy)<=194);
+ assert.doesNotMatch(chartNode(h,'xpChartFullCurve').d,/NaN|undefined|Infinity/);svg.clientWidth=600;h.resize();assert.equal(svg.viewBox,'0 0 600 285');
 });
 test('3つのタブは対応する画面と追加ボタンを切り替え、キーボードで循環する',()=>{
  const nodes=new Map(),node=id=>{if(!nodes.has(id)){const classes=new Set();nodes.set(id,{classList:{toggle(name,on){on?classes.add(name):classes.delete(name)},contains:name=>classes.has(name)},setAttribute(name,value){this[name]=value},click(){context.switchTab(({timerTab:'timers',characterTab:'characters',toolsTab:'tools'})[id])},focus(){}})}return nodes.get(id)};
