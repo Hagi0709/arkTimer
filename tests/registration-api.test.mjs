@@ -47,15 +47,28 @@ test('有効期限とログアウト後は再認証が必要',async t=>{
  const next=(await login(env)).headers.get('set-cookie');t.mock.method(Date,'now',()=>NOW+30*60000+1);
  assert.equal((await call(env,'/api/admin/registrations',{cookie:next})).status,401);
 });
-test('登録内容と通知状態を認証後に表示し、画像・アカウントID・Push購読情報を返さない',async t=>{
+test('登録内容だけを認証後に表示し、通知の登録・配信状態、画像、アカウントIDを返さない',async t=>{
  const env=await setup(t),id=await digest(token),subscriber=await digest(pushToken);
  env.DB.sql.prepare("INSERT INTO subscribers (id,endpoint,subscription,updated_at,sync_revision) VALUES (?,?,?,?,1)").run(subscriber,'private-endpoint','private-subscription',NOW);
  assert.equal((await sync(env)).status,200);const cookie=(await login(env)).headers.get('set-cookie');
- const list=await call(env,'/api/admin/registrations',{cookie});assert.equal(list.data.items[0].characters,1);assert.equal(list.data.items[0].timers,1);assert.equal(list.data.items[0].subscriberId,subscriber);assert.equal(list.data.notifications.length,1);
+ const list=await call(env,'/api/admin/registrations',{cookie});assert.equal(list.data.items[0].characters,1);assert.equal(list.data.items[0].timers,1);assert.equal(list.data.items[0].subscriberId,undefined);assert.equal(list.data.notifications,undefined);
  const item=(await call(env,'/api/admin/registrations/'+id,{cookie})).data.item;
  assert.equal(item.characters[0].serverNo,'5041');assert.equal(item.timers[0].memo,'燃料を確認');assert.equal(item.characters[0].notes[0].acquired.length,1);
  assert.doesNotMatch(JSON.stringify([item,list.data]),/private-|eosId|steamId|appearance|imageSrc|endpoint|subscription|unit-password/);
  assert.equal(item.token,undefined);assert.equal(item.pushToken,undefined);assert.equal(list.headers.get('cache-control'),'no-store');
+ assert.equal(item.subscriberId,undefined);assert.equal(item.notification,undefined);
+ assert.equal(JSON.parse(env.DB.sql.prepare('SELECT data FROM registration_snapshots').get().data).notification,undefined);
+ assert.equal(env.DB.sql.prepare('SELECT subscriber_id FROM registration_snapshots').get().subscriber_id,null);
+ assert.equal(env.DB.sql.prepare('SELECT COUNT(*) AS n FROM subscribers').get().n,1);
+});
+test('旧版で保存された通知状態も管理APIには表示しない',async t=>{
+ const env=await setup(t);await sync(env);env.DB.sql.prepare('UPDATE registration_snapshots SET subscriber_id=?,data=?').run(await digest(pushToken),JSON.stringify(snapshot()));
+ const cookie=(await login(env)).headers.get('set-cookie'),item=(await call(env,'/api/admin/registrations/'+await digest(token),{cookie})).data.item;
+ assert.equal(item.characters.length,1);assert.equal(item.notification,undefined);assert.equal(item.subscriberId,undefined);
+});
+test('通知登録なしでもキャラ・タイマーだけを同期できる',async t=>{
+ const env=await setup(t),data=snapshot();delete data.notification;
+ assert.equal((await sync(env,1,data)).status,200);
 });
 test('古い同期を後から送っても新しい内容を上書きしない',async t=>{
  const env=await setup(t);await sync(env,5);const changed=snapshot();changed.characters[0].name='古い名前';await sync(env,4,changed);

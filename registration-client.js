@@ -21,8 +21,7 @@
     if(!window.ARKRegistrationSnapshot)throw Error('読み込み中です。');
     const s=state(),data=await window.ARKRegistrationSnapshot();
     if(state()?.revision!==s.revision)continue;
-    const pushToken=localStorage.getItem('arkManager_push_device_token_v1');
-    const body=JSON.stringify({token:s.token,revision:s.revision,platform:platform(),pushToken:/^[a-f0-9]{64}$/.test(pushToken||'')?pushToken:null,data});
+    const body=JSON.stringify({token:s.token,revision:s.revision,platform:platform(),data});
     if(new TextEncoder().encode(body).length>500000)throw Error('登録内容が同期できるサイズを超えています。');
     this.latest=body;
     const response=await fetch('/api/registrations/sync',{method:'POST',headers:{'content-type':'application/json'},body,credentials:'omit',keepalive:body.length<60000,signal:AbortSignal.timeout(20000)});
@@ -36,11 +35,17 @@
  window.addEventListener('online',()=>sync.flush());window.addEventListener('pageshow',()=>sync.markChanged());
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync.markChanged()});
  window.addEventListener('pagehide',()=>{if(state()?.pending&&sync.latest&&JSON.parse(sync.latest).revision===state().revision&&sync.latest.length<60000)fetch('/api/registrations/sync',{method:'POST',headers:{'content-type':'application/json'},body:sync.latest,credentials:'omit',keepalive:true}).catch(()=>{})});
- const dialog=$('registrationAdminDialog'),notificationCache=new Map();let taps=0,lastTap=0,expiryTimer,selection=0,request=0,logoutPromise=Promise.resolve();
- function lock(){selection++;request++;notificationCache.clear();clearTimeout(expiryTimer);$('adminLoginForm').classList.remove('hidden');$('adminDashboard').classList.add('hidden');$('adminRegistrationList').replaceChildren();$('adminRegistrationDetail').replaceChildren();$('adminNotificationList').replaceChildren();$('adminPassword').value=''}
+ const dialog=$('registrationAdminDialog'),entry=$('adminEntry');let taps=0,lastTap=0,expiryTimer,selection=0,request=0,listScroll=0,selectedButton,logoutPromise=Promise.resolve();
+ function resetTaps(){taps=0;lastTap=0}
+ function isLogo(event){return event.composedPath().includes(entry)}
+ document.addEventListener('pointerdown',event=>{if(!isLogo(event))resetTaps()},true);
+ document.addEventListener('click',event=>{if(!isLogo(event))resetTaps()},true);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)resetTaps()});
+ window.addEventListener('blur',resetTaps);
+ function lock(){resetTaps();selection++;request++;clearTimeout(expiryTimer);$('adminLoginForm').classList.remove('hidden');$('adminDashboard').classList.add('hidden');$('adminDeviceListView').classList.remove('hidden');$('adminDeviceDetailView').classList.add('hidden');$('adminRegistrationList').replaceChildren();$('adminRegistrationDetail').replaceChildren();$('adminPassword').value='';selectedButton=null;listScroll=0}
  function message(value){$('adminStatus').textContent=value}
- $('adminEntry').addEventListener('click',()=>{
-  const now=Date.now();taps=now-lastTap>30000?1:taps+1;lastTap=now;if(taps<10)return;taps=0;
+ entry.addEventListener('click',()=>{
+  const now=Date.now();taps=now-lastTap>2000?1:taps+1;lastTap=now;if(taps<10)return;resetTaps();
   lock();message(staticPage()?'管理画面は通知対応版（ark-manager.arktools.workers.dev）で開いてください':'');
   if(!dialog.open)dialog.showModal();document.dispatchEvent(new Event('ark:dialog-change'));$('adminPassword').focus();
  });
@@ -54,17 +59,13 @@
  function element(tag,text,cls){const el=document.createElement(tag);if(text!==undefined)el.textContent=String(text);if(cls)el.className=cls;return el}
  function line(parent,label,value){parent.appendChild(element('p',label+'：'+(value===undefined||value===null||value===''?'—':value)))}
  const when=value=>value?new Date(value).toLocaleString('ja-JP'):'—';
- function renderNotification(parent,n){
-  line(parent,'購読',n.invalidatedAt?'無効／停止中':'有効');line(parent,'最終更新',when(n.updatedAt));
-  line(parent,'通知予定',n.pending+'件');line(parent,'配信受付済み',n.accepted+'件');line(parent,'表示確認済み',n.displayed+'件');line(parent,'失敗',n.failed+'件');
- }
- async function openItem(id){
-  const sequence=++selection,box=$('adminRegistrationDetail');box.replaceChildren(element('p','読み込み中…'));
+ async function openItem(id,button){
+  const sequence=++selection,box=$('adminRegistrationDetail');listScroll=dialog.scrollTop;selectedButton=button;
+  $('adminDeviceListView').classList.add('hidden');$('adminDeviceDetailView').classList.remove('hidden');
+  box.replaceChildren(element('p','読み込み中…'));message('');dialog.scrollTop=0;$('adminBackToDevices').focus({preventScroll:true});
   try{
    const {item}=await api('/api/admin/registrations/'+id);if(sequence!==selection||!dialog.open)return;
    box.replaceChildren(element('h3',item.platform+' · '+item.id.slice(0,8)));line(box,'最終同期',when(item.updatedAt));
-   line(box,'アプリの通知',item.notification.enabled?'ON':'OFF');line(box,'通知の許可',({granted:'許可済み',denied:'拒否',default:'未許可',unavailable:'利用不可'})[item.notification.permission]);
-   const notification=notificationCache.get(item.subscriberId);if(notification)renderNotification(box,notification);else line(box,'通知登録','未登録／更新待ち');
    box.appendChild(element('h3','キャラ '+item.characters.length+'件'));
    item.characters.forEach(c=>{
     const card=element('article',undefined,'admin-record');card.appendChild(element('h4',c.name||'名前未設定'));
@@ -84,20 +85,21 @@
     if(t.notificationSettings.customEntries?.length)line(card,'追加通知',t.notificationSettings.customEntries.map(e=>e.days+'日前（'+(e.enabled?'ON':'OFF')+'）').join('、'));
     line(card,'1日前以降の毎時通知',t.notificationSettings.hourlyWithinDay?'ON':'OFF');box.appendChild(card);
    });message('');
-  }catch(error){if(sequence===selection)message(error.message)}
+  }catch(error){if(sequence===selection){box.replaceChildren(element('p',error.message));message('')}}
  }
+ $('adminBackToDevices').addEventListener('click',()=>{
+  selection++;$('adminDeviceDetailView').classList.add('hidden');$('adminDeviceListView').classList.remove('hidden');$('adminRegistrationDetail').replaceChildren();message('');
+  selectedButton?.focus({preventScroll:true});dialog.scrollTop=listScroll;
+ });
  async function loadList(after=''){
   const version=++request;
   try{
    const data=await api('/api/admin/registrations'+(after?'?after='+after:''));if(version!==request||!dialog.open)return;
-   data.notifications.forEach(n=>notificationCache.set(n.id,n));
    const list=$('adminRegistrationList');if(!after)list.replaceChildren();
-   data.items.forEach(item=>{const button=element('button',item.platform+' · '+item.id.slice(0,8)+'\nキャラ '+item.characters+'件 / タイマー '+item.timers+'件\n'+when(item.updatedAt),'admin-device');button.type='button';button.addEventListener('click',()=>openItem(item.id));list.appendChild(button)});
+   data.items.forEach(item=>{const button=element('button',undefined,'admin-device');button.type='button';button.appendChild(element('span',item.platform+' · '+item.id.slice(0,8)+'\nキャラ '+item.characters+'件 / タイマー '+item.timers+'件\n'+when(item.updatedAt)));const arrow=element('span','›','admin-device-arrow');arrow.setAttribute('aria-hidden','true');button.appendChild(arrow);button.addEventListener('click',()=>openItem(item.id,button));list.appendChild(button)});
    if(!list.children.length)list.appendChild(element('p','登録内容はまだありません。各端末でアプリを更新して開くと表示されます。'));
    $('adminLoadMore').classList.toggle('hidden',!data.next);$('adminLoadMore').dataset.after=data.next||'';
-   const notices=$('adminNotificationList');notices.replaceChildren();
-   data.notifications.forEach(n=>{const card=element('details',undefined,'admin-record');card.appendChild(element('summary','通知端末 '+n.id.slice(0,8)));renderNotification(card,n);notices.appendChild(card)});
-   if(!data.notifications.length)notices.appendChild(element('p','通知の登録はありません。'));message('');
+   message('');
   }catch(error){if(version===request)message(error.message)}
  }
  $('adminLoginForm').addEventListener('submit',async event=>{

@@ -1392,10 +1392,9 @@ body{
 #registrationAdminDialog{width:min(calc(100% - 24px),940px)}
 .admin-record{padding:12px;border:1px solid var(--line);border-radius:12px;margin:10px 0;min-width:0;overflow-wrap:anywhere}
 .admin-record h4{margin:0 0 8px}.admin-record p{margin:6px 0;white-space:pre-wrap;font-size:13px;line-height:1.5}
-.admin-record details{margin:8px 0}.admin-device{display:block;width:100%;padding:12px;margin:8px 0;background:rgba(103,187,255,.08);border:1px solid var(--line);border-radius:12px;color:var(--text);text-align:left;white-space:pre-wrap;line-height:1.5}
-.admin-columns{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}.admin-columns>div{min-width:0}
+.admin-record details{margin:8px 0}.admin-device{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:12px;margin:8px 0;background:rgba(103,187,255,.08);border:1px solid var(--line);border-radius:12px;color:var(--text);text-align:left;white-space:pre-wrap;line-height:1.5;overflow-wrap:anywhere}.admin-device>span:first-child{min-width:0}.admin-device-arrow{flex:none;font-size:24px;color:var(--blue)}
+#adminDeviceDetailView,#adminRegistrationDetail{min-width:0}
 #adminStatus,#registrationSyncStatus{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
-@media(min-width:700px){.admin-columns{grid-template-columns:minmax(200px,1fr) minmax(0,2fr)}}
 .topbar,.manager-tabs,#characterDetail>.character-back{background-color:#0c1e2d!important;background-image:linear-gradient(rgba(139,199,218,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(139,199,218,.025) 1px,transparent 1px),linear-gradient(90deg,#0c1e2d,#10303a)!important;background-size:52px 52px,52px 52px,auto!important;background-position:0 var(--chrome-y,0px),0 0,0 0}
 #characterDetail>.character-back{--chrome-y:calc(0px - var(--app-header-height) - var(--app-tabs-height))}
 #characterCount,#timerCount{font-size:16px;font-weight:400;line-height:1.4}
@@ -1646,13 +1645,16 @@ body{
     </div>
   </dialog>
   <dialog id="registrationAdminDialog" class="character-dialog" aria-labelledby="registrationAdminTitle">
-    <div class="modal-header"><h2 id="registrationAdminTitle">登録状態</h2><button id="closeRegistrationAdmin" type="button" class="icon-btn" aria-label="閉じる">×</button></div>
+    <div class="modal-header"><h2 id="registrationAdminTitle">管理画面</h2><button id="closeRegistrationAdmin" type="button" class="icon-btn" aria-label="閉じる">×</button></div>
     <form id="adminLoginForm" class="form"><label class="field"><span>パスワード</span><input id="adminPassword" type="password" inputmode="numeric" autocomplete="off" required maxlength="100"></label><button id="adminLoginButton" type="submit" class="submit-btn">開く</button></form>
     <p id="adminStatus" role="status" aria-live="polite"></p>
     <section id="adminDashboard" class="hidden">
+      <div id="adminDeviceListView">
       <button id="adminRefresh" class="manager-small-btn" type="button">更新</button><p id="registrationSyncStatus" role="status"></p>
       <p class="eos-help">各端末でアプリを開くと登録内容が更新されます。画像・EOS ID・Steam Name・インプラント番号は含みません。登録内容の保存期間は最終同期から30日です。</p>
-      <div class="admin-columns"><div><h3>端末別の登録内容</h3><div id="adminRegistrationList"></div><button id="adminLoadMore" class="manager-small-btn hidden" type="button">もっと表示</button><h3>通知の登録・配信状態</h3><p class="eos-help">「配信受付済み」はPushサービスの受付、「表示確認済み」は端末の表示処理完了を示します。</p><div id="adminNotificationList"></div></div><div id="adminRegistrationDetail"></div></div>
+      <h3>端末別の登録内容</h3><div id="adminRegistrationList"></div><button id="adminLoadMore" class="manager-small-btn hidden" type="button">もっと表示</button>
+      </div>
+      <section id="adminDeviceDetailView" class="hidden"><button id="adminBackToDevices" class="manager-small-btn" type="button">‹ 端末一覧</button><div id="adminRegistrationDetail"></div></section>
     </section>
   </dialog>
   <script src="./install-guide.js" defer></script>
@@ -2558,7 +2560,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
   })),timers:(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')).map(t=>{
    const n=t.notificationSettings||legacyTimerNotificationSettings(),coords=coordinatesForPin(t.map,t.manualPin);
    return{id:str(t.id),name:str(t.timerName),map:str(t.map),serverNo:str(t.serverNo),type:str(t.type),material:str(t.material),customType:str(t.customType),memo:str(t.memo),startedAt:Number(t.startedAt),endsAt:Number(t.endsAt),lat:str(coords?coords.lat:t.lat),lng:str(coords?coords.lng:t.lng),showPin:t.showPin!==false,notificationSettings:{enabled:!!n.enabled,days:n.days||[],hours:n.hours||[],hourlyWithinDay:!!n.hourlyWithinDay,customEntries:(n.customNotifications?.entries||[]).map(e=>({days:e.days,enabled:!!n.customNotifications.enabled&&!!e.enabled}))}}
-  }),notification:{enabled:!!window.ARKPush?.getSettings?.().enabled,permission:window.Notification?.permission||'unavailable'}};
+  })};
  };
  window.ARKTransfer?.init({
   openDialog,closeDialog,

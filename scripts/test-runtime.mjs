@@ -65,11 +65,14 @@ try {
   const cron = await app.fetch('http://localhost/cdn-cgi/local/scheduled');
   assert.equal(cron.status, 200);
   assert.equal((await app.fetch('http://localhost/api/admin/registrations')).status,401);
-  const registration=await app.fetch('http://localhost/api/registrations/sync',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({token:randomBytes(32).toString('hex'),revision:now,platform:'PC',data:{characters:[],timers:[],notification:{enabled:false,permission:'default'}}})});
+  const registrationToken=randomBytes(32).toString('hex');
+  const registration=await app.fetch('http://localhost/api/registrations/sync',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({token:registrationToken,revision:now,platform:'PC',data:{characters:[],timers:[]}})});
   assert.equal(registration.status,200);
   const loggedIn=await app.fetch('http://localhost/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:adminPassword})});
   assert.equal(loggedIn.status,200);const cookie=loggedIn.headers.get('set-cookie').split(';')[0];
-  const management=await app.fetch('http://localhost/api/admin/registrations',{headers:{cookie}});assert.equal(management.status,200);assert.ok((await management.json()).items.length>0);
+  const management=await app.fetch('http://localhost/api/admin/registrations',{headers:{cookie}});assert.equal(management.status,200);
+  const managementData=await management.json();assert.ok(managementData.items.length>0);assert.equal(managementData.notifications,undefined);assert.ok(managementData.items.every(item=>item.subscriberId===undefined));
+  const detail=await app.fetch('http://localhost/api/admin/registrations/'+await digest(registrationToken),{headers:{cookie}});assert.equal(detail.status,200);const {item}=await detail.json();assert.equal(item.characters.length,0);assert.equal(item.notification,undefined);assert.equal(item.subscriberId,undefined);
   await app.fetch('http://localhost/api/admin/logout',{method:'POST',headers:{cookie}});
   assert.equal((await app.fetch('http://localhost/api/admin/registrations',{headers:{cookie}})).status,401);
   for (const path of ['/', '/push-client.js', '/install-guide.js','/registration-client.js', '/sw.js', '/manifest.webmanifest', '/build-info.json']) {

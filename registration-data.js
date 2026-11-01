@@ -18,6 +18,5 @@ export function sanitizeRegistrationData(raw){
   lat:text(t.lat,50),lng:text(t.lng,50),showPin:flag(t.showPin),
   notificationSettings:{enabled:flag(t.notificationSettings.enabled),days:offsets(t.notificationSettings.days,100000000),hours:offsets(t.notificationSettings.hours,23),hourlyWithinDay:flag(t.notificationSettings.hourlyWithinDay),customEntries:list(t.notificationSettings.customEntries||[],1000).map(e=>({days:offsets([e.days],100000000)[0],enabled:flag(e.enabled)}))}
  }));
- if(!['granted','denied','default','unavailable'].includes(raw.notification?.permission))throw Error('invalid permission');
- return {characters,timers,notification:{enabled:flag(raw.notification.enabled),permission:raw.notification.permission}};
+ return {characters,timers};
 }
