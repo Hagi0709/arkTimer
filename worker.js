@@ -1,4 +1,5 @@
 import webpush from 'web-push';
+import {registrationAPI,cleanRegistrations} from './registration-api.js';
 
 const DAY = 86400000;
 const MAX_ATTEMPTS = 8;
@@ -250,6 +251,9 @@ export async function runScheduled(env, { send = sendPush, clock = Date.now } = 
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    if(url.pathname.startsWith('/api/admin/')||url.pathname.startsWith('/api/registrations/')){
+      try{return await registrationAPI(req,env)}catch{return json({error:'管理機能を利用できません。しばらく待ってから再度お試しください'},503)}
+    }
     if (url.pathname.startsWith('/api/push/')) {
       if (req.headers.get('origin') && req.headers.get('origin') !== url.origin) return json({ error: 'origin mismatch' }, 403);
       try { return await api(req, env); } catch {
@@ -258,12 +262,12 @@ export default {
       }
     }
     const response = await env.ASSETS.fetch(req);
-    if (['/', '/index.html', '/push-client.js', '/data-transfer.js', '/install-guide.js', '/sw.js', '/build-info.json'].includes(url.pathname)) {
+    if (['/', '/index.html', '/push-client.js', '/data-transfer.js', '/install-guide.js', '/registration-client.js', '/sw.js', '/build-info.json'].includes(url.pathname)) {
       const fresh = new Response(response.body, response);
       fresh.headers.set('cache-control', 'no-cache');
       return fresh;
     }
     return response;
   },
-  async scheduled(event, env, ctx) { ctx.waitUntil(runScheduled(env)); }
+  async scheduled(event, env, ctx) { ctx.waitUntil(Promise.all([runScheduled(env),cleanRegistrations(env).catch(()=>console.error(JSON.stringify({event:'registration_cleanup_failed'})))])); }
 };

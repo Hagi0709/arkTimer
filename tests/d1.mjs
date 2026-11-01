@@ -7,7 +7,7 @@ export class D1 {
     this.sql.exec(readFileSync('migrations/0001_push_base.sql', 'utf8'));
     if (migrate) this.migrate();
   }
-  migrate() { this.sql.exec(readFileSync('migrations/0002_push_delivery.sql', 'utf8')); }
+  migrate() { for(const file of ['0002_push_delivery.sql','0003_admin_access.sql','0004_registration_snapshots.sql'])this.sql.exec(readFileSync('migrations/'+file,'utf8')); }
   prepare(query) {
     const sql = this.sql;
     return {

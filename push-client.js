@@ -41,6 +41,7 @@
       localStorage.setItem(SETTINGS, JSON.stringify(settings));
       this.settings = settings;
       this.onSettingsChange();
+      window.ARKRegistrationSync?.markChanged();
     }
     supported() {
       return window.isSecureContext && 'Notification' in window && 'PushManager' in window && 'serviceWorker' in navigator;
@@ -90,6 +91,7 @@
       if (!/^[a-f0-9]{64}$/.test(token || '')) {
         token = Array.from(crypto.getRandomValues(new Uint8Array(32)), n => n.toString(16).padStart(2, '0')).join('');
         localStorage.setItem(TOKEN, token);
+        window.ARKRegistrationSync?.markChanged();
       }
       return token;
     }

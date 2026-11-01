@@ -1388,6 +1388,14 @@ body{
 /* Crop only the generated image's transparent padding in the layout. */
 .brand-title{position:relative;width:150px;max-width:100%;aspect-ratio:1890 / 705;flex:0 1 150px;overflow:hidden}
 .brand-wordmark{position:absolute;display:block;width:104.445%;max-width:none;height:auto;left:-3.281%;top:-3.263%}
+.brand-title{padding:0;border:0;background:none;touch-action:manipulation}
+#registrationAdminDialog{width:min(calc(100% - 24px),940px)}
+.admin-record{padding:12px;border:1px solid var(--line);border-radius:12px;margin:10px 0;min-width:0;overflow-wrap:anywhere}
+.admin-record h4{margin:0 0 8px}.admin-record p{margin:6px 0;white-space:pre-wrap;font-size:13px;line-height:1.5}
+.admin-record details{margin:8px 0}.admin-device{display:block;width:100%;padding:12px;margin:8px 0;background:rgba(103,187,255,.08);border:1px solid var(--line);border-radius:12px;color:var(--text);text-align:left;white-space:pre-wrap;line-height:1.5}
+.admin-columns{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}.admin-columns>div{min-width:0}
+#adminStatus,#registrationSyncStatus{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+@media(min-width:700px){.admin-columns{grid-template-columns:minmax(200px,1fr) minmax(0,2fr)}}
 .topbar,.manager-tabs,#characterDetail>.character-back{background-color:#0c1e2d!important;background-image:linear-gradient(rgba(139,199,218,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(139,199,218,.025) 1px,transparent 1px),linear-gradient(90deg,#0c1e2d,#10303a)!important;background-size:52px 52px,52px 52px,auto!important;background-position:0 var(--chrome-y,0px),0 0,0 0}
 #characterDetail>.character-back{--chrome-y:calc(0px - var(--app-header-height) - var(--app-tabs-height))}
 #characterCount,#timerCount{font-size:16px;font-weight:400;line-height:1.4}
@@ -1399,7 +1407,7 @@ body{
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand-title"><img class="brand-wordmark" src="ark-manager-wordmark.png" alt="ARK Manager" width="1974" height="797"></div>
+      <button type="button" id="adminEntry" class="brand-title" aria-label="ARK Manager"><img class="brand-wordmark" src="ark-manager-wordmark.png" alt="" width="1974" height="797"></button>
     </header>
 
     <nav class="manager-tabs" aria-label="管理機能">
@@ -1637,9 +1645,20 @@ body{
       <div class="install-guide-actions"><button id="homeScreenGuideLater" class="manager-small-btn" type="button" autofocus>あとで</button><button id="homeScreenGuideNever" class="manager-small-btn" type="button">今後表示しない</button></div>
     </div>
   </dialog>
+  <dialog id="registrationAdminDialog" class="character-dialog" aria-labelledby="registrationAdminTitle">
+    <div class="modal-header"><h2 id="registrationAdminTitle">登録状態</h2><button id="closeRegistrationAdmin" type="button" class="icon-btn" aria-label="閉じる">×</button></div>
+    <form id="adminLoginForm" class="form"><label class="field"><span>パスワード</span><input id="adminPassword" type="password" inputmode="numeric" autocomplete="off" required maxlength="100"></label><button id="adminLoginButton" type="submit" class="submit-btn">開く</button></form>
+    <p id="adminStatus" role="status" aria-live="polite"></p>
+    <section id="adminDashboard" class="hidden">
+      <button id="adminRefresh" class="manager-small-btn" type="button">更新</button><p id="registrationSyncStatus" role="status"></p>
+      <p class="eos-help">各端末でアプリを開くと登録内容が更新されます。画像・EOS ID・Steam Name・インプラント番号は含みません。登録内容の保存期間は最終同期から30日です。</p>
+      <div class="admin-columns"><div><h3>端末別の登録内容</h3><div id="adminRegistrationList"></div><button id="adminLoadMore" class="manager-small-btn hidden" type="button">もっと表示</button><h3>通知の登録・配信状態</h3><p class="eos-help">「配信受付済み」はPushサービスの受付、「表示確認済み」は端末の表示処理完了を示します。</p><div id="adminNotificationList"></div></div><div id="adminRegistrationDetail"></div></div>
+    </section>
+  </dialog>
   <script src="./install-guide.js" defer></script>
   <script src="./push-client.js"></script>
   <script src="./data-transfer.js"></script>
+  <script src="./registration-client.js" defer></script>
   <script>
 /* Shared copy action for all copy buttons */
 window.ARKCopyText=async function(value){
@@ -1772,6 +1791,7 @@ function save(){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.timers));
   localStorage.setItem(SORT_KEY,state.sortMode);
   timerPush?.markChanged();
+  window.ARKRegistrationSync?.markChanged();
 }
 
 function generateId(){return `timer_${Date.now()}_${Math.random().toString(36).slice(2,9)}`}
@@ -2117,7 +2137,7 @@ init();
   return `<picture class="level-rule-image" aria-hidden="true"><img class="level-rule-artwork" src="./${src}" style="${style}" alt="" decoding="async"></picture>`;
  }
  const bossRule=r=>r.type==='boss'||['overseer','manticore','rockwell','king_titan','lost_queen','master_controller','abyssalus_shallocis'].includes(r.id);
- function saveLevelRules(){localStorage.setItem(LEVEL_RULES_KEY,JSON.stringify(levelRules))}
+ function saveLevelRules(){localStorage.setItem(LEVEL_RULES_KEY,JSON.stringify(levelRules));window.ARKRegistrationSync?.markChanged()}
  function checkedLevelIds(c){const ids=Array.isArray(c.levelUnlocks)?c.levelUnlocks:[];const all=[...new Set(ids)];return all.includes('bobs_tall_tales')?[...new Set([...all,'bobs_sc','bobs_ab','bobs_ex'])]:all}
  function bossTier(c,id){const tiers=c.levelBossTiers||{};return ['gamma','beta','alpha'].includes(tiers[id])?tiers[id]:'alpha'}
  function getLevelTotal(c){return LEVEL_BASE+levelRules.reduce((sum,r)=>sum+(checkedLevelIds(c).includes(r.id)?(bossRule(r)?BOSS_LEVELS[bossTier(c,r.id)]:Number(r.points)):0),0)}
@@ -2200,12 +2220,12 @@ init();
  function readRecords(){return new Promise((resolve,reject)=>{const tx=db.transaction('characters','readonly');const req=tx.objectStore('characters').getAll();req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
  function loadLocalRecords(){try{const raw=localStorage.getItem(CHARACTER_STORAGE_KEY);const parsed=raw?JSON.parse(raw):[];return Array.isArray(parsed)?parsed:[]}catch(e){return []}}
  function writeRecord(record,remove=false){
-  if(!db){return new Promise((resolve,reject)=>{try{const next=remove?records.filter(c=>c.id!==record.id):records.some(c=>c.id===record.id)?records.map(c=>c.id===record.id?record:c):[...records,record];localStorage.setItem(CHARACTER_STORAGE_KEY,JSON.stringify(next));resolve()}catch(e){reject(e)}})}
-  return new Promise((resolve,reject)=>{const tx=db.transaction('characters','readwrite');const store=tx.objectStore('characters');remove?store.delete(record.id):store.put(record);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})
+  const stored=!db?new Promise((resolve,reject)=>{try{const next=remove?records.filter(c=>c.id!==record.id):records.some(c=>c.id===record.id)?records.map(c=>c.id===record.id?record:c):[...records,record];localStorage.setItem(CHARACTER_STORAGE_KEY,JSON.stringify(next));resolve()}catch(e){reject(e)}}):new Promise((resolve,reject)=>{const tx=db.transaction('characters','readwrite');const store=tx.objectStore('characters');remove?store.delete(record.id):store.put(record);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)});
+  return stored.then(()=>{window.ARKRegistrationSync?.markChanged()})
  }
  // Lock the page behind native dialogs, including iOS Safari overscroll.
  let dialogScrollY=0;
- const managerDialogs=['characterDialog','serverSettingsDialog','levelSettingsDialog','characterViewer','dataTransferDialog'];
+ const managerDialogs=['characterDialog','serverSettingsDialog','levelSettingsDialog','characterViewer','dataTransferDialog','registrationAdminDialog'];
  function syncDialogScrollLock(){
   const hasOpen=managerDialogs.some(id=>{const d=$(id);return d&&(d.open||d.hasAttribute('open'))});
   if(hasOpen){
@@ -2230,6 +2250,7 @@ init();
   syncDialogScrollLock();
  }
  managerDialogs.forEach(id=>$(id)?.addEventListener('close',syncDialogScrollLock));
+ document.addEventListener('ark:dialog-change',syncDialogScrollLock);
  // iOS: never let a gesture starting behind the active popup steal its scroll.
  document.addEventListener('touchmove',event=>{
   if(!document.body.classList.contains('manager-dialog-open'))return;
@@ -2505,7 +2526,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
   try{
    if(db){await new Promise((resolve,reject)=>{const tx=db.transaction('characters','readwrite'),store=tx.objectStore('characters');next.forEach(c=>store.put(c));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}
    else localStorage.setItem(CHARACTER_STORAGE_KEY,JSON.stringify(next));
-   records=next;renderCharacters();
+   records=next;renderCharacters();window.ARKRegistrationSync?.markChanged();
   }catch(e){records=previous;renderCharacters();toast('並び順を保存できませんでした')}
  });
  installReorder(list,'[data-timer-drag]','.timer-list-item',elements=>{
@@ -2526,6 +2547,19 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
  for(const id of ['characterDialog','characterViewer'])$(id).addEventListener('click',e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog($(id))});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmOverlay.classList.contains('hidden'))closeConfirm(false);else if(!modal.classList.contains('hidden'))closeModal()}});
  renderCharacters();const charactersReady=(async()=>{try{if(location.protocol==='file:'||!('indexedDB' in window)){records=loadLocalRecords()}else{db=await openDatabase();records=await readRecords()}}catch(e){db=null;records=loadLocalRecords()}ready=true;renderCharacters()})();
+ window.ARKRegistrationSnapshot=async()=>{
+  await charactersReady;
+  const current=db?await readRecords():loadLocalRecords(),str=value=>String(value??'');
+  return {characters:current.map(c=>({
+   id:str(c.id),name:str(c.name),level:str(c.level),map:str(c.map),serverNo:str(c.serverNo),levelCap:getLevelTotal(c),
+   levelProgress:levelRules.map(r=>({name:str(r.name),completed:checkedLevelIds(c).includes(r.id),tier:bossRule(r)?bossTier(c,r.id):'',points:bossRule(r)?BOSS_LEVELS[bossTier(c,r.id)]:Number(r.points)})),
+   notes:EXT_NOTES.map(g=>({name:g.name,total:g.items.length,acquired:g.items.filter(n=>(c.extNotes||[]).includes(n.id)).map(n=>({label:n.label,coord:n.coord}))})),
+   tribes:c.tribeByMap?Object.entries(c.tribeByMap).map(([key,member])=>{let place=[];try{place=JSON.parse(key)}catch{}return{map:str(place[0]),serverNo:str(place[1]),member:!!member}}):c.map?[{map:str(c.map),serverNo:str(c.serverNo),member:!!c.tribeMember}]:[]
+  })),timers:(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')).map(t=>{
+   const n=t.notificationSettings||legacyTimerNotificationSettings(),coords=coordinatesForPin(t.map,t.manualPin);
+   return{id:str(t.id),name:str(t.timerName),map:str(t.map),serverNo:str(t.serverNo),type:str(t.type),material:str(t.material),customType:str(t.customType),memo:str(t.memo),startedAt:Number(t.startedAt),endsAt:Number(t.endsAt),lat:str(coords?coords.lat:t.lat),lng:str(coords?coords.lng:t.lng),showPin:t.showPin!==false,notificationSettings:{enabled:!!n.enabled,days:n.days||[],hours:n.hours||[],hourlyWithinDay:!!n.hourlyWithinDay,customEntries:(n.customNotifications?.entries||[]).map(e=>({days:e.days,enabled:!!n.customNotifications.enabled&&!!e.enabled}))}}
+  }),notification:{enabled:!!window.ARKPush?.getSettings?.().enabled,permission:window.Notification?.permission||'unavailable'}};
+ };
  window.ARKTransfer?.init({
   openDialog,closeDialog,
   getCurrent:async()=>{
@@ -2543,6 +2577,7 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
    state.timers=next.data.timers;state.sortMode=next.data.sortMode;sortSelect.value=state.sortMode;
    renderCharacters();if(selectedId)renderDetail();render();renderServerSettings();renderLevelSettings();
    timerPush?.markChanged();
+   window.ARKRegistrationSync?.markChanged();
   },
   openNotifications:()=>{switchTab('timers');timerPush?.open()}
  });

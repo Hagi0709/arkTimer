@@ -3,11 +3,13 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { unstable_dev } from 'wrangler';
 import webpush from 'web-push';
+import {digest} from '../admin-access.js';
 
 const keys = webpush.generateVAPIDKeys(); // Ephemeral test keys, kept in memory.
+const adminPassword=randomBytes(24).toString('hex');
 const app = await unstable_dev('worker.js', {
   config: 'wrangler.toml', local: true, ip: '127.0.0.1', port: 0, logLevel: 'error',
-  vars: { VAPID_PUBLIC_KEY: keys.publicKey, VAPID_PRIVATE_KEY: keys.privateKey, VAPID_SUBJECT: 'mailto:test@example.test' },
+  vars: { VAPID_PUBLIC_KEY: keys.publicKey, VAPID_PRIVATE_KEY: keys.privateKey, VAPID_SUBJECT: 'mailto:test@example.test',REGISTRATION_ADMIN_PASSWORD_HASH:await digest(adminPassword) },
   experimental: { disableExperimentalWarning: true, testScheduled: true, watch: false, disableDevRegistry: true }
 });
 const token = randomBytes(32).toString('hex');
@@ -62,7 +64,15 @@ try {
   assert.deepEqual((await post('status',{token})).alerts.filter(a=>a.cancelled_at===null).map(a=>a.due_at).sort(),flexibleAlerts.map(a=>a.due_at).sort());
   const cron = await app.fetch('http://localhost/cdn-cgi/local/scheduled');
   assert.equal(cron.status, 200);
-  for (const path of ['/', '/push-client.js', '/install-guide.js', '/sw.js', '/manifest.webmanifest', '/build-info.json']) {
+  assert.equal((await app.fetch('http://localhost/api/admin/registrations')).status,401);
+  const registration=await app.fetch('http://localhost/api/registrations/sync',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({token:randomBytes(32).toString('hex'),revision:now,platform:'PC',data:{characters:[],timers:[],notification:{enabled:false,permission:'default'}}})});
+  assert.equal(registration.status,200);
+  const loggedIn=await app.fetch('http://localhost/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:adminPassword})});
+  assert.equal(loggedIn.status,200);const cookie=loggedIn.headers.get('set-cookie').split(';')[0];
+  const management=await app.fetch('http://localhost/api/admin/registrations',{headers:{cookie}});assert.equal(management.status,200);assert.ok((await management.json()).items.length>0);
+  await app.fetch('http://localhost/api/admin/logout',{method:'POST',headers:{cookie}});
+  assert.equal((await app.fetch('http://localhost/api/admin/registrations',{headers:{cookie}})).status,401);
+  for (const path of ['/', '/push-client.js', '/install-guide.js','/registration-client.js', '/sw.js', '/manifest.webmanifest', '/build-info.json']) {
     const response = await app.fetch('http://localhost' + path);
     assert.equal(response.status, 200, path);
     if (path !== '/manifest.webmanifest') assert.equal(response.headers.get('cache-control'), 'no-cache', path);
