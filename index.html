@@ -1432,20 +1432,17 @@ body{
     </main>
     <main id="toolsPage" class="content hidden" role="tabpanel" aria-labelledby="toolsTab">
       <section id="toolsListView"><div class="section-heading"><h1>ツール</h1></div>
-        <div class="tool-list"><button id="openSurvivorXp" type="button" class="tool-card"><img src="./tool-survivor-xp.png" width="64" height="64" alt=""><span class="tool-card-copy"><strong>サバイバー経験値計算</strong><small>開始レベルから目標レベルまでの必要経験値を計算</small></span><span class="tool-card-arrow" aria-hidden="true">›</span></button></div>
+        <div class="tool-list"><button id="openSurvivorXp" type="button" class="tool-card"><img src="./tool-survivor-xp.png?v=exp" width="64" height="64" alt=""><span class="tool-card-copy"><strong>サバイバー経験値計算</strong><small>開始レベルから目標レベルまでの必要経験値を計算</small></span><span class="tool-card-arrow" aria-hidden="true">›</span></button></div>
       </section>
       <section id="survivorXpView" class="xp-tool hidden" aria-labelledby="survivorXpTitle">
         <button id="backToTools" type="button" class="manager-small-btn tool-back">‹ ツール一覧</button>
-        <div class="xp-tool-heading"><img src="./tool-survivor-xp.png" width="58" height="58" alt=""><div><h1 id="survivorXpTitle" tabindex="-1">サバイバー経験値計算</h1><p>ARK: Survival Ascended</p></div></div>
+        <div class="xp-tool-heading"><img src="./tool-survivor-xp.png?v=exp" width="58" height="58" alt=""><h1 id="survivorXpTitle" tabindex="-1">サバイバー経験値計算</h1></div>
         <form id="survivorXpForm" class="xp-form" novalidate>
-          <div class="xp-levels"><label>開始レベル<input id="survivorXpStart" type="number" inputmode="numeric" min="1" max="245" step="1" value="1" required aria-describedby="survivorXpNote survivorXpError"></label><label>目標レベル<input id="survivorXpTarget" type="number" inputmode="numeric" min="1" max="245" step="1" value="105" required aria-describedby="survivorXpNote survivorXpError"></label></div>
-          <p id="survivorXpNote" class="xp-field-note">各レベルに到達した直後の経験値で計算します。レベル途中の獲得分は含みません。</p>
+          <div class="xp-levels"><label>開始レベル<input id="survivorXpStart" type="number" inputmode="numeric" min="1" max="245" step="1" value="1" required aria-describedby="survivorXpError"></label><label>目標レベル<input id="survivorXpTarget" type="number" inputmode="numeric" min="1" max="245" step="1" value="105" required aria-describedby="survivorXpError"></label></div>
           <p id="survivorXpError" class="xp-error hidden" role="status"></p>
         </form>
         <section class="xp-result" aria-label="計算結果" aria-live="polite" aria-atomic="true"><p class="xp-result-label">目標までに必要な経験値</p><div class="xp-result-amount"><output id="survivorXpNeeded" for="survivorXpStart survivorXpTarget">—</output><span>XP</span></div><p id="survivorXpRange" class="xp-result-range">—</p><dl class="xp-totals"><div><dt>開始レベルの累計XP</dt><dd id="survivorXpStartTotal">—</dd></div><div><dt>目標レベルの累計XP</dt><dd id="survivorXpTargetTotal">—</dd></div></dl></section>
-        <p class="xp-field-note" style="margin-top:16px">マルチプレイヤーの経験値表を使用します。Lv106以上にはレベル上限の解放が必要です。経験値テーブルを変更したサーバーは対象外です。</p>
         <details id="survivorXpBreakdown" class="xp-step-table"><summary>レベルごとの内訳</summary><table><thead><tr><th scope="col">到達レベル</th><th scope="col">必要XP</th><th scope="col">開始からの合計</th></tr></thead><tbody id="survivorXpRows"></tbody></table></details>
-        <p class="xp-source">経験値テーブルの参照：<a href="https://wikily.gg/ja/ark-survival-ascended/xp-calculator" target="_blank" rel="noopener noreferrer">Wikily 経験値計算ツール</a></p>
       </section>
     </main>
     <button id="addCharacter" class="fab hidden" type="button" aria-label="キャラ追加"></button>
