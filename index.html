@@ -1401,6 +1401,14 @@ body{
 .timer-list-heading{padding-right:48px}
 .timer-list-heading-actions{position:relative;flex:0 0 auto}
 #timerCount{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%)}
+/* Tools share the existing fixed header and tab bar. */
+.manager-tabs button{min-width:0;padding-inline:6px;font-size:clamp(11px,3.2vw,13px)}
+.tool-list{display:grid;gap:12px;margin-top:20px}.tool-card{display:flex;align-items:center;gap:14px;width:100%;padding:16px;text-align:left;background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:20px;color:var(--text)}
+.tool-card img{width:64px;height:64px;object-fit:contain;flex:none}.tool-card-copy{flex:1;min-width:0}.tool-card-copy strong{display:block;font-size:clamp(15px,4vw,18px);line-height:1.5}.tool-card-copy small{display:block;margin-top:5px;color:var(--muted);font-size:12px;line-height:1.6}.tool-card-arrow{flex:none;color:var(--blue);font-size:24px}
+.xp-tool{max-width:640px;margin-inline:auto}.tool-back{margin:4px 0 20px}.xp-tool-heading{display:flex;align-items:center;gap:12px;margin:0 0 22px}.xp-tool-heading img{width:58px;height:58px;object-fit:contain;flex:none}.xp-tool-heading h1{margin:0;font-size:clamp(18px,5vw,24px);line-height:1.45}.xp-tool-heading p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.xp-form{display:grid;gap:18px;padding:20px;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:20px;min-width:0}.xp-mode{display:grid;gap:9px;font-size:14px;font-weight:700}.xp-levels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.xp-levels label{display:grid;gap:10px;font-size:14px;font-weight:700;min-width:0}.xp-form select,.xp-form input{width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:16px;color-scheme:dark}.xp-form input{font-variant-numeric:tabular-nums}.xp-field-note{margin:0;color:var(--muted);font-size:12px;line-height:1.7}
+.xp-result{margin-top:20px;padding:22px 20px;border:1px solid rgba(105,230,210,.3);border-radius:20px;background:linear-gradient(120deg,rgba(103,187,255,.09),rgba(102,232,211,.06));min-width:0}.xp-result-label{margin:0;color:var(--muted);font-size:13px}.xp-result-amount{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;margin:12px 0;color:var(--cyan);font-weight:800;font-variant-numeric:tabular-nums}.xp-result-amount output{font-size:clamp(25px,7.5vw,40px);overflow-wrap:anywhere}.xp-result-amount span{font-size:14px}.xp-result-range{margin:0;font-size:14px;color:var(--text)}.xp-totals{display:grid;gap:10px;margin:20px 0 0;padding-top:16px;border-top:1px solid var(--line);font-size:13px}.xp-totals>div{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.xp-totals dt{color:var(--muted)}.xp-totals dd{margin:0;font-variant-numeric:tabular-nums}.xp-error{color:#ffaaaa;font-size:13px;line-height:1.6;margin:0}.xp-source{font-size:12px;color:var(--muted);line-height:1.8;margin:20px 0}.xp-source a{color:var(--blue)}.xp-step-table{margin-top:20px;padding:14px 0;border-top:1px solid var(--line)}.xp-step-table summary{cursor:pointer;font-size:14px;color:var(--blue)}.xp-step-table table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}.xp-step-table th,.xp-step-table td{padding:12px 5px;border-bottom:1px solid var(--line);text-align:right}.xp-step-table th:first-child,.xp-step-table td:first-child{text-align:left}.xp-step-table th{color:var(--muted);font-weight:400}
+@media(max-width:360px){.tool-card{padding:12px;gap:10px}.tool-card img{width:52px;height:52px}.xp-form,.xp-result{padding:16px}.xp-levels{gap:10px}.xp-tool-heading{gap:8px}.xp-tool-heading img{width:48px;height:48px}}
 </style>
 </head>
 <body>
@@ -1411,7 +1419,8 @@ body{
 
     <nav class="manager-tabs" aria-label="管理機能">
       <button id="timerTab" class="selected" role="tab" aria-selected="true" aria-controls="timerPage">タイマ管理</button>
-      <button id="characterTab" role="tab" aria-selected="false" aria-controls="characterPage">キャラ管理</button>
+      <button id="characterTab" role="tab" aria-selected="false" aria-controls="characterPage" tabindex="-1">キャラ管理</button>
+      <button id="toolsTab" role="tab" aria-selected="false" aria-controls="toolsPage" tabindex="-1">ツール</button>
     </nav>
     <main id="characterPage" class="content hidden" role="tabpanel" aria-labelledby="characterTab">
       <div id="characterListPage">
@@ -1420,6 +1429,24 @@ body{
         <div id="characterList" class="character-list"></div><div class="server-settings-bar manager-settings-bottom"><button id="openServerSettings" type="button" class="manager-small-btn">⚙ マップ設定</button><button data-open-transfer type="button" class="manager-small-btn">データ引き継ぎ</button></div>
       </div>
       <section id="characterDetail" class="hidden"></section>
+    </main>
+    <main id="toolsPage" class="content hidden" role="tabpanel" aria-labelledby="toolsTab">
+      <section id="toolsListView"><div class="section-heading"><h1>ツール</h1></div>
+        <div class="tool-list"><button id="openSurvivorXp" type="button" class="tool-card"><img src="./tool-survivor-xp.png" width="64" height="64" alt=""><span class="tool-card-copy"><strong>サバイバー経験値計算</strong><small>開始レベルから目標レベルまでの必要経験値を計算</small></span><span class="tool-card-arrow" aria-hidden="true">›</span></button></div>
+      </section>
+      <section id="survivorXpView" class="xp-tool hidden" aria-labelledby="survivorXpTitle">
+        <button id="backToTools" type="button" class="manager-small-btn tool-back">‹ ツール一覧</button>
+        <div class="xp-tool-heading"><img src="./tool-survivor-xp.png" width="58" height="58" alt=""><div><h1 id="survivorXpTitle" tabindex="-1">サバイバー経験値計算</h1><p>ARK: Survival Ascended</p></div></div>
+        <form id="survivorXpForm" class="xp-form" novalidate>
+          <div class="xp-levels"><label>開始レベル<input id="survivorXpStart" type="number" inputmode="numeric" min="1" max="245" step="1" value="1" required aria-describedby="survivorXpNote survivorXpError"></label><label>目標レベル<input id="survivorXpTarget" type="number" inputmode="numeric" min="1" max="245" step="1" value="105" required aria-describedby="survivorXpNote survivorXpError"></label></div>
+          <p id="survivorXpNote" class="xp-field-note">各レベルに到達した直後の経験値で計算します。レベル途中の獲得分は含みません。</p>
+          <p id="survivorXpError" class="xp-error hidden" role="status"></p>
+        </form>
+        <section class="xp-result" aria-label="計算結果" aria-live="polite" aria-atomic="true"><p class="xp-result-label">目標までに必要な経験値</p><div class="xp-result-amount"><output id="survivorXpNeeded" for="survivorXpStart survivorXpTarget">—</output><span>XP</span></div><p id="survivorXpRange" class="xp-result-range">—</p><dl class="xp-totals"><div><dt>開始レベルの累計XP</dt><dd id="survivorXpStartTotal">—</dd></div><div><dt>目標レベルの累計XP</dt><dd id="survivorXpTargetTotal">—</dd></div></dl></section>
+        <p class="xp-field-note" style="margin-top:16px">マルチプレイヤーの経験値表を使用します。Lv106以上にはレベル上限の解放が必要です。経験値テーブルを変更したサーバーは対象外です。</p>
+        <details id="survivorXpBreakdown" class="xp-step-table"><summary>レベルごとの内訳</summary><table><thead><tr><th scope="col">到達レベル</th><th scope="col">必要XP</th><th scope="col">開始からの合計</th></tr></thead><tbody id="survivorXpRows"></tbody></table></details>
+        <p class="xp-source">経験値テーブルの参照：<a href="https://wikily.gg/ja/ark-survival-ascended/xp-calculator" target="_blank" rel="noopener noreferrer">Wikily 経験値計算ツール</a></p>
+      </section>
     </main>
     <button id="addCharacter" class="fab hidden" type="button" aria-label="キャラ追加"></button>
     <dialog id="characterDialog" class="character-dialog" aria-labelledby="characterDialogTitle">
@@ -1661,6 +1688,8 @@ body{
   <script src="./push-client.js"></script>
   <script src="./data-transfer.js"></script>
   <script src="./registration-client.js" defer></script>
+  <script src="./survivor-xp-data.js" defer></script>
+  <script src="./survivor-xp.js" defer></script>
   <script>
 /* Shared copy action for all copy buttons */
 window.ARKCopyText=async function(value){
@@ -2318,7 +2347,7 @@ init();
   page.style.display='none';void page.offsetHeight;page.style.removeProperty('display');
  }
  function showDetail(id){selectedId=id;$('characterListPage').classList.add('hidden');$('characterDetail').classList.remove('hidden');$('addCharacter').classList.add('hidden');renderDetail();window.scrollTo(0,0)}
- function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',chars);$('add').classList.toggle('hidden',chars);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',!chars]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active))}window.scrollTo(0,0)}
+ function switchTab(tab){closeModal();closeDialog($('characterDialog'));closeDialog($('characterViewer'));const chars=tab==='characters',timers=tab==='timers',tools=tab==='tools';$('characterPage').classList.toggle('hidden',!chars);$('timerPage').classList.toggle('hidden',!timers);$('toolsPage').classList.toggle('hidden',!tools);$('add').classList.toggle('hidden',!timers);$('addCharacter').classList.toggle('hidden',!chars||!!selectedId);for(const [id,active] of [['characterTab',chars],['timerTab',timers],['toolsTab',tools]]){$(id).classList.toggle('selected',active);$(id).setAttribute('aria-selected',String(active));$(id).tabIndex=active?0:-1}window.scrollTo(0,0)}
  function formField(key,value=''){
   const label=labels[key];
   if(key==='tribeMember')return `<label class="field tribe-check"><input name="tribeMember" type="checkbox" value="yes" ${value===true||value==='yes'?'checked':''}><span>トライブに所属している</span></label>`;
@@ -2543,8 +2572,8 @@ for(const k of Object.keys(values))if(typeof values[k]==='string')values[k]=valu
   try{saveServers();renderServerSettings()}catch(e){toast('サーバーの並び順を保存できませんでした')}
  });
  $('characterList').addEventListener('click',e=>{const btn=e.target.closest('[data-character]');if(btn)showDetail(btn.dataset.character)});
- $('addCharacter').addEventListener('click',()=>showEditor());$('characterTab').addEventListener('click',()=>switchTab('characters'));$('timerTab').addEventListener('click',()=>switchTab('timers'));
- document.querySelector('.manager-tabs').setAttribute('role','tablist');document.querySelector('.manager-tabs').addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const tabs=[...document.querySelectorAll('.manager-tabs [role="tab"]')],target=e.key==='Home'?tabs[0]:e.key==='End'?tabs[tabs.length-1]:document.activeElement===tabs[0]?tabs[1]:tabs[0];target.click();target.focus()}});
+ $('addCharacter').addEventListener('click',()=>showEditor());$('characterTab').addEventListener('click',()=>switchTab('characters'));$('timerTab').addEventListener('click',()=>switchTab('timers'));$('toolsTab').addEventListener('click',()=>switchTab('tools'));
+ document.querySelector('.manager-tabs').setAttribute('role','tablist');document.querySelector('.manager-tabs').addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const tabs=[...document.querySelectorAll('.manager-tabs [role="tab"]')],index=Math.max(0,tabs.indexOf(document.activeElement)),target=e.key==='Home'?tabs[0]:e.key==='End'?tabs[tabs.length-1]:tabs[(index+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];target.click();target.focus()}});
  $('closeCharacterDialog').addEventListener('click',()=>closeDialog($('characterDialog')));$('closeCharacterViewer').addEventListener('click',()=>closeDialog($('characterViewer')));
  for(const id of ['characterDialog','characterViewer'])$(id).addEventListener('click',e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog($(id))});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmOverlay.classList.contains('hidden'))closeConfirm(false);else if(!modal.classList.contains('hidden'))closeModal()}});

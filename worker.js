@@ -262,7 +262,7 @@ export default {
       }
     }
     const response = await env.ASSETS.fetch(req);
-    if (['/', '/index.html', '/push-client.js', '/data-transfer.js', '/install-guide.js', '/registration-client.js', '/sw.js', '/build-info.json'].includes(url.pathname)) {
+    if (['/', '/index.html', '/push-client.js', '/data-transfer.js', '/install-guide.js', '/registration-client.js', '/survivor-xp-data.js', '/survivor-xp.js', '/sw.js', '/build-info.json'].includes(url.pathname)) {
       const fresh = new Response(response.body, response);
       fresh.headers.set('cache-control', 'no-cache');
       return fresh;

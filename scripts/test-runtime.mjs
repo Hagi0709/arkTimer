@@ -75,12 +75,12 @@ try {
   const detail=await app.fetch('http://localhost/api/admin/registrations/'+await digest(registrationToken),{headers:{cookie}});assert.equal(detail.status,200);const {item}=await detail.json();assert.equal(item.characters.length,0);assert.equal(item.notification,undefined);assert.equal(item.subscriberId,undefined);
   await app.fetch('http://localhost/api/admin/logout',{method:'POST',headers:{cookie}});
   assert.equal((await app.fetch('http://localhost/api/admin/registrations',{headers:{cookie}})).status,401);
-  for (const path of ['/', '/push-client.js', '/install-guide.js','/registration-client.js', '/sw.js', '/manifest.webmanifest', '/build-info.json']) {
+  for (const path of ['/', '/push-client.js', '/install-guide.js','/registration-client.js','/survivor-xp-data.js','/survivor-xp.js', '/sw.js', '/manifest.webmanifest', '/build-info.json']) {
     const response = await app.fetch('http://localhost' + path);
     assert.equal(response.status, 200, path);
     if (path !== '/manifest.webmanifest') assert.equal(response.headers.get('cache-control'), 'no-cache', path);
   }
-  for(const path of ['/ark-manager-app-icon-dodo-v2.jpg','/safari-share-symbol.png','/timer-tribe-tower.png','/timer-generator.png','/timer-material-stone.webp',...['thatch','wood','metal','tek'].map(name=>`/timer-material-${name}.png`),'/genesis1-ocean.jpg','/genesis1-genesis.jpg',...['island','astraeos','lost-colony','aberration','ragnarok'].map(name=>`/timer-map-${name}.jpg`),...['overseer','manticore','rockwell','king-titan','lost-queen','master-controller','astraeos'].map(name=>`/boss-${name}.webp`),...['explorer-notes','bobs-sc','bobs-ab','bobs-ex','chibi','tides-of-fortune'].map(name=>`/level-${name}.webp`)]){
+  for(const path of ['/tool-survivor-xp.png','/ark-manager-app-icon-dodo-v2.jpg','/safari-share-symbol.png','/timer-tribe-tower.png','/timer-generator.png','/timer-material-stone.webp',...['thatch','wood','metal','tek'].map(name=>`/timer-material-${name}.png`),'/genesis1-ocean.jpg','/genesis1-genesis.jpg',...['island','astraeos','lost-colony','aberration','ragnarok'].map(name=>`/timer-map-${name}.jpg`),...['overseer','manticore','rockwell','king-titan','lost-queen','master-controller','astraeos'].map(name=>`/boss-${name}.webp`),...['explorer-notes','bobs-sc','bobs-ab','bobs-ex','chibi','tides-of-fortune'].map(name=>`/level-${name}.webp`)]){
     const response=await app.fetch('http://localhost'+path);assert.equal(response.status,200,path);assert.match(response.headers.get('content-type'),/^image\//);
   }
   console.log('Local Workers + D1: custom-day/hourly/legacy/9999-day schedules, individual/global cancellation, Cron and PWA assets passed');
